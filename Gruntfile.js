@@ -14,7 +14,6 @@ module.exports = function(grunt) {
           ],
           'dist/af-angular-setup.js':[
             'dist/setup/console-fix.js',
-            'dist/setup/app-env.js',
             'dist/setup/**/*'
           ]
         }
