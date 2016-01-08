@@ -1,9 +1,10 @@
-(function() {
-
 angular.module('af.loader', ['af.event'])
 
   .service('$loader', function($event) {
-    var $loader = {}, isLoading = false;
+
+    var $loader = {};
+    var isLoading = false;
+
     return $loader = {
       start: function(options) {
         isLoading = true;
@@ -88,6 +89,4 @@ angular.module('af.loader', ['af.event'])
         element.on('$destroy', clearTick);
       }
     };
-  })
-
-}).call(this);
+  });

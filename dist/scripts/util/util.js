@@ -75,17 +75,23 @@
       },
 
       // creates a displayName for our user
-      createDisplayName:function(user){
-        if(!user) return '';
-        // return preferred name if it exists...
-        //var preferredDisplayName = appTenant.config('settings.preferredDisplayName');
-        //if(preferredDisplayName && user[preferredDisplayName])
-        //  return user[preferredDisplayName];
-        // return name
-        if(user.firstName && user.lastName)
-          return user.firstName + ' ' + user.lastName;
-        // return whatever we can about this user
-        return user.firstName || user.lastName || user.nameOfPractice || user.username || user.userId || '';
+      createDisplayName:function(user, preference){
+
+        if(!user) return 'Unknown User';
+        var fullName = function(user){
+          if(user.firstName && user.lastName)
+            return user.firstName + ' ' + user.lastName;
+          return null;
+        };
+
+        if(preference && preference == 'nameOfPractice'){
+          if(user.nameOfPractice) return user.nameOfPractice;
+          if(fullName(user)) return fullName(user);
+        } else {
+          if(fullName(user)) return fullName(user);
+          if(user.nameOfPractice) return user.nameOfPractice;
+        }
+        return user.name || user.firstName || user.lastName || user.username || 'User ' + user.userId;
       },
 
       protocolAndHost:function(){
@@ -236,7 +242,6 @@
           return final;
         }
       }
-
 
     };
   });

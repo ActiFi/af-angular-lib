@@ -1,16 +1,16 @@
-(function() {
 
 angular.module('af.event', [])
 
-  .service('$event', function($rootScope, $log) {
-    var logEvent, service;
+  .constant('$EVENT_CONFIG', {suppress:['Loader.start', 'Loader.stop', 'Msg.clear']} )
 
-    logEvent = function(type, eventName, data) {
-      var suppress = [service.EVENT_loaderStart, service.EVENT_loaderStop, service.EVENT_msgClear];
-      if (!_.contains(suppress, eventName))
+  .service('$event', function($rootScope, $log, $EVENT_CONFIG) {
+
+    var logEvent = function(type, eventName, data) {
+      if(!_.contains($EVENT_CONFIG.suppress, eventName))
         $log.debug('$event.' + type + ': ' + eventName, data);
     };
 
+    var service = null;
     return service = {
 
       EVENT_loaderStart: 'Loader.start',
@@ -31,6 +31,5 @@ angular.module('af.event', [])
         return $scope.$emit(eventName, data);
       }
     };
-  })
 
-}).call(this);
+  });

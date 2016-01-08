@@ -9,7 +9,7 @@ angular.module('af.msg', ['af.event'])
       minVisible: 3,
 
       show: function(message, type, closable, delay) {
-        type = type || 'warning'
+        type = type || 'warning';
 
         if (!_.isBoolean(closable)) closable = true;
         if (!_.isNumber(delay) || delay < msg.minVisible) delay = 0;
