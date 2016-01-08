@@ -1,0 +1,11 @@
+{
+  "name": "af-angular-lib",
+  "description": "AcitFi Angular Libraries",
+  "main": "dist/af-angular-lib.js",
+  "authors": [
+    "Nate Alberg <alberg.nate@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/ActiFi/af-angular-lib",
+  "moduleType": []
+}
