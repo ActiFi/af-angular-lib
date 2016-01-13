@@ -11,7 +11,6 @@ var appTenant = {
 
   // quickie makers
   label:function(value, plural){ return appTenant.config('labels.'+value, plural)},
-  enabled:function(value){ return appTenant.config('enabled.'+value)},
 
   config:function(path, makePlural){
     if(!path) return appTenant._config; // return entire config if no path
