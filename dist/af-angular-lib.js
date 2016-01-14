@@ -244,24 +244,33 @@ angular.module('af.validators', [])
 
 ;
 
-angular.module('af.filters', [])
+angular.module('af.filters', ['af.appTenant'])
 
 
   // eg {{'user.name' | label}}
   // <span ng-bind="'user' | tenantLabel | plural"></span>
-  .filter('tenantConfig', function() {  return appTenant.config; })
-  .filter('tenantLabel', function() {   return appTenant.label; })
+  .filter('tenantConfig', function(appTenant) {  return appTenant.config; })
+  .filter('tenantLabel',  function(appTenant) {  return appTenant.label; })
+  .filter('plural',       function(appTenant) {  return appTenant.makePlural; })
 
-  .filter('plural', function() {        return appTenant.makePlural; })
-
-  .filter('tenantImage', function($filter) {
+  .filter('tenantImage', function(appTenant) {
     return function(file) {
       var tnt = appTenant.config('tenant');
       return '/tenant/' + tnt + '/images/' + tnt + '_' + file;
     };
-  })
+  });
 ;
 
+;
+angular.module('af.appEnv', [])
+  .service('appEnv', function() {
+    return window.appEnv;
+  });
+;
+angular.module('af.appTenant', [])
+  .service('appTenant', function() {
+    return window.appTenant;
+  });
 ;
 
 angular.module('af.event', [])

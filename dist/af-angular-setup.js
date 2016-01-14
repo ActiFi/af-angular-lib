@@ -81,12 +81,34 @@ var appCatch = {
 //
 // TENANTS CONFIGURATION (labels, theme, etc)
 //
+var appEnv = {
+  _config:{}, // holds config (loaded from db or php, or whatever)
+  init:function(config){
+    if(!config.ENV)           throw new Error('appEnv.init failed. ENV not defined');
+    if(!config.TENANT_HASH)   throw new Error('appEnv.init failed. TENANT_HASH not defined');
+    if(!config.TENANT_INDEX)  throw new Error('appEnv.init failed. TENANT_INDEX not defined');
+    appEnv._config.ENV = config;
+  },
+  ENV:function(){ return appEnv._config.ENV },
+  TENANT_HASH:function(){ return appEnv._config.TENANT_HASH },
+  TENANT_INDEX:function(){ return appEnv._config.TENANT_INDEX }
+};
+;
+//
+// TENANTS CONFIGURATION (labels, theme, etc)
+//
 var appTenant = {
 
   _config:{}, // holds config (loaded from db or php, or whatever)
 
   init:function(config){
     appTenant._config = config;
+    if(!window.ENV) throw new Error('window.ENV not defined');
+    if(!window.TENANT_HASH) throw new Error('window.TENANT_HASH not defined');
+    if(!window.TENANT_INDEX) throw new Error('window.TENANT_INDEX not defined');
+    appTenant._config.ENV = window.ENV;
+    appTenant._config.TENANT_HASH = window.TENANT_HASH;
+    appTenant._config.TENANT_INDEX = window.TENANT_INDEX;
   },
 
   // quickie makers
