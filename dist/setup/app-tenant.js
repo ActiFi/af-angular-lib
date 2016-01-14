@@ -7,6 +7,7 @@ var appTenant = {
 
   init:function(config){
     appTenant._config = config;
+    console.log('appTenant:', appTenant.get('app.tenant'));
   },
 
   // quickie makers
