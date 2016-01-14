@@ -7,12 +7,6 @@ var appTenant = {
 
   init:function(config){
     appTenant._config = config;
-    if(!window.ENV) throw new Error('window.ENV not defined');
-    if(!window.TENANT_HASH) throw new Error('window.TENANT_HASH not defined');
-    if(!window.TENANT_INDEX) throw new Error('window.TENANT_INDEX not defined');
-    appTenant._config.ENV = window.ENV;
-    appTenant._config.TENANT_HASH = window.TENANT_HASH;
-    appTenant._config.TENANT_INDEX = window.TENANT_INDEX;
   },
 
   // quickie makers
