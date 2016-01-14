@@ -11,7 +11,7 @@ var appTenant = {
   },
 
   // quickie makers
-  label:function(value, plural){ return appTenant.config('labels.'+value, plural)},
+  label:function(value, plural){ return appTenant.config('label.'+value, plural)},
 
   config:function(path, makePlural){
     if(!path) return appTenant._config; // return entire config if no path
@@ -41,3 +41,4 @@ var appTenant = {
   }
 
 };
+appTenant.get = appTenant.config; // alias
