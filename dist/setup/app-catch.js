@@ -8,7 +8,7 @@ var appCatch = {
   config: {
     uid:'',
     enabled: true,
-    logging:true,
+    logging: true,
     options: {
       whitelistUrls:[ 'actifi.com/' ],
       ignoreUrls: [ /extensions\//i, /^chrome:\/\//i ]
@@ -19,13 +19,8 @@ var appCatch = {
   //
   // INITIALIZE
   //
-  init:function(settings){
-    // load settings
-    if(settings){
-      for(var key in settings){
-        appCatch.config[key] = settings[key];
-      }
-    }
+  init:function(uid){
+    appCatch.config.uid = uid;
     // sanity checks
     if(appCatch.loaded) return;
     if(!appCatch.config.enabled)     return console.log('SENTRY - Disabled via config.', appCatch.config);
@@ -33,7 +28,7 @@ var appCatch = {
     if(!appCatch.config.uid)         return console.log('ERROR!! Sentry init error. Application Config not defined.');
     // init
     Raven.config(appCatch.config.uid, appCatch.config.options).install();
-    console.log('SENTRY - Enabled', appCatch.config);
+    console.log('SENTRY - Enabled');
     appCatch.loaded = true;
   },
 
@@ -55,9 +50,8 @@ var appCatch = {
     // url of error
     options.extra.url = extra.href || window.location.href;
     // tags
-    options.tags.app = tags.app || serverConfig.app;
-    options.tags.env = tags.env || serverConfig.env;
-    options.tags.subDomain = tags.subDomain || tags.host || serverConfig.host;
+    options.tags.env = tags.env || appEnv.ENV();
+    options.tags.subDomain = tags.subDomain || tags.host || appEnv.HOST();
     Raven.captureMessage(message, options)
   },
 

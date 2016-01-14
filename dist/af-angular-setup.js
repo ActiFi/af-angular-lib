@@ -10,7 +10,7 @@ var appCatch = {
   config: {
     uid:'',
     enabled: true,
-    logging:true,
+    logging: true,
     options: {
       whitelistUrls:[ 'actifi.com/' ],
       ignoreUrls: [ /extensions\//i, /^chrome:\/\//i ]
@@ -21,13 +21,8 @@ var appCatch = {
   //
   // INITIALIZE
   //
-  init:function(settings){
-    // load settings
-    if(settings){
-      for(var key in settings){
-        appCatch.config[key] = settings[key];
-      }
-    }
+  init:function(uid){
+    appCatch.config.uid = uid;
     // sanity checks
     if(appCatch.loaded) return;
     if(!appCatch.config.enabled)     return console.log('SENTRY - Disabled via config.', appCatch.config);
@@ -35,7 +30,7 @@ var appCatch = {
     if(!appCatch.config.uid)         return console.log('ERROR!! Sentry init error. Application Config not defined.');
     // init
     Raven.config(appCatch.config.uid, appCatch.config.options).install();
-    console.log('SENTRY - Enabled', appCatch.config);
+    console.log('SENTRY - Enabled');
     appCatch.loaded = true;
   },
 
@@ -57,9 +52,8 @@ var appCatch = {
     // url of error
     options.extra.url = extra.href || window.location.href;
     // tags
-    options.tags.app = tags.app || serverConfig.app;
-    options.tags.env = tags.env || serverConfig.env;
-    options.tags.subDomain = tags.subDomain || tags.host || serverConfig.host;
+    options.tags.env = tags.env || appEnv.ENV();
+    options.tags.subDomain = tags.subDomain || tags.host || appEnv.HOST();
     Raven.captureMessage(message, options)
   },
 
@@ -79,23 +73,37 @@ var appCatch = {
 };
 ;
 //
-// TENANTS CONFIGURATION (labels, theme, etc)
+// SERVER CONFIGURATION (ENV, TENANT_HASH, TENANT_INDEX, etc)
 //
 var appEnv = {
   _config:{}, // holds config (loaded from db or php, or whatever)
-  init:function(config){
+  init:function(config, app){
     if(!config.ENV)           throw new Error('appEnv.init failed. ENV not defined');
     if(!config.TENANT_HASH)   throw new Error('appEnv.init failed. TENANT_HASH not defined');
     if(!config.TENANT_INDEX)  throw new Error('appEnv.init failed. TENANT_INDEX not defined');
-    appEnv._config.ENV = config.ENV;
-    appEnv._config.TENANT_HASH = config.TENANT_HASH;
-    appEnv._config.TENANT_INDEX = config.TENANT_INDEX;
+    if(!app)                  throw new Error('appEnv.init failed. must specify app'); // eg, portal, auth, metrics, assessment etc...
+    appEnv._config = config;
+    appEnv._config.HOST = window.location.protocol + "//" + window.location.host;
+    appEnv._config.APP = app;
+
+    // log it...
     console.log('appEnv', appEnv._config);
   },
   ENV:function(){ return appEnv._config.ENV },
   TENANT_HASH:function(){ return appEnv._config.TENANT_HASH },
-  TENANT_INDEX:function(){ return appEnv._config.TENANT_INDEX }
+  TENANT_INDEX:function(){ return appEnv._config.TENANT_INDEX },
+  SENTRY:function(){ return appEnv._config.SENTRY },
+  MIXPANEL:function(){ return appEnv._config.MIXPANEL },
+  HOST:function(){ return appEnv._config.HOST },
+  APP:function(){ return appEnv._config.APP },
+
+  // global getter
+  config : function(path){
+    if(!path) return appEnv._config; // return entire config if no path
+    return _.get(appEnv._config, path);
+  }
 };
+appEnv.get = appEnv.config; // alias
 ;
 //
 // TENANTS CONFIGURATION (labels, theme, etc)
@@ -189,33 +197,26 @@ var appTrack = {
   //
   // INITIALIZE
   //
-  init:function(settings){
-    // load settings
-    if(settings){
-      for(var key in settings){
-        appTrack.config[key] = settings[key];
-      }
-    }
+  init:function(uid){
+    appTrack.config.uid = uid;
 
     // sanity checks
     if(appTrack.loaded) return;
-    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.', appCatch.config);
+    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.', appTrack.config);
     if (typeof mixpanel === "undefined") return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
     if (!appTrack.config.uid) return appCatch.send('Cannot initialize AppTrack. AppTrack.config not defined.');
-
-    appTrack.config.debug = serverConfig.isDev;
 
     // init
     mixpanel.init(appTrack.config.uid, appTrack.config.options);
     // always pass these with events:
     appTrack.config.globals = {
-      'Domain': serverConfig.host,
-      'Tenant': serverConfig.tenant,
+      'Domain': appEnv.HOST(),
+      'Tenant': appEnv.TENANT_HASH(),
       'Browser Version':navigator.sayswho,
-      'App': serverConfig.app
+      'App': appEnv.APP()
     };
     mixpanel.register(appTrack.config.globals);
-    console.log('MIXPANEL - Enabled', appTrack.config);
+    console.log('MIXPANEL - Enabled');
     appTrack.loaded = true;
   },
 

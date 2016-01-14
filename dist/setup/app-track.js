@@ -45,33 +45,26 @@ var appTrack = {
   //
   // INITIALIZE
   //
-  init:function(settings){
-    // load settings
-    if(settings){
-      for(var key in settings){
-        appTrack.config[key] = settings[key];
-      }
-    }
+  init:function(uid){
+    appTrack.config.uid = uid;
 
     // sanity checks
     if(appTrack.loaded) return;
-    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.', appCatch.config);
+    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.', appTrack.config);
     if (typeof mixpanel === "undefined") return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
     if (!appTrack.config.uid) return appCatch.send('Cannot initialize AppTrack. AppTrack.config not defined.');
-
-    appTrack.config.debug = serverConfig.isDev;
 
     // init
     mixpanel.init(appTrack.config.uid, appTrack.config.options);
     // always pass these with events:
     appTrack.config.globals = {
-      'Domain': serverConfig.host,
-      'Tenant': serverConfig.tenant,
+      'Domain': appEnv.HOST(),
+      'Tenant': appEnv.TENANT_HASH(),
       'Browser Version':navigator.sayswho,
-      'App': serverConfig.app
+      'App': appEnv.APP()
     };
     mixpanel.register(appTrack.config.globals);
-    console.log('MIXPANEL - Enabled', appTrack.config);
+    console.log('MIXPANEL - Enabled');
     appTrack.loaded = true;
   },
 
