@@ -10,7 +10,6 @@ var appCatch = {
   config: {
     uid:'',
     enabled: true,
-    logging: true,
     options: {
       whitelistUrls:[ 'actifi.com/' ],
       ignoreUrls: [ /extensions\//i, /^chrome:\/\//i ]
@@ -22,16 +21,25 @@ var appCatch = {
   // INITIALIZE
   //
   init:function(uid){
+    if(appCatch.loaded)  return;
+
+    // set uid
     appCatch.config.uid = uid;
+
     // sanity checks
-    if(appCatch.loaded) return;
-    if(!appCatch.config.enabled)     return console.log('SENTRY - Disabled via config.', appCatch.config);
-    if(typeof Raven === "undefined") return console.log('ERROR!! Cannot initialize Sentry. Missing Raven library.');
-    if(!appCatch.config.uid)         return console.log('ERROR!! Sentry init error. Application Config not defined.');
+    if(appEnv == void 0)          return console.log('Cannot initialize appCatch. appEnv must be loaded first.');
+    if(!appCatch.config.enabled)  return console.log('SENTRY - Disabled via config.');
+    if(typeof Raven === void 0)   return console.log('ERROR!! Cannot initialize Sentry. Missing Raven library.');
+    if(!appCatch.config.uid)      return console.log('ERROR!! Sentry init error. Application Config not defined.');
+
     // init
     Raven.config(appCatch.config.uid, appCatch.config.options).install();
     console.log('SENTRY - Enabled');
     appCatch.loaded = true;
+  },
+
+  isEnabled:function(){
+    return appCatch.loaded && appCatch.enabled;
   },
 
 
@@ -43,7 +51,7 @@ var appCatch = {
     appCatch.error(message, extra, tags);
   },
   error:function(message, extra, tags){
-    if(!appCatch.loaded) return;
+    if(!appCatch.isEnabled()) return;
     console.log('SENTRY - error()', message);
     extra = extra || {};
     tags = tags || {};
@@ -59,14 +67,14 @@ var appCatch = {
 
   // additional info about the user that threw error...
   setUser:function(id, email){
-    if(!appCatch.loaded) return;
+    if(!appCatch.isEnabled()) return;
     var user = { id:id };
     if(email) user.email = email;
     console.log('SENTRY - setUser()', user);
     Raven.setUser(user);
   },
   clearUser:function(){
-    if(!appCatch.loaded) return;
+    if(!appCatch.isEnabled()) return;
     console.log('SENTRY - clearUser()');
     Raven.setUser(); // this clears out any current user
   }
@@ -198,13 +206,19 @@ var appTrack = {
   // INITIALIZE
   //
   init:function(uid){
+    if(appTrack.loaded) return;
+
+    // set uid
     appTrack.config.uid = uid;
 
     // sanity checks
-    if(appTrack.loaded) return;
-    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.', appTrack.config);
-    if (typeof mixpanel === "undefined") return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
-    if (!appTrack.config.uid) return appCatch.send('Cannot initialize AppTrack. AppTrack.config not defined.');
+    if(appCatch == void 0)    return console.log('Cannot initialize appTrack. appCatch must be loaded first.');
+    if(appEnv == void 0)      return appCatch.send('Cannot initialize appTrack. appEnv must be loaded first.');
+    if(amplify == void 0)     return appCatch.send('Cannot initialize appTrack. amplify must be loaded first.');
+    if(_ == void 0)           return appCatch.send('Cannot initialize appTrack. lodash must be loaded first.');
+    if(!appTrack.config.uid)  return appCatch.send('Cannot initialize appTrack. uid not defined.');
+    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.');
+    if(typeof mixpanel === void 0) return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
 
     // init
     mixpanel.init(appTrack.config.uid, appTrack.config.options);
@@ -223,6 +237,7 @@ var appTrack = {
   isEnabled:function(){
     return (appTrack.loaded && appTrack.config.enabled && amplify.store('mixpanel_trackUserStats')) ? true:false;
   },
+
 
   //
   // WHO stats are tracked for

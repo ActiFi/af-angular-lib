@@ -8,7 +8,6 @@ var appCatch = {
   config: {
     uid:'',
     enabled: true,
-    logging: true,
     options: {
       whitelistUrls:[ 'actifi.com/' ],
       ignoreUrls: [ /extensions\//i, /^chrome:\/\//i ]
@@ -20,16 +19,25 @@ var appCatch = {
   // INITIALIZE
   //
   init:function(uid){
+    if(appCatch.loaded)  return;
+
+    // set uid
     appCatch.config.uid = uid;
+
     // sanity checks
-    if(appCatch.loaded) return;
-    if(!appCatch.config.enabled)     return console.log('SENTRY - Disabled via config.', appCatch.config);
-    if(typeof Raven === "undefined") return console.log('ERROR!! Cannot initialize Sentry. Missing Raven library.');
-    if(!appCatch.config.uid)         return console.log('ERROR!! Sentry init error. Application Config not defined.');
+    if(appEnv == void 0)          return console.log('Cannot initialize appCatch. appEnv must be loaded first.');
+    if(!appCatch.config.enabled)  return console.log('SENTRY - Disabled via config.');
+    if(typeof Raven === void 0)   return console.log('ERROR!! Cannot initialize Sentry. Missing Raven library.');
+    if(!appCatch.config.uid)      return console.log('ERROR!! Sentry init error. Application Config not defined.');
+
     // init
     Raven.config(appCatch.config.uid, appCatch.config.options).install();
     console.log('SENTRY - Enabled');
     appCatch.loaded = true;
+  },
+
+  isEnabled:function(){
+    return appCatch.loaded && appCatch.enabled;
   },
 
 
@@ -41,7 +49,7 @@ var appCatch = {
     appCatch.error(message, extra, tags);
   },
   error:function(message, extra, tags){
-    if(!appCatch.loaded) return;
+    if(!appCatch.isEnabled()) return;
     console.log('SENTRY - error()', message);
     extra = extra || {};
     tags = tags || {};
@@ -57,14 +65,14 @@ var appCatch = {
 
   // additional info about the user that threw error...
   setUser:function(id, email){
-    if(!appCatch.loaded) return;
+    if(!appCatch.isEnabled()) return;
     var user = { id:id };
     if(email) user.email = email;
     console.log('SENTRY - setUser()', user);
     Raven.setUser(user);
   },
   clearUser:function(){
-    if(!appCatch.loaded) return;
+    if(!appCatch.isEnabled()) return;
     console.log('SENTRY - clearUser()');
     Raven.setUser(); // this clears out any current user
   }

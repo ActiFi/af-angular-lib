@@ -46,13 +46,19 @@ var appTrack = {
   // INITIALIZE
   //
   init:function(uid){
+    if(appTrack.loaded) return;
+
+    // set uid
     appTrack.config.uid = uid;
 
     // sanity checks
-    if(appTrack.loaded) return;
-    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.', appTrack.config);
-    if (typeof mixpanel === "undefined") return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
-    if (!appTrack.config.uid) return appCatch.send('Cannot initialize AppTrack. AppTrack.config not defined.');
+    if(appCatch == void 0)    return console.log('Cannot initialize appTrack. appCatch must be loaded first.');
+    if(appEnv == void 0)      return appCatch.send('Cannot initialize appTrack. appEnv must be loaded first.');
+    if(amplify == void 0)     return appCatch.send('Cannot initialize appTrack. amplify must be loaded first.');
+    if(_ == void 0)           return appCatch.send('Cannot initialize appTrack. lodash must be loaded first.');
+    if(!appTrack.config.uid)  return appCatch.send('Cannot initialize appTrack. uid not defined.');
+    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.');
+    if(typeof mixpanel === void 0) return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
 
     // init
     mixpanel.init(appTrack.config.uid, appTrack.config.options);
@@ -71,6 +77,7 @@ var appTrack = {
   isEnabled:function(){
     return (appTrack.loaded && appTrack.config.enabled && amplify.store('mixpanel_trackUserStats')) ? true:false;
   },
+
 
   //
   // WHO stats are tracked for
