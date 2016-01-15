@@ -14,6 +14,8 @@ angular.module('af.lib',
   // wrappers
     'af.appEnv',
     'af.appTenant',
+    'af.appTrack',
+    'af.appCatch',
     'af.amplify',
     'af._',
     'af.moment'

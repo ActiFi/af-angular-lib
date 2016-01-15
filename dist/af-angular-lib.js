@@ -14,6 +14,8 @@ angular.module('af.lib',
   // wrappers
     'af.appEnv',
     'af.appTenant',
+    'af.appTrack',
+    'af.appCatch',
     'af.amplify',
     'af._',
     'af.moment'
@@ -367,7 +369,6 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
       },
 
 
-
       isLoggedIn:function(){
         return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.webToken())
       },
@@ -388,6 +389,11 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
 ;
 
 ;
+angular.module('af.appCatch', [])
+  .service('appCatch', function($window) {
+    return $window.appCatch;
+  });
+;
 angular.module('af.appEnv', [])
   .service('appEnv', function($window) {
     return $window.appEnv;
@@ -396,6 +402,11 @@ angular.module('af.appEnv', [])
 angular.module('af.appTenant', [])
   .service('appTenant', function($window) {
     return $window.appTenant;
+  });
+;
+angular.module('af.appTrack', [])
+  .service('appTrack', function($window) {
+    return $window.appTrack;
   });
 ;
 
