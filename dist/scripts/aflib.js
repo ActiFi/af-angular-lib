@@ -10,6 +10,7 @@ angular.module('af.lib',
     'af.msg',
     'af.storage',
     'af.util',
+    'af.jwtManager',
 
   // wrappers
     'af.appEnv',

@@ -1,5 +1,5 @@
 
-angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
+angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManager'])
 
   .constant('AF_AUTH_MANAGER_CONFIG', {
 
@@ -12,7 +12,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
 
   })
 
-  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, $util, amplify, $window) {
+  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, jwtManager, $window) {
 
     var store = function(key, value){
       if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
@@ -27,7 +27,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
       _.each(priorities, function(priority) {
         if(value) return;
         switch (priority) {
-          case 'url':     value = $util.GET(key); break;
+          case 'url':     value = afUtil.GET(key); break;
           case 'cache':   value = amplify.store(key); break;
           case 'window':  value = $window[key]; break;
         }
@@ -48,6 +48,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
       },
+      decodeWebToken:jwtManager.decode,
 
 
       //
