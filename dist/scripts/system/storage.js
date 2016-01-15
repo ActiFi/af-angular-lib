@@ -5,7 +5,7 @@ angular.module('af.storage', [])
 
   .constant('$STORAGE_CONFIG', {persistent_prefix:'myApp'} )
 
-  .service('$storage', function($STORAGE_CONFIG, $log) {
+  .service('afStorage', function($STORAGE_CONFIG, $log) {
 
     var prefix = $STORAGE_CONFIG.persistent_prefix;
 

@@ -1,29 +1,29 @@
 angular.module('af.loader', ['af.event'])
 
-  .service('$loader', function($event) {
+  .service('afLoader', function(afEvent) {
 
-    var $loader = {};
+    var afLoader = {};
     var isLoading = false;
 
-    return $loader = {
+    return afLoader = {
       start: function(options) {
         isLoading = true;
-        return $event.shout($event.EVENT_loaderStart, options);
+        return afEvent.shout(afEvent.EVENT_loaderStart, options);
       },
       stop: function() {
         isLoading = false;
-        return $event.shout($event.EVENT_loaderStop);
+        return afEvent.shout(afEvent.EVENT_loaderStop);
       },
       // util / quickies
       isLoading:function(){ return isLoading; },
-      saving: function() { $loader.start('Saving');    },
-      loading: function() { $loader.start('Loading');  },
-      bar: function() { $loader.start({bar:true, mask:false});  },
-      mask: function() { $loader.start({bar:false, mask:true});  }
+      saving: function() { afLoader.start('Saving');    },
+      loading: function() { afLoader.start('Loading');  },
+      bar: function() { afLoader.start({bar:true, mask:false});  },
+      mask: function() { afLoader.start({bar:false, mask:true});  }
     };
   })
 
-  .directive('loaderHolder', function($event, $interval, $log) {
+  .directive('loaderHolder', function(afEvent, $interval, $log) {
     return {
       restrict: 'A',
       scope: {},
@@ -80,10 +80,10 @@ angular.module('af.loader', ['af.event'])
           scope.loaderBar = scope.loaderText = scope.loadMask = null;
           clearTick();
         };
-        scope.$on($event.EVENT_loaderStart, function(event, txt) {
+        scope.$on(afEvent.EVENT_loaderStart, function(event, txt) {
           scope.start(txt);
         });
-        scope.$on($event.EVENT_loaderStop, scope.stop);
+        scope.$on(afEvent.EVENT_loaderStop, scope.stop);
 
         // kill any timer on destroy
         element.on('$destroy', clearTick);

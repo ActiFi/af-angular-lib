@@ -3,11 +3,11 @@ angular.module('af.event', [])
 
   .constant('$EVENT_CONFIG', {suppress:['Loader.start', 'Loader.stop', 'Msg.clear']} )
 
-  .service('$event', function($rootScope, $log, $EVENT_CONFIG) {
+  .service('afEvent', function($rootScope, $log, $EVENT_CONFIG) {
 
     var logEvent = function(type, eventName, data) {
       if(!_.contains($EVENT_CONFIG.suppress, eventName))
-        $log.debug('$event.' + type + ': ' + eventName, data);
+        $log.debug('afEvent.' + type + ': ' + eventName, data);
     };
 
     var service = null;

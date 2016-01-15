@@ -6,7 +6,7 @@ angular.module('af.modal', ['af.event'])
     genericModalPath:'src/views/templates/generic.modal.view.html'
   })
 
-  .service("$modal", function($event, $MODAL_CONFIG) {
+  .service("afModal", function(afEvent, $MODAL_CONFIG) {
     var service;
     service = {
       isOpen:false,
@@ -18,7 +18,7 @@ angular.module('af.modal', ['af.event'])
         service.controller = ctrl;
         service.size = size; // lg, md, sm
         if (!service.url) service.url = $MODAL_CONFIG.genericModalPath;
-        $event.shout("Modal.open", {
+        afEvent.shout("Modal.open", {
           url: service.url,
           controller: service.controller,
           size: service.size
@@ -27,7 +27,7 @@ angular.module('af.modal', ['af.event'])
       },
       close: function(data) {
         if(!service.isOpen) return;
-        $event.shout("Modal.close", data);
+        afEvent.shout("Modal.close", data);
         service.isOpen = false;
         service.url = null;
         service.size = null;
@@ -47,7 +47,7 @@ angular.module('af.modal', ['af.event'])
     return service;
   })
 
-  .directive("modalHolder", function($modal, $timeout, $window) {
+  .directive("modalHolder", function(afModal, $timeout, $window) {
     return {
       restrict: "A",
       scope: {},
@@ -62,7 +62,7 @@ angular.module('af.modal', ['af.event'])
                   '</div>' +
                 '</div>',
       link: function(scope, element, attrs) {
-        scope.modalURL = $modal.url;
+        scope.modalURL = afModal.url;
         scope.size = null;
         scope.close = function() {
           $('body').removeClass('modal-open');
@@ -70,10 +70,10 @@ angular.module('af.modal', ['af.event'])
           return scope.modalURL = null;
         };
         scope.$on("Modal.open", function() {
-          scope.modalURL = $modal.url;
+          scope.modalURL = afModal.url;
           scope.size = null;
-          if($modal.size){
-            switch($modal.size){
+          if(afModal.size){
+            switch(afModal.size){
               case 'lg': scope.size = {'modal-lg':true}; break;
               case 'md': scope.size = {'modal-md':true}; break;
               case 'sm': scope.size = {'modal-sm':true}; break;
@@ -93,15 +93,15 @@ angular.module('af.modal', ['af.event'])
     };
   })
 
-  .controller('GenericModalCtrl', function($scope, $modal) {
+  .controller('GenericModalCtrl', function($scope, afModal) {
 
     /*
     Example usage
-    $modal.open('client/views/analyzers/client.profitability.settings.php', {
+    afModal.open('client/views/analyzers/client.profitability.settings.php', {
       clickClose:() ->
-        modalScope = $modal.getScope()
+        modalScope = afModal.getScope()
          * do something
-        $modal.close()
+        afModal.close()
     })
      */
     var defaultController, init;
@@ -111,10 +111,10 @@ angular.module('af.modal', ['af.event'])
       closeBtnLabel: 'Close',
       confirmBtnLabel: null,
       clickClose: function() {
-        return $modal.close();
+        return afModal.close();
       },
       clickConfirm: function() {
-        return $modal.close();
+        return afModal.close();
       },
       run: function() {
         var foo;
@@ -122,8 +122,8 @@ angular.module('af.modal', ['af.event'])
       }
     };
     init = function() {
-      _.extend($scope, defaultController, $modal.controller);
-      //return $modal.updateModalScope($scope);
+      _.extend($scope, defaultController, afModal.controller);
+      //return afModal.updateModalScope($scope);
     };
     init();
     return $scope.run();

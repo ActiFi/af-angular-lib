@@ -1,3 +1,29 @@
+// master module which includes all other modules
+angular.module('af.lib',
+  [
+    'af.authManager',
+    'af.bsIcons',
+    'af.event',
+    'af.filters',
+    'af.loader',
+    'af.modal',
+    'af.msg',
+    'af.storage',
+    'af.util',
+
+  // wrappers
+    'af.appEnv',
+    'af.appTenant',
+    'af.amplify',
+    'af._',
+    'af.moment'
+
+  // these are not included by default
+    //'ui.bootstrap.dropdown'
+    //'af.validators'
+  ]
+);
+;
 
 ;
 (function() {
@@ -262,14 +288,114 @@ angular.module('af.filters', ['af.appTenant'])
 ;
 
 ;
+
+angular.module('af.authManager', ['af._', 'af.amplify', 'af.util'])
+
+  .constant('AF_AUTH_MANAGER_CONFIG', {
+
+    tokenPriority:['url', 'cache', 'window'],
+    cacheFor:86400000, // 1 day
+
+    cacheSessionTokenAs:'sessionToken',
+    cacheWebTokenAs:'webToken',
+    cacheUserAs:'loggedInUser'
+
+  })
+
+  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, $util, amplify, $window) {
+
+    var store = function(key, value){
+      if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
+      amplify.store(key, value, { expires:AF_AUTH_MANAGER_CONFIG.cacheFor });
+    };
+
+
+    var getViaPriority  = function(key, priorities){
+      priorities = priorities || AF_AUTH_MANAGER_CONFIG.tokenPriority;
+      // cycle through possible locations..
+      var value = null;
+      _.each(priorities, function(priority) {
+        if(value) return;
+        switch (priority) {
+          case 'url':     value = $util.GET(key); break;
+          case 'cache':   value = amplify.store(key); break;
+          case 'window':  value = $window[key]; break;
+        }
+      });
+      return value;
+    };
+
+
+    var afAuthManager = {
+
+
+      //
+      // JSON WEB TOKEN
+      //
+      setWebToken:function(jwt){
+        store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt);
+      },
+      webToken:function(priorities){
+        return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
+      },
+
+
+      //
+      // SESSION TOKEN (DEPRECATED)
+      //
+      setSessionToken:function(sessionToken){
+        store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, sessionToken);
+      },
+      sessionToken: function(priorities){
+        return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, priorities);
+      },
+
+
+      //
+      // USER
+      //
+      setUser:function(user){
+        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user)
+      },
+      user:function(){
+        return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
+      },
+      userId:function(){
+        var user = afAuthManager.user();
+        if(user && user.userId) return user.userId;
+        return null;
+      },
+
+
+
+      isLoggedIn:function(){
+        return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.webToken())
+      },
+
+      // CLEAR / LOGOUT
+      clear: function() {
+        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, null);
+        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, null);
+        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, null);
+      }
+    };
+
+    // alias
+    afAuthManager.logout = afAuthManager.clear;
+
+    return afAuthManager;
+});
+;
+
+;
 angular.module('af.appEnv', [])
-  .service('appEnv', function() {
-    return window.appEnv;
+  .service('appEnv', function($window) {
+    return $window.appEnv;
   });
 ;
 angular.module('af.appTenant', [])
-  .service('appTenant', function() {
-    return window.appTenant;
+  .service('appTenant', function($window) {
+    return $window.appTenant;
   });
 ;
 
@@ -277,11 +403,11 @@ angular.module('af.event', [])
 
   .constant('$EVENT_CONFIG', {suppress:['Loader.start', 'Loader.stop', 'Msg.clear']} )
 
-  .service('$event', function($rootScope, $log, $EVENT_CONFIG) {
+  .service('afEvent', function($rootScope, $log, $EVENT_CONFIG) {
 
     var logEvent = function(type, eventName, data) {
       if(!_.contains($EVENT_CONFIG.suppress, eventName))
-        $log.debug('$event.' + type + ': ' + eventName, data);
+        $log.debug('afEvent.' + type + ': ' + eventName, data);
     };
 
     var service = null;
@@ -310,30 +436,30 @@ angular.module('af.event', [])
 ;
 angular.module('af.loader', ['af.event'])
 
-  .service('$loader', function($event) {
+  .service('afLoader', function(afEvent) {
 
-    var $loader = {};
+    var afLoader = {};
     var isLoading = false;
 
-    return $loader = {
+    return afLoader = {
       start: function(options) {
         isLoading = true;
-        return $event.shout($event.EVENT_loaderStart, options);
+        return afEvent.shout(afEvent.EVENT_loaderStart, options);
       },
       stop: function() {
         isLoading = false;
-        return $event.shout($event.EVENT_loaderStop);
+        return afEvent.shout(afEvent.EVENT_loaderStop);
       },
       // util / quickies
       isLoading:function(){ return isLoading; },
-      saving: function() { $loader.start('Saving');    },
-      loading: function() { $loader.start('Loading');  },
-      bar: function() { $loader.start({bar:true, mask:false});  },
-      mask: function() { $loader.start({bar:false, mask:true});  }
+      saving: function() { afLoader.start('Saving');    },
+      loading: function() { afLoader.start('Loading');  },
+      bar: function() { afLoader.start({bar:true, mask:false});  },
+      mask: function() { afLoader.start({bar:false, mask:true});  }
     };
   })
 
-  .directive('loaderHolder', function($event, $interval, $log) {
+  .directive('loaderHolder', function(afEvent, $interval, $log) {
     return {
       restrict: 'A',
       scope: {},
@@ -390,10 +516,10 @@ angular.module('af.loader', ['af.event'])
           scope.loaderBar = scope.loaderText = scope.loadMask = null;
           clearTick();
         };
-        scope.$on($event.EVENT_loaderStart, function(event, txt) {
+        scope.$on(afEvent.EVENT_loaderStart, function(event, txt) {
           scope.start(txt);
         });
-        scope.$on($event.EVENT_loaderStop, scope.stop);
+        scope.$on(afEvent.EVENT_loaderStop, scope.stop);
 
         // kill any timer on destroy
         element.on('$destroy', clearTick);
@@ -409,7 +535,7 @@ angular.module('af.modal', ['af.event'])
     genericModalPath:'src/views/templates/generic.modal.view.html'
   })
 
-  .service("$modal", function($event, $MODAL_CONFIG) {
+  .service("afModal", function(afEvent, $MODAL_CONFIG) {
     var service;
     service = {
       isOpen:false,
@@ -421,7 +547,7 @@ angular.module('af.modal', ['af.event'])
         service.controller = ctrl;
         service.size = size; // lg, md, sm
         if (!service.url) service.url = $MODAL_CONFIG.genericModalPath;
-        $event.shout("Modal.open", {
+        afEvent.shout("Modal.open", {
           url: service.url,
           controller: service.controller,
           size: service.size
@@ -430,7 +556,7 @@ angular.module('af.modal', ['af.event'])
       },
       close: function(data) {
         if(!service.isOpen) return;
-        $event.shout("Modal.close", data);
+        afEvent.shout("Modal.close", data);
         service.isOpen = false;
         service.url = null;
         service.size = null;
@@ -450,7 +576,7 @@ angular.module('af.modal', ['af.event'])
     return service;
   })
 
-  .directive("modalHolder", function($modal, $timeout, $window) {
+  .directive("modalHolder", function(afModal, $timeout, $window) {
     return {
       restrict: "A",
       scope: {},
@@ -465,7 +591,7 @@ angular.module('af.modal', ['af.event'])
                   '</div>' +
                 '</div>',
       link: function(scope, element, attrs) {
-        scope.modalURL = $modal.url;
+        scope.modalURL = afModal.url;
         scope.size = null;
         scope.close = function() {
           $('body').removeClass('modal-open');
@@ -473,10 +599,10 @@ angular.module('af.modal', ['af.event'])
           return scope.modalURL = null;
         };
         scope.$on("Modal.open", function() {
-          scope.modalURL = $modal.url;
+          scope.modalURL = afModal.url;
           scope.size = null;
-          if($modal.size){
-            switch($modal.size){
+          if(afModal.size){
+            switch(afModal.size){
               case 'lg': scope.size = {'modal-lg':true}; break;
               case 'md': scope.size = {'modal-md':true}; break;
               case 'sm': scope.size = {'modal-sm':true}; break;
@@ -496,15 +622,15 @@ angular.module('af.modal', ['af.event'])
     };
   })
 
-  .controller('GenericModalCtrl', function($scope, $modal) {
+  .controller('GenericModalCtrl', function($scope, afModal) {
 
     /*
     Example usage
-    $modal.open('client/views/analyzers/client.profitability.settings.php', {
+    afModal.open('client/views/analyzers/client.profitability.settings.php', {
       clickClose:() ->
-        modalScope = $modal.getScope()
+        modalScope = afModal.getScope()
          * do something
-        $modal.close()
+        afModal.close()
     })
      */
     var defaultController, init;
@@ -514,10 +640,10 @@ angular.module('af.modal', ['af.event'])
       closeBtnLabel: 'Close',
       confirmBtnLabel: null,
       clickClose: function() {
-        return $modal.close();
+        return afModal.close();
       },
       clickConfirm: function() {
-        return $modal.close();
+        return afModal.close();
       },
       run: function() {
         var foo;
@@ -525,8 +651,8 @@ angular.module('af.modal', ['af.event'])
       }
     };
     init = function() {
-      _.extend($scope, defaultController, $modal.controller);
-      //return $modal.updateModalScope($scope);
+      _.extend($scope, defaultController, afModal.controller);
+      //return afModal.updateModalScope($scope);
     };
     init();
     return $scope.run();
@@ -539,7 +665,7 @@ angular.module('af.modal', ['af.event'])
 
 angular.module('af.msg', ['af.event'])
 
-  .service('$msg', function($event) {
+  .service('afMsg', function(afEvent) {
     var msg;
     return msg = {
       shownAt: null,
@@ -554,7 +680,7 @@ angular.module('af.msg', ['af.event'])
 
         msg.shownAt = new Date().getTime();
 
-        return $event.shout($event.EVENT_msgShow, {
+        return afEvent.shout(afEvent.EVENT_msgShow, {
           message: message,
           type: type,
           delay: delay,
@@ -565,7 +691,7 @@ angular.module('af.msg', ['af.event'])
       clear: function(force) {
         var now = new Date().getTime();
         if (force || (msg.shownAt && (now - msg.shownAt) > msg.minVisible))
-          return $event.shout($event.EVENT_msgClear);
+          return afEvent.shout(afEvent.EVENT_msgClear);
       },
 
       alert: function(message, closable, delay) {   return msg.show(message, 'warning', closable, delay); },
@@ -575,7 +701,7 @@ angular.module('af.msg', ['af.event'])
     };
   })
 
-  .directive('msgHolder', function($timeout, $window, $event) {
+  .directive('msgHolder', function($timeout, $window, afEvent) {
     var timer = null;
     return {
       restrict: 'A',
@@ -612,10 +738,10 @@ angular.module('af.msg', ['af.event'])
           scope.visible = false;
           if (timer) $timeout.cancel(timer);
         };
-        scope.$on($event.EVENT_msgShow, function(event, data) {
+        scope.$on(afEvent.EVENT_msgShow, function(event, data) {
           scope.show(data.message, data.type, data.closable, data.delay);
         });
-        return scope.$on($event.EVENT_msgClear, scope.clear);
+        return scope.$on(afEvent.EVENT_msgClear, scope.clear);
       }
     };
   })
@@ -630,7 +756,7 @@ angular.module('af.storage', [])
 
   .constant('$STORAGE_CONFIG', {persistent_prefix:'myApp'} )
 
-  .service('$storage', function($STORAGE_CONFIG, $log) {
+  .service('afStorage', function($STORAGE_CONFIG, $log) {
 
     var prefix = $STORAGE_CONFIG.persistent_prefix;
 
@@ -679,6 +805,21 @@ angular.module('af.storage', [])
   });
 
 
+;
+angular.module('af.amplify', [])
+  .service('amplify', function($window) {
+    return $window.amplify;
+  });
+;
+angular.module('af._', [])
+  .service('_', function($window) {
+    return $window._;
+  });
+;
+angular.module('af.moment', [])
+  .service('moment', function($window) {
+    return $window.moment;
+  });
 ;
 
 ;

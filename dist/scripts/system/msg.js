@@ -2,7 +2,7 @@
 
 angular.module('af.msg', ['af.event'])
 
-  .service('$msg', function($event) {
+  .service('afMsg', function(afEvent) {
     var msg;
     return msg = {
       shownAt: null,
@@ -17,7 +17,7 @@ angular.module('af.msg', ['af.event'])
 
         msg.shownAt = new Date().getTime();
 
-        return $event.shout($event.EVENT_msgShow, {
+        return afEvent.shout(afEvent.EVENT_msgShow, {
           message: message,
           type: type,
           delay: delay,
@@ -28,7 +28,7 @@ angular.module('af.msg', ['af.event'])
       clear: function(force) {
         var now = new Date().getTime();
         if (force || (msg.shownAt && (now - msg.shownAt) > msg.minVisible))
-          return $event.shout($event.EVENT_msgClear);
+          return afEvent.shout(afEvent.EVENT_msgClear);
       },
 
       alert: function(message, closable, delay) {   return msg.show(message, 'warning', closable, delay); },
@@ -38,7 +38,7 @@ angular.module('af.msg', ['af.event'])
     };
   })
 
-  .directive('msgHolder', function($timeout, $window, $event) {
+  .directive('msgHolder', function($timeout, $window, afEvent) {
     var timer = null;
     return {
       restrict: 'A',
@@ -75,10 +75,10 @@ angular.module('af.msg', ['af.event'])
           scope.visible = false;
           if (timer) $timeout.cancel(timer);
         };
-        scope.$on($event.EVENT_msgShow, function(event, data) {
+        scope.$on(afEvent.EVENT_msgShow, function(event, data) {
           scope.show(data.message, data.type, data.closable, data.delay);
         });
-        return scope.$on($event.EVENT_msgClear, scope.clear);
+        return scope.$on(afEvent.EVENT_msgClear, scope.clear);
       }
     };
   })
