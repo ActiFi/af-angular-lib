@@ -127,7 +127,9 @@ var appTenant = {
 
   // quickie makers
   label:function(value, plural){ return appTenant.config('label.'+value, plural)},
-
+  exists:function(path){
+    return _.get(appTenant._config, path) !== void 0;
+  },
   config:function(path, makePlural){
     if(!path) return appTenant._config; // return entire config if no path
     var value = _.get(appTenant._config, path);
