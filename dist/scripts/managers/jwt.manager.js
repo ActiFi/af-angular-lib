@@ -1,7 +1,7 @@
 
 angular.module('af.jwtManager', [])
 
-    .service('jwtManager', function($window, $log) {
+    .service('afJwtManager', function($window, $log) {
 
       function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
@@ -26,8 +26,8 @@ angular.module('af.jwtManager', [])
         return null;
       }
 
-      var jwtManager = null;
-      return jwtManager = {
+      var afJwtManager = null;
+      return afJwtManager = {
 
         decode:function(token){
           if(!token) return false;

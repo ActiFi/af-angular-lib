@@ -305,7 +305,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
 
   })
 
-  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, jwtManager, $window) {
+  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, afJwtManager, $window) {
 
     var store = function(key, value){
       if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
@@ -341,7 +341,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
       },
-      decodeWebToken:jwtManager.decode,
+      decodeWebToken:afJwtManager.decode,
 
 
       //
@@ -392,7 +392,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
 
 angular.module('af.jwtManager', [])
 
-    .service('jwtManager', function($window, $log) {
+    .service('afJwtManager', function($window, $log) {
 
       function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
@@ -417,8 +417,8 @@ angular.module('af.jwtManager', [])
         return null;
       }
 
-      var jwtManager = null;
-      return jwtManager = {
+      var afJwtManager = null;
+      return afJwtManager = {
 
         decode:function(token){
           if(!token) return false;
