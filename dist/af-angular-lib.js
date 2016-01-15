@@ -392,7 +392,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
 
 angular.module('af.jwtManager', [])
 
-    .service('jwtManager', function(JWT_MANAGER_CONFIG, $window, $log) {
+    .service('jwtManager', function($window, $log) {
 
       function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
