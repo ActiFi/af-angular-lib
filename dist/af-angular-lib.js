@@ -908,45 +908,45 @@ angular.module('af.modal', ['af.event'])
 }).call(this);
 
 ;
-(function() {
 
-angular.module('af.msg', ['af.event'])
+angular.module('af.msg', ['af.event', '_'])
 
   .service('afMsg', function(afEvent) {
-    var msg;
-    return msg = {
+    var afMsg = null;
+    return afMsg = {
+
       shownAt: null,
       minVisible: 3,
 
-      show: function(message, type, closable, delay) {
-        type = type || 'warning';
+      show: function(message, type, options) {
 
-        if (!_.isBoolean(closable)) closable = true;
-        if (!_.isNumber(delay) || delay < msg.minVisible) delay = 0;
-        if (!closable && delay === 0) delay = 3;
+        options = options || {};
+        if (_.isNumber(options.delay) && options.delay < afMsg.minVisible)
+          options.delay = afMsg.minVisible;
 
-        msg.shownAt = new Date().getTime();
+        afMsg.shownAt = new Date().getTime();
 
         return afEvent.shout(afEvent.EVENT_msgShow, {
           message: message,
-          type: type,
-          delay: delay,
-          closable: closable
+          type:    type,
+          options: options
         });
       },
 
       clear: function(force) {
         var now = new Date().getTime();
-        if (force || (msg.shownAt && (now - msg.shownAt) > msg.minVisible))
+        if (force || (afMsg.shownAt && (now - afMsg.shownAt) > afMsg.minVisible))
           return afEvent.shout(afEvent.EVENT_msgClear);
       },
 
-      alert: function(message, closable, delay) {   return msg.show(message, 'warning', closable, delay); },
-      error: function(message, closable, delay) {   return msg.show(message, 'danger',  closable, delay); },
-      info: function(message, closable, delay) {    return msg.show(message, 'info',    closable, delay); },
-      success: function(message, closable, delay) { return msg.show(message, 'success', closable, delay); }
+      alert:   function(message, options) { return afMsg.show(message, 'warning', options); },
+      error:   function(message, options) { return afMsg.show(message, 'danger',  options); },
+      danger:  function(message, options) { return afMsg.show(message, 'danger',  options); },
+      info:    function(message, options) { return afMsg.show(message, 'info',    options); },
+      success: function(message, options) { return afMsg.show(message, 'success', options); }
     };
   })
+
 
   .directive('msgHolder', function($timeout, $window, afEvent) {
     var timer = null;
@@ -955,45 +955,58 @@ angular.module('af.msg', ['af.event'])
       template: '<div id="app-alert" class="ng-cloak">' +
                   '<div class="app-alert-container container" ng-show="visible">' +
                     '<div class="alert" ng-class="cssClass">' +
-                      '<button type="button" class="close" ng-show="closable" ng-click="clear()">×</button>' +
+                      '<button type="button" class="close" ng-show="!closable" ng-click="clear()">×</button>' +
                       '<span ng-bind-html="message"></span>' +
                     '</div>' +
                   '</div>' +
                 '</div>',
       link: function(scope, element, attrs) {
+
         scope.message = null;
         scope.type = null;
-        scope.closable = null;
+        scope.closable = true;
+
         scope.visible = false;
-        scope.show = function(message, type, closable, delay) {
+
+        var showMessage = function(message, type, options) {
+
+          var types = ['warning', 'danger', 'info', 'success'];
+          if(!_.contains(types, type)) type = 'warning';
+
           scope.message = message;
-          scope.closable = closable;
-          scope.cssClass = type ? 'alert-' + type : 'alert-warning';
-          if (scope.closable)
-            scope.cssClass += ' alert-dismissable';
+          scope.closable = options.closable;
           scope.visible = true;
 
-          // clear after delay
-          if (timer) $timeout.cancel(timer);
-          if (_.isNumber(delay) && delay > 0) {
+          scope.cssClass = 'alert-' + type;
+
+          if(scope.delay)
+            scope.cssClass += ' alert-dismissable';
+
+          // clear after delay?
+          if (timer)
+            $timeout.cancel(timer);
+
+          if(_.isNumber(options.delay) && options.delay > 0) {
             timer = $timeout(function() {
               scope.clear();
-            }, delay * 1000);
+            }, options.delay * 1000);
           }
         };
+
         scope.clear = function() {
           scope.visible = false;
           if (timer) $timeout.cancel(timer);
         };
+
         scope.$on(afEvent.EVENT_msgShow, function(event, data) {
-          scope.show(data.message, data.type, data.closable, data.delay);
+          showMessage(data.message, data.type, data.options);
         });
-        return scope.$on(afEvent.EVENT_msgClear, scope.clear);
+
+        scope.$on(afEvent.EVENT_msgClear, scope.clear);
+
       }
     };
-  })
-
-}).call(this);
+  });
 
 ;
 //
