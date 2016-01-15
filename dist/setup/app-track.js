@@ -52,13 +52,15 @@ var appTrack = {
     appTrack.config.uid = uid;
 
     // sanity checks
-    if(appCatch == void 0)    return console.log('Cannot initialize appTrack. appCatch must be loaded first.');
-    if(appEnv == void 0)      return appCatch.send('Cannot initialize appTrack. appEnv must be loaded first.');
-    if(amplify == void 0)     return appCatch.send('Cannot initialize appTrack. amplify must be loaded first.');
-    if(_ == void 0)           return appCatch.send('Cannot initialize appTrack. lodash must be loaded first.');
-    if(!appTrack.config.uid)  return appCatch.send('Cannot initialize appTrack. uid not defined.');
-    if(!appTrack.config.enabled) return console.log('MixPanel - Disabled via config.');
-    if(typeof mixpanel === void 0) return appCatch.send('Cannot initialize AppTrack. Missing MixPanel library.');
+    if(appEnv == void 0)              return console.log('AppTrack - Cannot initialize. appEnv must be defined.');
+    if(appEnv.ENV() !== 'production') return console.log('AppTrack - Disabled in ' + appEnv.ENV() + ' environment');
+    if(appCatch == void 0)            return console.log('AppTrack - Cannot initialize. appCatch must be defined.');
+    if(!appTrack.config.enabled)      return console.log('appTrack - Disabled via config.');
+
+    if(amplify == void 0)             return appCatch.send('AppTrack - Cannot initialize. amplify must be loaded first.');
+    if(_ == void 0)                   return appCatch.send('AppTrack - Cannot initialize. lodash must be loaded first.');
+    if(!appTrack.config.uid)          return appCatch.send('AppTrack - Cannot initialize. uid not defined.');
+    if(typeof mixpanel === void 0)    return appCatch.send('AppTrack - Cannot initialize. mixpanel must be defiend.');
 
     // init
     mixpanel.init(appTrack.config.uid, appTrack.config.options);

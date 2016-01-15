@@ -25,10 +25,11 @@ var appCatch = {
     appCatch.config.uid = uid;
 
     // sanity checks
-    if(appEnv == void 0)          return console.log('Cannot initialize appCatch. appEnv must be loaded first.');
-    if(!appCatch.config.enabled)  return console.log('SENTRY - Disabled via config.');
-    if(typeof Raven === void 0)   return console.log('ERROR!! Cannot initialize Sentry. Missing Raven library.');
-    if(!appCatch.config.uid)      return console.log('ERROR!! Sentry init error. Application Config not defined.');
+    if(appEnv == void 0)              return console.log('AppCatch - Cannot initialize. appEnv must be defined.');
+    if(appEnv.ENV() !== 'production') return console.log('AppTrack - Disabled in ' + appEnv.ENV() + ' environment');
+    if(!appCatch.config.enabled)      return console.log('AppCatch - Disabled via config.');
+    if(typeof Raven === void 0)       return console.log('AppCatch - ERROR!! Cannot initialize Sentry. Missing Raven library.');
+    if(!appCatch.config.uid)          return console.log('AppCatch - ERROR!! Sentry init error. Application Config not defined.');
 
     // init
     Raven.config(appCatch.config.uid, appCatch.config.options).install();
