@@ -16,10 +16,10 @@ angular.module('af.loader', ['af.event'])
       },
       // util / quickies
       isLoading:function(){ return isLoading; },
-      saving: function() { afLoader.start('Saving');    },
+      saving: function() {  afLoader.start('Saving');    },
       loading: function() { afLoader.start('Loading');  },
-      bar: function() { afLoader.start({bar:true, mask:false});  },
-      mask: function() { afLoader.start({bar:false, mask:true});  }
+      bar: function() {     afLoader.start({bar:true,  mask:false});  },
+      mask: function() {    afLoader.start({bar:false, mask:true});  }
     };
   })
 
@@ -49,10 +49,10 @@ angular.module('af.loader', ['af.event'])
         var addDots = function(){
           scope.dots += 1;
           if(scope.dots == 4) scope.dots = 0;
-        }
+        };
         var clearTick = function(){
           if(timer) $interval.cancel(timer);
-        }
+        };
         var startTick = function(){
           clearTick();
           if(!scope.loaderText) return;
@@ -61,7 +61,7 @@ angular.module('af.loader', ['af.event'])
             scope.loaderText = scope.loaderText.substring(0, scope.loaderText.length - 3);
           addDots();
           timer = $interval(addDots, 600);
-        }
+        };
 
         scope.start = function(options) {
           if(!options || _.isString(options)){
@@ -71,8 +71,8 @@ angular.module('af.loader', ['af.event'])
             scope.loaderBar = true;
           } else if(_.isPlainObject(options)){
             scope.loaderText = options.hasOwnProperty('text') ? options.text : '';
-            scope.loadMask = options.hasOwnProperty('mask') ? options.mask : scope.loaderText; // show mask if text
-            scope.loaderBar = options.hasOwnProperty('bar') ? options.bar : true
+            scope.loadMask =   options.hasOwnProperty('mask') ? options.mask : scope.loaderText; // show mask if text
+            scope.loaderBar =  options.hasOwnProperty('bar') ?  options.bar : true
           }
           startTick();
         };
@@ -80,8 +80,8 @@ angular.module('af.loader', ['af.event'])
           scope.loaderBar = scope.loaderText = scope.loadMask = null;
           clearTick();
         };
-        scope.$on(afEvent.EVENT_loaderStart, function(event, txt) {
-          scope.start(txt);
+        scope.$on(afEvent.EVENT_loaderStart, function(event, options) {
+          scope.start(options);
         });
         scope.$on(afEvent.EVENT_loaderStop, scope.stop);
 
