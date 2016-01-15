@@ -1,22 +1,20 @@
-(function() {
+Number.prototype.formatNumber = function(precision, decimal, seperator) {
+  var i, j, n, s;
+  n = this;
+  precision = (isNaN(precision = Math.abs(precision)) ? 0 : precision);
+  decimal = (decimal === undefined ? "." : decimal);
+  seperator = (seperator === undefined ? "," : seperator);
+  s = (n < 0 ? "-" : "");
+  i = parseInt(n = Math.abs(+n || 0).toFixed(precision)) + "";
+  j = ((j = i.length) > 3 ? j % 3 : 0);
+  return s + (j ? i.substr(0, j) + seperator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + seperator) + (precision ? decimal + Math.abs(n - i).toFixed(precision).slice(2) : "");
+};
 
-  Number.prototype.formatNumber = function(precision, decimal, seperator) {
-    var i, j, n, s;
-    n = this;
-    precision = (isNaN(precision = Math.abs(precision)) ? 0 : precision);
-    decimal = (decimal === undefined ? "." : decimal);
-    seperator = (seperator === undefined ? "," : seperator);
-    s = (n < 0 ? "-" : "");
-    i = parseInt(n = Math.abs(+n || 0).toFixed(precision)) + "";
-    j = ((j = i.length) > 3 ? j % 3 : 0);
-    return s + (j ? i.substr(0, j) + seperator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + seperator) + (precision ? decimal + Math.abs(n - i).toFixed(precision).slice(2) : "");
-  };
+angular.module('af.util', [])
+  .service('afUtil', function($window, $location) {
 
-  angular.module('af.util', [])
-  .service('$util', function($window, $location) {
-
-    var $util = null;
-    return $util = {
+    var afUtil = null;
+    return afUtil = {
 
       GET: function(key) {
         // quick check to see if key is even in url at all...
@@ -97,13 +95,14 @@
       protocolAndHost:function(){
         return $window.location.protocol+'//'+$window.location.host;
       },
+
       isTruthy:function(value){
         return (value === 'true' || value === true || value == '1' || value === 1)
       },
 
       number:{
         // floating point error fix
-        nc:function(number, precision){ return $util.number.floatFix(number, precision); },
+        nc:function(number, precision){ return afUtil.number.floatFix(number, precision); },
         floatFix:function(number, precision){
           var precision = precision || 2,
               correction = Math.pow(10, precision);
@@ -159,7 +158,7 @@
           cleaned.formatNumber(precision || 0);
           // show symbol?
           if(_.isUndefined(showSymbol) || _.isNull(showSymbol)) showSymbol = true;
-          showSymbol = $util.isTruthy(showSymbol);
+          showSymbol = afUtil.isTruthy(showSymbol);
           var symbol = '';
           if(showSymbol){
             switch((''+type).toLowerCase()){
@@ -178,18 +177,18 @@
           }
         },
         currency: function(value, precision, showSymbol) {
-          return $util.format.number(value, precision, 'currency', showSymbol);
+          return afUtil.format.number(value, precision, 'currency', showSymbol);
         },
         percent: function(value, precision, showSymbol) {
-          return $util.format.number(value, precision, 'percent', showSymbol);
+          return afUtil.format.number(value, precision, 'percent', showSymbol);
         },
         targetValue:function(value, type, precision){
           switch((''+type).toLowerCase()){
             case 'hours':
-            case 'number':    return $util.format.number(value, precision);
-            case 'currency':  return $util.format.currency(value, precision);
-            case 'percent':   return $util.format.percent(value, precision);
-            case 'textarea':  return $util.string.nl2br(value);
+            case 'number':    return afUtil.format.number(value, precision);
+            case 'currency':  return afUtil.format.currency(value, precision);
+            case 'percent':   return afUtil.format.percent(value, precision);
+            case 'textarea':  return afUtil.string.nl2br(value);
             case 'text':      return value;
           }
           return value;
@@ -198,10 +197,10 @@
 
       unFormat:{
         percent:function(value, precision){
-          return $util.unFormat.number(value, precision, 'percent');
+          return afUtil.unFormat.number(value, precision, 'percent');
         },
         currency:function(value, precision){
-          return $util.unFormat.number(value, precision, 'currency');
+          return afUtil.unFormat.number(value, precision, 'currency');
         },
         number:function(value, precision, type){
 
@@ -237,7 +236,7 @@
           var final = parseFloat(cleaned);
 
           // get correct value if its a percent
-          if(type == 'percent') final = $util.number.floatFix(final / 100, precision+2);
+          if(type == 'percent') final = afUtil.number.floatFix(final / 100, precision+2);
           if(_.isNaN(final) || _.isUndefined(final)) return null;
           return final;
         }
@@ -245,5 +244,3 @@
 
     };
   });
-
-}).call(this);
