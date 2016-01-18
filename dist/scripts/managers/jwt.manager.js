@@ -1,7 +1,7 @@
 
-angular.module('af.jwtManager', [])
+angular.module('af.jwtManager', ['af.moment'])
 
-    .service('afJwtManager', function($window, $log) {
+    .service('afJwtManager', function($window, $log, moment) {
 
       function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
@@ -34,7 +34,14 @@ angular.module('af.jwtManager', [])
           var encoded = token.split('.')[1];
           var decoded = JSON.parse(urlBase64Decode(encoded));
           return decoded;
+        },
+
+        hasExpired:function(decodedToken){
+          if(!decodedToken || !decodedToken.exp) return true;
+          var expiresOn = moment(decodedToken.exp, 'X');
+          return moment().isAfter(expiresOn) ? true:false;
         }
+
 
       };
     });

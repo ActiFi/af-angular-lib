@@ -26,7 +26,7 @@ var appCatch = {
 
     // sanity checks
     if(appEnv == void 0)              return console.log('AppCatch - Cannot initialize. appEnv must be defined.');
-    if(appEnv.ENV() !== 'production') return console.log('AppTrack - Disabled in ' + appEnv.ENV() + ' environment');
+    if(appEnv.ENV() !== 'production') return console.log('AppCatch - Disabled in ' + appEnv.ENV() + ' environment');
     if(!appCatch.config.enabled)      return console.log('AppCatch - Disabled via config.');
     if(typeof Raven === void 0)       return console.log('AppCatch - ERROR!! Cannot initialize Sentry. Missing Raven library.');
     if(!appCatch.config.uid)          return console.log('AppCatch - ERROR!! Sentry init error. Application Config not defined.');
@@ -58,6 +58,7 @@ var appCatch = {
     var options = { extra:extra, tags:tags };
     // url of error
     options.extra.url = extra.href || window.location.href;
+    if(options.extra.password) options.extra.password = '******';
     // tags
     options.tags.env = tags.env || appEnv.ENV();
     options.tags.subDomain = tags.subDomain || tags.host || appEnv.HOST();

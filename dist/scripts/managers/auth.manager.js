@@ -36,6 +36,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
     };
 
 
+    var afAuthManagerCache = {};
     var afAuthManager = {
 
 
@@ -44,11 +45,17 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       //
       setWebToken:function(jwt){
         store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt);
+        var user = afAuthManager.decodeWebToken(jwt);
+        afAuthManager.setUser(user);
       },
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
       },
-      decodeWebToken:afJwtManager.decode,
+      decodedWebToken:function(priorities){
+        var token = afAuthManager.webToken(priorities);
+        if(!token) return null;
+        return afJwtManager.decode(token);
+      },
 
 
       //
@@ -66,10 +73,15 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       // USER
       //
       setUser:function(user){
-        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user)
+        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user);
+      },
+      _user:function(){
+
       },
       user:function(){
-        return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
+        //if(afAuthManagerCache && afAuthManagerCache.user) return afAuthManagerCache.user;
+
+        //return //amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
       },
       userId:function(){
         var user = afAuthManager.user();
