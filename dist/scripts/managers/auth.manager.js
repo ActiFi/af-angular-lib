@@ -14,9 +14,13 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
 
   .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, afJwtManager, $window) {
 
-    var store = function(key, value){
+    var store = function(key, value, expires){
+      expires = expires || AF_AUTH_MANAGER_CONFIG.cacheFor;
+      if(_.isNumber(expires))
+        expires = {expires:expires};
+
       if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
-      amplify.store(key, value, { expires:AF_AUTH_MANAGER_CONFIG.cacheFor });
+      amplify.store(key, value, expires);
     };
 
 
@@ -36,17 +40,18 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
     };
 
 
-    var afAuthManagerCache = {};
     var afAuthManager = {
-
 
       //
       // JSON WEB TOKEN
       //
       setWebToken:function(jwt){
         store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt);
-        var user = afAuthManager.decodeWebToken(jwt);
-        afAuthManager.setUser(user);
+
+        var decodedToken = afJwtManager.decode(jwt);
+        //afJwtManager.expiresToSeconds(decodedToken);
+
+        afAuthManager.setUser(decodedToken);
       },
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
@@ -54,6 +59,12 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       decodedWebToken:function(priorities){
         var token = afAuthManager.webToken(priorities);
         if(!token) return null;
+
+        var cachedToken = afAuthManagerCache.webToken;
+
+        if(cachedToken && !afJwtManager.hasExpired(cachedToken))
+          return cachedToken;
+        //if(afAuthManager._)
         return afJwtManager.decode(token);
       },
 

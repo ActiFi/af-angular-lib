@@ -32,9 +32,13 @@ angular.module('af.apiUtil', ['af._'])
           if(_.has(response, 'message'))
             return response.message || defaultMessage;
 
-          //
-          if(afApiUtil.isHTTPResponse(response) && _.has(response, 'data') && _.has(response.data, 'message'))
-              return response.data.message || defaultMessage;
+          // http error
+          if(afApiUtil.isHTTPResponse(response)) {
+            var error = response.data || {};
+            if(error.message && (''+error.message).indexOf('<?xml') !== 0)
+              return error.message || defaultMessage;
+            return (error.name + ' ' + error.code) || defaultMessage;
+          }
 
           return defaultMessage;
         }

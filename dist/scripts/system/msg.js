@@ -61,7 +61,7 @@ angular.module('af.msg', ['af.event', 'af._'])
         var showMessage = function(message, type, options) {
 
           var types = ['warning', 'danger', 'info', 'success'];
-          if(!_.contains(types, type)) type = 'warning';
+          if(!_.includes(types, type)) type = 'warning';
 
           scope.message = message;
           scope.closable = options.closable;

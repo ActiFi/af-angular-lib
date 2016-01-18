@@ -6,7 +6,7 @@ angular.module('af.event', [])
   .service('afEvent', function($rootScope, $log, $EVENT_CONFIG) {
 
     var logEvent = function(type, eventName, data) {
-      if(!_.contains($EVENT_CONFIG.suppress, eventName))
+      if(!_.includes($EVENT_CONFIG.suppress, eventName))
         $log.debug('afEvent.' + type + ': ' + eventName, data);
     };
 

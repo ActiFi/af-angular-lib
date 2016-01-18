@@ -330,17 +330,18 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
     };
 
 
-    var afAuthManagerCache = {};
     var afAuthManager = {
-
 
       //
       // JSON WEB TOKEN
       //
       setWebToken:function(jwt){
         store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt);
-        var user = afAuthManager.decodeWebToken(jwt);
-        afAuthManager.setUser(user);
+
+        var decodedToken = afJwtManager.decode(jwt);
+        afJwtManager.expiresToSeconds(decodedToken);
+        // cache as user:
+        afAuthManager.setUser(decodedToken);
       },
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
@@ -348,6 +349,12 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       decodedWebToken:function(priorities){
         var token = afAuthManager.webToken(priorities);
         if(!token) return null;
+
+        var cachedToken = afAuthManagerCache.webToken;
+
+        if(cachedToken && !afJwtManager.hasExpired(cachedToken))
+          return cachedToken;
+        if(afAuthManager._)
         return afJwtManager.decode(token);
       },
 
@@ -442,8 +449,18 @@ angular.module('af.jwtManager', ['af.moment'])
 
         hasExpired:function(decodedToken){
           if(!decodedToken || !decodedToken.exp) return true;
-          var expiresOn = moment(decodedToken.exp, 'X');
+          var expiresOn = afJwtManager.getExpiresOn(decodedToken.exp);
           return moment().isAfter(expiresOn) ? true:false;
+        },
+
+        getExpiresOn:function(exp){
+          return moment(exp, 'X');
+        },
+
+        expiresToSeconds:function(decodedToken){
+          var expiresOn = afJwtManager.getExpiresOn(decodedToken.exp);
+          console.log('expires in:', moment().diff(expiresOn));
+          return moment().diff(expiresOn);
         }
 
 
@@ -673,7 +690,7 @@ angular.module('af.event', [])
   .service('afEvent', function($rootScope, $log, $EVENT_CONFIG) {
 
     var logEvent = function(type, eventName, data) {
-      if(!_.contains($EVENT_CONFIG.suppress, eventName))
+      if(!_.includes($EVENT_CONFIG.suppress, eventName))
         $log.debug('afEvent.' + type + ': ' + eventName, data);
     };
 
@@ -991,7 +1008,7 @@ angular.module('af.msg', ['af.event', 'af._'])
         var showMessage = function(message, type, options) {
 
           var types = ['warning', 'danger', 'info', 'success'];
-          if(!_.contains(types, type)) type = 'warning';
+          if(!_.includes(types, type)) type = 'warning';
 
           scope.message = message;
           scope.closable = options.closable;

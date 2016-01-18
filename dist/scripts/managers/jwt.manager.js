@@ -38,8 +38,18 @@ angular.module('af.jwtManager', ['af.moment'])
 
         hasExpired:function(decodedToken){
           if(!decodedToken || !decodedToken.exp) return true;
-          var expiresOn = moment(decodedToken.exp, 'X');
+          var expiresOn = afJwtManager.getExpiresOn(decodedToken.exp);
           return moment().isAfter(expiresOn) ? true:false;
+        },
+
+        getExpiresOn:function(exp){
+          return moment(exp, 'X');
+        },
+
+        expiresToSeconds:function(decodedToken){
+          var expiresOn = afJwtManager.getExpiresOn(decodedToken.exp);
+          console.log('expires in:', moment().diff(expiresOn));
+          return moment().diff(expiresOn);
         }
 
 
