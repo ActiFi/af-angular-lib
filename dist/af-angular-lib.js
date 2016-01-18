@@ -1125,7 +1125,7 @@ angular.module('af.apiUtil', ['af._'])
           return false;
         },
 
-        getErrorFromResponse:function(response){
+        getErrorMessageFromResponse:function(response){
 
           var defaultMessage = 'An unexpected error has occurred.';
 
