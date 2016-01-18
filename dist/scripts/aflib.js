@@ -1,6 +1,7 @@
 // master module which includes all other modules
 angular.module('af.lib',
   [
+    'af.apiUtil',
     'af.authManager',
     'af.bsIcons',
     'af.event',
