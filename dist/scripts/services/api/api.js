@@ -43,21 +43,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
 
         // default response handler
         errorHandler:function(response){
-
-          var error = afApiUtil.error.getError(response);
-
-          // log all error to console
-          console.log(error);
-
-          var request = _.has(response, 'config') ? response.config : null;
-
-          // send to sentry?
-          if(!request || request.autoErrorLog === true)
-            afApiUtil.error.logError(response);
-
-          // display message on UI with afMsg?
-          if(!request || request.autoErrorDisplay === true)
-            afApiUtil.error.displayError(response);
+          afApiUtil.error.handler(response);
         }
 
       };

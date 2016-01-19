@@ -26,6 +26,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
         request:{
           attachWebToken:function(request){
             var token = afAuthManager.webToken();
+            request.headers = request.headers || {};
             request.headers.authorization = token;
             return request;
           },
@@ -51,6 +52,26 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
 
 
         error:{
+
+          // default error handler
+          handler:function(response){
+            // get consistent error object
+            var error = afApiUtil.error.getError(response);
+
+            // log all error to console
+            console.log(error);
+
+            var request = _.has(response, 'config') ? response.config : null;
+
+            // send to sentry?
+            if(!request || request.autoErrorLog === true)
+              afApiUtil.error.logError(response);
+
+            // display message on UI with afMsg?
+            if(!request || request.autoErrorDisplay === true)
+              afApiUtil.error.displayError(response);
+          },
+
 
           //
           // CREATE CONSISTENT ERROR BASED ON A WIDE VARIETY OF SERVER RESPONSES
@@ -88,9 +109,17 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               if(err.message && (''+err.message).indexOf('<?xml') !== 0) errorObject.message = err.message;
               // attach additional debug if
               if(_.has(response, 'config')){
-                if(_.has(response.config, 'password'))
-                  response.config.password = '******';
-                errorObject.debug = _.extend({}, errorObject.debug, response.config);
+                var params = _.has(response.config, 'data') ? response.config.data:{};
+                if(_.has(params, 'password'))
+                  params.password = '******';
+                // create debug object
+                errorObject.debug = _.extend({}, errorObject.debug, {
+                  url:$location.absUrl(),
+                  requestUrl:response.config.url,
+                  requestMethod:response.config.method,
+                  headers:response.config.headers,
+                  params:params
+                });
               }
 
             // some other object response...
@@ -112,12 +141,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             // get consistent error format
             var error = afApiUtil.error.getError(response);
             // log it
-            if(afApiUtil.response.isHTTPResponse(response)){
-              $log.error(error, response.headers, response.data);
-            } else{
-              $log.error(error);
-            }
-
+            $log.error(error);
             // send to sentry
             appCatch.send(error.message, error.debug);
           }

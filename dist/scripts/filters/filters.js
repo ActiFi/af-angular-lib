@@ -2,9 +2,11 @@
 angular.module('af.filters', ['af.appTenant'])
 
 
-  // eg {{'user.name' | label}}
+  // eg {{'user.name' | appTenant}}
   // <span ng-bind="'user' | tenantLabel | plural"></span>
-  .filter('tenantConfig', function(appTenant) {  return appTenant.config; })
+
+  .filter('appTenant',    function(appTenant) {  return appTenant.config; })
+  .filter('tenantConfig', function(appTenant) {  return appTenant.config; }) // alias
   .filter('tenantLabel',  function(appTenant) {  return appTenant.label; })
   .filter('plural',       function(appTenant) {  return appTenant.makePlural; })
 

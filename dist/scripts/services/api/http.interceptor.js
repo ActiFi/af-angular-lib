@@ -15,7 +15,7 @@ angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
           return response;
 
         // A 200 success can still be an error with jsend
-        var isJsend = afApiUtil.isJsend(response);
+        var isJsend = afApiUtil.response.isJsend(response);
         var isError = (isJsend && response.data.status === 'error');
 
         if (isError) {

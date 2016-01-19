@@ -15,6 +15,9 @@ angular.module('af.lib',
     'af.util',
     'af.jwtManager',
 
+  // forms
+    'af.directive.formGroup',
+
   // wrappers
     'af.appEnv',
     'af.appTenant',

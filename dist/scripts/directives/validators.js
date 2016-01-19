@@ -1,20 +1,53 @@
 
 angular.module('af.validators', [])
+    
+  .directive('validateMatch',
+    function match ($parse) {
+      return {
+        require: '?ngModel',
+        restrict: 'A',
+        link: function(scope, elem, attrs, ctrl) {
+          if(!ctrl) {
+            return;
+          }
 
-  .directive('validateMatches', function() {
-    return {
-      require: 'ngModel',
-      link : function(scope, element, attrs, ngModel) {
-        ngModel.$parsers.push(function(value) {
-          var scope2 = scope;
-          var attr2 = attrs;
-          var value2 = scope.$eval(attrs.validateMatches)
-          ngModel.$setValidity('matches', value == scope.$eval(attrs.validateMatches));
-          return value;
-        });
-      }
+          var matchGetter = $parse(attrs.validateMatch);
+          var caselessGetter = $parse(attrs.matchCaseless);
+          var noMatchGetter = $parse(attrs.notMatch);
+
+          scope.$watch(getMatchValue, function(){
+            ctrl.$$parseAndValidate();
+          });
+
+          ctrl.$validators.match = function(){
+            var match = getMatchValue();
+            var notMatch = noMatchGetter(scope);
+            var value;
+
+            if(caselessGetter(scope)){
+              value = angular.lowercase(ctrl.$viewValue) === angular.lowercase(match);
+            }else{
+              value = ctrl.$viewValue === match;
+            }
+            /*jslint bitwise: true */
+            value ^= notMatch;
+            /*jslint bitwise: false */
+            return !!value;
+          };
+
+          function getMatchValue(){
+            var match = matchGetter(scope);
+            if(angular.isObject(match) && match.hasOwnProperty('$viewValue')){
+              match = match.$viewValue;
+            }
+            return match;
+          }
+        }
+      };
     }
-  })
+  )
+
+
   .directive('validatePasswordCharacters', function() {
 
     var PASSWORD_FORMATS = [
@@ -37,6 +70,7 @@ angular.module('af.validators', [])
       }
     }
   })
+
   .directive('validateEmail', function() {
     return {
       restrict: 'A',

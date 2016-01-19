@@ -1,4 +1,3 @@
-(function() {
 
 angular.module('ui.bootstrap.dropdown', [])
 
@@ -161,5 +160,3 @@ angular.module('ui.bootstrap.dropdown', [])
       }
     };
   })
-
-}).call(this);

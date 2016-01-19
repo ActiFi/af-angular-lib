@@ -15,6 +15,9 @@ angular.module('af.lib',
     'af.util',
     'af.jwtManager',
 
+  // forms
+    'af.directive.formGroup',
+
   // wrappers
     'af.appEnv',
     'af.appTenant',
@@ -34,7 +37,6 @@ angular.module('af.lib',
 ;
 
 ;
-(function() {
 
 angular.module('ui.bootstrap.dropdown', [])
 
@@ -198,8 +200,6 @@ angular.module('ui.bootstrap.dropdown', [])
     };
   })
 
-}).call(this);
-
 ;
 (function() {
 
@@ -236,22 +236,86 @@ angular.module('ui.bootstrap.dropdown', [])
 }).call(this);
 ;
 
-angular.module('af.validators', [])
+;
+angular.module('af.directive.formGroup', [])
 
-  .directive('validateMatches', function() {
+  .directive("formGroup", function() {
     return {
-      require: 'ngModel',
-      link : function(scope, element, attrs, ngModel) {
-        ngModel.$parsers.push(function(value) {
-          var scope2 = scope;
-          var attr2 = attrs;
-          var value2 = scope.$eval(attrs.validateMatches)
-          ngModel.$setValidity('matches', value == scope.$eval(attrs.validateMatches));
-          return value;
-        });
+      restrict: "A",
+      transclude: true,
+      replace: true,
+      scope: {
+        formGroup: '@',
+        formHelp: '@',
+        formRequired: '@'
+      },
+      template: '<div class="form-group"> ' +
+                  '<label class="text-capitalize" style="color:#333333;">' +
+                    '{{::formGroup}}' +
+                    ' <span ng-show="formRequired" class="text-danger required">*</span> ' +
+                  '</label> ' +
+                  '<div ng-transclude></div> ' +
+                  '<p class="help-block" ng-bind-html="::formHelp"></p> ' +
+                '</div>',
+      compile: function(element, attrs) {
+        attrs.formRequired = attrs.formRequired === 'true' ? true:false;
+        return function(scope, element, attrs){
+          scope.formRequired = attrs.formRequired;
+        }
       }
+    };
+  });
+;
+
+angular.module('af.validators', [])
+    
+  .directive('validateMatch',
+    function match ($parse) {
+      return {
+        require: '?ngModel',
+        restrict: 'A',
+        link: function(scope, elem, attrs, ctrl) {
+          if(!ctrl) {
+            return;
+          }
+
+          var matchGetter = $parse(attrs.validateMatch);
+          var caselessGetter = $parse(attrs.matchCaseless);
+          var noMatchGetter = $parse(attrs.notMatch);
+
+          scope.$watch(getMatchValue, function(){
+            ctrl.$$parseAndValidate();
+          });
+
+          ctrl.$validators.match = function(){
+            var match = getMatchValue();
+            var notMatch = noMatchGetter(scope);
+            var value;
+
+            if(caselessGetter(scope)){
+              value = angular.lowercase(ctrl.$viewValue) === angular.lowercase(match);
+            }else{
+              value = ctrl.$viewValue === match;
+            }
+            /*jslint bitwise: true */
+            value ^= notMatch;
+            /*jslint bitwise: false */
+            return !!value;
+          };
+
+          function getMatchValue(){
+            var match = matchGetter(scope);
+            if(angular.isObject(match) && match.hasOwnProperty('$viewValue')){
+              match = match.$viewValue;
+            }
+            return match;
+          }
+        }
+      };
     }
-  })
+  )
+
+
   .directive('validatePasswordCharacters', function() {
 
     var PASSWORD_FORMATS = [
@@ -274,6 +338,7 @@ angular.module('af.validators', [])
       }
     }
   })
+
   .directive('validateEmail', function() {
     return {
       restrict: 'A',
@@ -303,9 +368,11 @@ angular.module('af.validators', [])
 angular.module('af.filters', ['af.appTenant'])
 
 
-  // eg {{'user.name' | label}}
+  // eg {{'user.name' | appTenant}}
   // <span ng-bind="'user' | tenantLabel | plural"></span>
-  .filter('tenantConfig', function(appTenant) {  return appTenant.config; })
+
+  .filter('appTenant',    function(appTenant) {  return appTenant.config; })
+  .filter('tenantConfig', function(appTenant) {  return appTenant.config; }) // alias
   .filter('tenantLabel',  function(appTenant) {  return appTenant.label; })
   .filter('plural',       function(appTenant) {  return appTenant.makePlural; })
 
@@ -532,21 +599,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
 
         // default response handler
         errorHandler:function(response){
-
-          var error = afApiUtil.error.getError(response);
-
-          // log all error to console
-          console.log(error);
-
-          var request = _.has(response, 'config') ? response.config : null;
-
-          // send to sentry?
-          if(!request || request.autoErrorLog === true)
-            afApiUtil.error.logError(response);
-
-          // display message on UI with afMsg?
-          if(!request || request.autoErrorDisplay === true)
-            afApiUtil.error.displayError(response);
+          afApiUtil.error.handler(response);
         }
 
       };
@@ -569,7 +622,7 @@ angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
           return response;
 
         // A 200 success can still be an error with jsend
-        var isJsend = afApiUtil.isJsend(response);
+        var isJsend = afApiUtil.response.isJsend(response);
         var isError = (isJsend && response.data.status === 'error');
 
         if (isError) {
@@ -1280,6 +1333,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
         request:{
           attachWebToken:function(request){
             var token = afAuthManager.webToken();
+            request.headers = request.headers || {};
             request.headers.authorization = token;
             return request;
           },
@@ -1305,6 +1359,26 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
 
 
         error:{
+
+          // default error handler
+          handler:function(response){
+            // get consistent error object
+            var error = afApiUtil.error.getError(response);
+
+            // log all error to console
+            console.log(error);
+
+            var request = _.has(response, 'config') ? response.config : null;
+
+            // send to sentry?
+            if(!request || request.autoErrorLog === true)
+              afApiUtil.error.logError(response);
+
+            // display message on UI with afMsg?
+            if(!request || request.autoErrorDisplay === true)
+              afApiUtil.error.displayError(response);
+          },
+
 
           //
           // CREATE CONSISTENT ERROR BASED ON A WIDE VARIETY OF SERVER RESPONSES
@@ -1342,9 +1416,17 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               if(err.message && (''+err.message).indexOf('<?xml') !== 0) errorObject.message = err.message;
               // attach additional debug if
               if(_.has(response, 'config')){
-                if(_.has(response.config, 'password'))
-                  response.config.password = '******';
-                errorObject.debug = _.extend({}, errorObject.debug, response.config);
+                var params = _.has(response.config, 'data') ? response.config.data:{};
+                if(_.has(params, 'password'))
+                  params.password = '******';
+                // create debug object
+                errorObject.debug = _.extend({}, errorObject.debug, {
+                  url:$location.absUrl(),
+                  requestUrl:response.config.url,
+                  requestMethod:response.config.method,
+                  headers:response.config.headers,
+                  params:params
+                });
               }
 
             // some other object response...
@@ -1366,12 +1448,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             // get consistent error format
             var error = afApiUtil.error.getError(response);
             // log it
-            if(afApiUtil.response.isHTTPResponse(response)){
-              $log.error(error, response.headers, response.data);
-            } else{
-              $log.error(error);
-            }
-
+            $log.error(error);
             // send to sentry
             appCatch.send(error.message, error.debug);
           }
