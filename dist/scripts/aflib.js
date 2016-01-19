@@ -1,6 +1,8 @@
 // master module which includes all other modules
 angular.module('af.lib',
   [
+    'af.httpInterceptor',
+    'af.api',
     'af.apiUtil',
     'af.authManager',
     'af.bsIcons',
@@ -18,11 +20,13 @@ angular.module('af.lib',
     'af.appTenant',
     'af.appTrack',
     'af.appCatch',
-    'af.amplify',
-    'af._',
-    'af.moment'
+  // lib wrappers
+    'jQuery',
+    'amplify',
+    '_',
+    'moment'
 
-  // these are not included by default
+    // these are not included by default
     //'ui.bootstrap.dropdown'
     //'af.validators'
   ]

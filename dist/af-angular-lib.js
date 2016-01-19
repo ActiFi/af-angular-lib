@@ -1,6 +1,8 @@
 // master module which includes all other modules
 angular.module('af.lib',
   [
+    'af.httpInterceptor',
+    'af.api',
     'af.apiUtil',
     'af.authManager',
     'af.bsIcons',
@@ -18,11 +20,13 @@ angular.module('af.lib',
     'af.appTenant',
     'af.appTrack',
     'af.appCatch',
-    'af.amplify',
-    'af._',
-    'af.moment'
+  // lib wrappers
+    'jQuery',
+    'amplify',
+    '_',
+    'moment'
 
-  // these are not included by default
+    // these are not included by default
     //'ui.bootstrap.dropdown'
     //'af.validators'
   ]
@@ -270,6 +274,28 @@ angular.module('af.validators', [])
       }
     }
   })
+  .directive('validateEmail', function() {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link : function(scope, element, attrs, ngModel) {
+
+        // please note you can name your function & argument anything you like
+        function customValidator(ngModelValue) {
+          // check if its an email
+          if (/^[_a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/.test(ngModelValue)) {
+            ngModel.$setValidity('invalid-email', true);
+          } else {
+            ngModel.$setValidity('invalid-email', false);
+          }
+          return ngModelValue;
+        }
+        ngModel.$parsers.push(customValidator);
+
+      }
+
+    }
+  })
 ;
 
 ;
@@ -293,7 +319,7 @@ angular.module('af.filters', ['af.appTenant'])
 
 ;
 
-angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
 
   .constant('AF_AUTH_MANAGER_CONFIG', {
 
@@ -308,9 +334,13 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
 
   .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, afJwtManager, $window) {
 
-    var store = function(key, value){
+    var store = function(key, value, expires){
+      expires = expires || AF_AUTH_MANAGER_CONFIG.cacheFor;
+      if(_.isNumber(expires))
+        expires = {expires:expires};
+
       if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
-      amplify.store(key, value, { expires:AF_AUTH_MANAGER_CONFIG.cacheFor });
+      amplify.store(key, value, expires);
     };
 
 
@@ -336,28 +366,18 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       // JSON WEB TOKEN
       //
       setWebToken:function(jwt){
-        store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt);
-
         var decodedToken = afJwtManager.decode(jwt);
-        afJwtManager.expiresToSeconds(decodedToken);
-        // cache as user:
-        afAuthManager.setUser(decodedToken);
+        var timeTillExpires = afJwtManager.millisecondsTillExpires(decodedToken.exp);
+
+        // cache both coded and decoded version till it expires
+        store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt, timeTillExpires);
+        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, decodedToken, timeTillExpires);
+
+        $log.info('Your session will expire at', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
       },
-      decodedWebToken:function(priorities){
-        var token = afAuthManager.webToken(priorities);
-        if(!token) return null;
-
-        var cachedToken = afAuthManagerCache.webToken;
-
-        if(cachedToken && !afJwtManager.hasExpired(cachedToken))
-          return cachedToken;
-        if(afAuthManager._)
-        return afJwtManager.decode(token);
-      },
-
 
       //
       // SESSION TOKEN (DEPRECATED)
@@ -373,16 +393,11 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       //
       // USER
       //
-      setUser:function(user){
-        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user);
-      },
-      _user:function(){
-
+      setUser:function(user, expires){
+        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user, expires);
       },
       user:function(){
-        //if(afAuthManagerCache && afAuthManagerCache.user) return afAuthManagerCache.user;
-
-        //return //amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
+        return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
       },
       userId:function(){
         var user = afAuthManager.user();
@@ -391,10 +406,13 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
       },
 
 
+
+      //
+      // MISC
+      //
       isLoggedIn:function(){
         return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.webToken())
       },
-
       // CLEAR / LOGOUT
       clear: function() {
         amplify.store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, null);
@@ -402,7 +420,6 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
         amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, null);
       }
     };
-
     // alias
     afAuthManager.logout = afAuthManager.clear;
 
@@ -410,7 +427,7 @@ angular.module('af.authManager', ['af._', 'af.amplify', 'af.util', 'af.jwtManage
 });
 ;
 
-angular.module('af.jwtManager', ['af.moment'])
+angular.module('af.jwtManager', ['moment'])
 
     .service('afJwtManager', function($window, $log, moment) {
 
@@ -457,17 +474,127 @@ angular.module('af.jwtManager', ['af.moment'])
           return moment(exp, 'X');
         },
 
-        expiresToSeconds:function(decodedToken){
-          var expiresOn = afJwtManager.getExpiresOn(decodedToken.exp);
-          console.log('expires in:', moment().diff(expiresOn));
-          return moment().diff(expiresOn);
-        }
-
+        millisecondsTillExpires:function(exp){
+          var expiresAt = afJwtManager.getExpiresOn(exp);
+          var diffInMill = expiresAt.diff(moment());
+          return diffInMill;
+        },
 
       };
     });
 ;
 
+;
+
+;
+angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
+
+  .constant('AF_API_CONFIG', {
+    autoErrorDisplay:true,    // call msg.error on error
+    autoErrorLog:true,        // send errors to sentry
+    attachWebToken:true,      // attach webToken to header
+    attachSessionToken:false, // attach sessionToken to request params
+    urlEncode:false           // send as urlEncoded instead of json
+  })
+
+  .service('afApi', function($http, $log, _, $q, afApiUtil, afMsg, AF_API_CONFIG) {
+
+      var afApi = null;
+      return afApi = {
+
+        call: function(url, params, options) {
+
+          var defaults = {
+            url:url,
+            method: options.method || 'post',
+            data: params
+          };
+          var request = _.extend(defaults, AF_API_CONFIG, options);
+
+          // AUTO ATTACH SOME DATA
+          // (unless requested off)
+          if(request.attachWebToken === true)
+            request = afApiUtil.request.attachWebToken(request);
+          if(request.attachSessionToken === true)
+            request = afApiUtil.request.attachSessionToken(request);
+          if(request.urlEncode === true)
+            request = afApiUtil.request.urlEncode(request);
+
+          return $http(request)
+            .then(function(response){
+              return response.data; // return just data on success (drop headers, status etc)
+            })
+            .catch(function(response){
+              afApi.errorHandler(response);
+              return $q.reject(response);
+            })
+        },
+
+        // default response handler
+        errorHandler:function(response){
+
+          var error = afApiUtil.error.getError(response);
+
+          // log all error to console
+          console.log(error);
+
+          var request = _.has(response, 'config') ? response.config : null;
+
+          // send to sentry?
+          if(!request || request.autoErrorLog === true)
+            afApiUtil.error.logError(response);
+
+          // display message on UI with afMsg?
+          if(!request || request.autoErrorDisplay === true)
+            afApiUtil.error.displayError(response);
+        }
+
+      };
+    });
+;
+angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
+  .factory("afHttpInterceptor", function($q, _, afApiUtil) {
+
+    var afHttpInterceptor = null;
+    return afHttpInterceptor = {
+
+      // REQUEST
+      //request: function(request) { return request; },
+
+
+      // RESPONSE 200 SUCCESS
+      response: function(response){
+        var request = response.config;
+        if(!request || afApiUtil.request.isFileRequest(request))
+          return response;
+
+        // A 200 success can still be an error with jsend
+        var isJsend = afApiUtil.isJsend(response);
+        var isError = (isJsend && response.data.status === 'error');
+
+        if (isError) {
+          return $q.reject(response);
+        } else {
+          // strip jsend out... return just the data.
+          if(isJsend) response.data = response.data.data;
+          return response;
+        }
+      }
+
+      // RESPONSE ERROR
+      //responseError: function(response) { return $q.reject(response); }
+
+    };
+  });
+
+
+;
+
+;
+/*! angular-shims-placeholder - v0.4.5 - 2015-07-01
+* https://github.com/cvn/angular-shims-placeholder
+* Copyright (c) 2015 Chad von Nau; Licensed MIT */
+!function(a,b,c){"use strict";a.module("ng.shims.placeholder",[]).service("placeholderSniffer",["$document",function(a){this.emptyClassName="empty",this.hasPlaceholder=function(){var b=a[0].createElement("input");return void 0!==b.placeholder}}]).directive("placeholder",["$timeout","$document","$interpolate","$injector","placeholderSniffer",function(d,e,f,g,h){if(h.hasPlaceholder())return{};var i=!1,j=parseFloat(a.version.full);try{var k=g.get("$animate")}catch(l){}return{restrict:"A",require:"?ngModel",priority:j>=1.2?110:-10,link:function(g,l,m,n){function o(a){var b=l.val();l.hasClass(O)&&b&&b===N||p(function(){q(b)},a)}function p(a,c){b.documentMode<=11&&c?d(a,0):a()}function q(a){a||0===a||u(J)?(l.removeClass(O),l.val(a)):(l.addClass(O),l.val(M?"":N)),M&&(x(),k&&y())}function r(){return n?g.$eval(m.ngModel)||"":s()||""}function s(){var a=l.val();return a===m.placeholder&&(a=""),a}function t(a,b){l.hasClass(O)&&l.val()===N&&l.val(""),N=a,o(b)}function u(a){var c=!1;try{c=a===b.activeElement}catch(d){}return c}function v(a,b,c,d){c?a.attr(b,d):a.removeAttr(b)}function w(){H=a.element('<input type="text" value="'+N+'"/>'),A(),C(H),H.addClass(O).bind("focus",F),J.parentNode.insertBefore(H[0],J);for(var b=[m.ngDisabled,m.ngReadonly,m.ngRequired,m.ngShow,m.ngHide],c=0;c<b.length;c++)b[c]&&g.$watch(b[c],z)}function x(){A(),G()?C(H):l.hasClass(O)&&J!==b.activeElement?D():E()}function y(){j>=1.3?k.addClass(l,"").then(x):k.addClass(l,"",x)}function z(){k?y():x()}function A(){H.val(N),H.attr("class",l.attr("class")||"").attr("style",l.attr("style")||"").prop("disabled",l.prop("disabled")).prop("readOnly",l.prop("readOnly")).prop("required",l.prop("required")),v(H,"unselectable","on"===l.attr("unselectable"),"on"),v(H,"tabindex",l.attr("tabindex")!==c,l.attr("tabindex"))}function B(a){j>=1.2?a.removeClass(P):a.css("display","")}function C(a){j>=1.2?a.addClass(P):a.css("display","none")}function D(){C(l),B(H)}function E(){C(H),B(l)}function F(){E(),J.focus()}function G(){var a="undefined"!=typeof m.ngShow,b="undefined"!=typeof m.ngHide;return a||b?a&&!g.$eval(m.ngShow)||b&&g.$eval(m.ngHide):!1}var H,I=r(),J=l[0],K=J.nodeName.toLowerCase(),L="input"===K||"textarea"===K,M="password"===m.type,N=m.placeholder||"",O=h.emptyClassName,P="ng-hide";L&&(m.$observe("placeholder",function(a){t(a)}),M&&w(),q(I),l.bind("focus",function(){l.hasClass(O)&&(l.val(""),l.removeClass(O),J.select())}),l.bind("blur",o),n||l.bind("change",function(a){t(f(l.attr("placeholder")||"")(g),a)}),n&&(n.$render=function(){q(n.$viewValue),u(J)&&!l.val()&&J.select()}),i||(e.bind("selectstart",function(b){var c=a.element(b.target);c.hasClass(O)&&c.prop("disabled")&&b.preventDefault()}),i=!0))}}}])}(window.angular,window.document);
 ;
 /*
  * $Id: base64.js,v 2.15 2014/04/05 12:58:57 dankogai Exp dankogai $
@@ -811,15 +938,14 @@ angular.module('af.loader', ['af.event'])
     };
   });
 ;
-(function() {
 
 angular.module('af.modal', ['af.event'])
 
-  .constant('$MODAL_CONFIG', {
+  .constant('AF_MODAL_CONFIG', {
     genericModalPath:'src/views/templates/generic.modal.view.html'
   })
 
-  .service("afModal", function(afEvent, $MODAL_CONFIG) {
+  .service("afModal", function(afEvent, AF_MODAL_CONFIG) {
     var service;
     service = {
       isOpen:false,
@@ -830,7 +956,7 @@ angular.module('af.modal', ['af.event'])
         service.url = url;
         service.controller = ctrl;
         service.size = size; // lg, md, sm
-        if (!service.url) service.url = $MODAL_CONFIG.genericModalPath;
+        if (!service.url) service.url = AF_MODAL_CONFIG.genericModalPath;
         afEvent.shout("Modal.open", {
           url: service.url,
           controller: service.controller,
@@ -854,7 +980,7 @@ angular.module('af.modal', ['af.event'])
           ctrl.title = title;
           ctrl.body = body;
         }
-        service.open($MODAL_CONFIG.genericModalPath, ctrl);
+        service.open(AF_MODAL_CONFIG.genericModalPath, ctrl);
       }
     };
     return service;
@@ -941,12 +1067,9 @@ angular.module('af.modal', ['af.event'])
     init();
     return $scope.run();
   });
-
-}).call(this);
-
 ;
 
-angular.module('af.msg', ['af.event', 'af._'])
+angular.module('af.msg', ['af.event', '_'])
 
   .service('afMsg', function(afEvent) {
     var afMsg = null;
@@ -1051,11 +1174,11 @@ angular.module('af.msg', ['af.event', 'af._'])
 //
 angular.module('af.storage', [])
 
-  .constant('$STORAGE_CONFIG', {persistent_prefix:'myApp'} )
+  .constant('AF_STORAGE_CONFIG', {persistent_prefix:'myApp'} )
 
-  .service('afStorage', function($STORAGE_CONFIG, $log) {
+  .service('afStorage', function(AF_STORAGE_CONFIG, $log) {
 
-    var prefix = $STORAGE_CONFIG.persistent_prefix;
+    var prefix = AF_STORAGE_CONFIG.persistent_prefix;
 
     // determine if data belons to this app
     var isAppData = function(key){
@@ -1103,62 +1226,155 @@ angular.module('af.storage', [])
 
 
 ;
-angular.module('af.amplify', [])
-  .service('amplify', function($window) {
-    return $window.amplify;
-  });
+//these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
+angular.module('_', [])
+  .factory('_', [ '$window',
+    function ($window) { return $window._; }
+  ]);
 ;
-angular.module('af._', [])
-  .service('_', function($window) {
-    return $window._;
-  });
+//these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
+angular.module('amplify', [])
+  .factory('amplify', [ '$window',
+    function ($window) { return $window.amplify; }
+  ]);
 ;
-angular.module('af.moment', [])
-  .service('moment', function($window) {
-    return $window.moment;
-  });
+//these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
+angular.module('jQuery', [])
+  .factory('jQuery', [ '$window',
+    function ($window) { return $window.jQuery; }
+  ]);
+;
+//these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
+angular.module('moment', [])
+  .factory('moment', [ '$window',
+    function ($window) { return $window.moment; }
+  ]);
 ;
 
 ;
 
-angular.module('af.apiUtil', ['af._'])
-    .service('afApiUtil', function(_) {
+angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
+    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, $location, afMsg, jQuery) {
 
       var afApiUtil = null;
       return afApiUtil = {
 
-        isHTTPResponse:function(response){
-          return (_.has(response, 'headers') && _.has(response, 'status'));
+        response:{
+
+          isHTTPResponse:function(response){
+            return (_.has(response, 'headers') && _.has(response, 'status'));
+          },
+          isJsend:function(response){
+            var data = response;
+            if(afApiUtil.response.isHTTPResponse(response))
+              data = response.data;
+            if(!_.has(data, 'status')) return false;
+            if(data.status == 'success' && _.has(data, 'data')) return true;
+            if(data.status == 'error' && _.has(data, 'message')) return true;
+            return false;
+          }
+
         },
 
-        isJsend:function(response){
-          var data = response;
-          if(afApiUtil.isHTTPResponse(response))
-            data = response.data;
 
-          if(!_.has(data, 'status')) return false;
-          if(data.status == 'success' && _.has(data, 'data')) return true;
-          if(data.status == 'error' && _.has(data, 'message')) return true;
-          return false;
+        request:{
+          attachWebToken:function(request){
+            var token = afAuthManager.webToken();
+            request.headers.authorization = token;
+            return request;
+          },
+          attachSessionToken:function(request){
+            var token = afAuthManager.sessionToken();
+            request.data = request.data || {};
+            request.data.sessionToken = token;
+            return request;
+          },
+          isFileRequest:function(request){
+            return request.url.substr(request.url.length - 5).indexOf('.') >= 0
+          },
+          // convert request into a urlEncoded request instead of json
+          urlEncode:function(request){
+            request.headers = request.headers || {};
+            _.extend(request.headers, { 'Content-Type':'application/x-www-form-urlencoded' });
+            // data needs to be in string format
+            if(!_.isString(request.data))
+              request.data = jQuery.param(request.data);
+            return request;
+          }
         },
 
-        getErrorMessageFromResponse:function(response){
 
-          var defaultMessage = 'An unexpected error has occurred.';
-
-          // simple string error
-          if(_.isString(response))
-            return response;
-
-          // object error
-          if(_.has(response, 'message'))
-            return response.message || defaultMessage;
+        error:{
 
           //
-          if(afApiUtil.isHTTPResponse(response) && _.has(response, 'data') && _.has(response.data, 'message'))
-              return response.data.message || defaultMessage;
+          // CREATE CONSISTENT ERROR BASED ON A WIDE VARIETY OF SERVER RESPONSES
+          //
+          getError:function(response){
+            // already made consistent?
+            if(_.has(response, 'data') && _.has(response.data, 'isConsistent'))
+              return response.data;
 
-          return defaultMessage;
+            var err = null;
+            var errorObject = {
+              code:500,
+              message:'An unexpected error has occurred.',
+              name:'UnexpectedError',
+              status:'error',
+              debug:{
+                url:$location.absUrl()
+              },
+              isConsistent:true // flag for later
+            };
+
+            // string?
+            if(_.isString(response) && (response !== '' && response !== 'undefined' && response !== 'null')){
+              errorObject.message = response;
+
+            // http response
+            } else if(afApiUtil.response.isHTTPResponse(response)){
+              // pass status and statusText over
+              if(response.status !== 200) errorObject.code = response.status;
+              if(response.statusText) errorObject.name = response.statusText;
+              // if we received any jsend error data... use that instead
+              err = response.data || {};
+              if(err.code) errorObject.code = err.code;
+              if(err.name) errorObject.name = err.name;
+              if(err.message && (''+err.message).indexOf('<?xml') !== 0) errorObject.message = err.message;
+              // attach additional debug if
+              if(_.has(response, 'config')){
+                if(_.has(response.config, 'password'))
+                  response.config.password = '******';
+                errorObject.debug = _.extend({}, errorObject.debug, response.config);
+              }
+
+            // some other object response...
+            } else if(_.isPlainObject(response)){
+              err = response;
+              if(err.code) errorObject.code = err.code;
+              if(err.name) errorObject.name = err.name;
+              if(err.message && (''+err.message).indexOf('<?xml') !== 0) errorObject.message = err.message;
+            }
+            return errorObject;
+          },
+
+          displayError:function(response){
+            var error = afApiUtil.error.getError(response);
+            afMsg.error(error.message);
+          },
+
+          logError:function(response){
+            // get consistent error format
+            var error = afApiUtil.error.getError(response);
+            // log it
+            if(afApiUtil.response.isHTTPResponse(response)){
+              $log.error(error, response.headers, response.data);
+            } else{
+              $log.error(error);
+            }
+
+            // send to sentry
+            appCatch.send(error.message, error.debug);
+          }
         }
 
       }

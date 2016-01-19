@@ -37,3 +37,25 @@ angular.module('af.validators', [])
       }
     }
   })
+  .directive('validateEmail', function() {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link : function(scope, element, attrs, ngModel) {
+
+        // please note you can name your function & argument anything you like
+        function customValidator(ngModelValue) {
+          // check if its an email
+          if (/^[_a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/.test(ngModelValue)) {
+            ngModel.$setValidity('invalid-email', true);
+          } else {
+            ngModel.$setValidity('invalid-email', false);
+          }
+          return ngModelValue;
+        }
+        ngModel.$parsers.push(customValidator);
+
+      }
+
+    }
+  })

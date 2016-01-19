@@ -1,5 +1,5 @@
 
-angular.module('af.jwtManager', ['af.moment'])
+angular.module('af.jwtManager', ['moment'])
 
     .service('afJwtManager', function($window, $log, moment) {
 
@@ -46,12 +46,11 @@ angular.module('af.jwtManager', ['af.moment'])
           return moment(exp, 'X');
         },
 
-        expiresToSeconds:function(decodedToken){
-          var expiresOn = afJwtManager.getExpiresOn(decodedToken.exp);
-          console.log('expires in:', moment().diff(expiresOn));
-          return moment().diff(expiresOn);
-        }
-
+        millisecondsTillExpires:function(exp){
+          var expiresAt = afJwtManager.getExpiresOn(exp);
+          var diffInMill = expiresAt.diff(moment());
+          return diffInMill;
+        },
 
       };
     });

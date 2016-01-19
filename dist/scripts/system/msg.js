@@ -1,5 +1,5 @@
 
-angular.module('af.msg', ['af.event', 'af._'])
+angular.module('af.msg', ['af.event', '_'])
 
   .service('afMsg', function(afEvent) {
     var afMsg = null;

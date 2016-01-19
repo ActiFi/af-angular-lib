@@ -3,11 +3,11 @@
 //
 angular.module('af.storage', [])
 
-  .constant('$STORAGE_CONFIG', {persistent_prefix:'myApp'} )
+  .constant('AF_STORAGE_CONFIG', {persistent_prefix:'myApp'} )
 
-  .service('afStorage', function($STORAGE_CONFIG, $log) {
+  .service('afStorage', function(AF_STORAGE_CONFIG, $log) {
 
-    var prefix = $STORAGE_CONFIG.persistent_prefix;
+    var prefix = AF_STORAGE_CONFIG.persistent_prefix;
 
     // determine if data belons to this app
     var isAppData = function(key){
