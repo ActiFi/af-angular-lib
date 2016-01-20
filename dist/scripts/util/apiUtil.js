@@ -78,8 +78,8 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
           //
           getError:function(response){
             // already made consistent?
-            if(_.has(response, 'data') && _.has(response.data, 'isConsistent'))
-              return response.data;
+            if(_.has(response, 'errorObject'))
+              return response.errorObject;
 
             var err = null;
             var errorObject = {
@@ -89,8 +89,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               status:'error',
               debug:{
                 url:$location.absUrl()
-              },
-              isConsistent:true // flag for later
+              }
             };
 
             // string?
@@ -136,6 +135,10 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               if(err.name) errorObject.name = err.name;
               if(err.message && (''+err.message).indexOf('<?xml') !== 0) errorObject.message = err.message;
             }
+
+            // save if this gets called again...
+            response.errorObject = errorObject;
+
             return errorObject;
           },
 
