@@ -108,7 +108,10 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               if(err.name) errorObject.name = err.name;
               if(err.message) errorObject.message = err.message;
               if(_.isString(err)) {
-                errorObject.message = errorObject.code + ' ' + afApiUtil.error.getErrCodeLabel(err.code);
+                if(err.indexOf('<?xml') == 0)
+                  errorObject.message = errorObject.code + ' ' + afApiUtil.error.getErrCodeLabel(errorObject.code);
+                else
+                  errorObject.message = err;
               }
 
               // attach additional debug if
