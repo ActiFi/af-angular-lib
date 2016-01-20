@@ -55,7 +55,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         afAuthManager.setUser(decodedToken, timeTillExpires);
 
         if(appEnv.ENV() !== 'production')
-          $log.info('afAuthManager - Session Set:', decodedToken);
+          $log.info('afAuthManager - User Set:', afAuthManager.user());
         $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
       webToken:function(priorities){
@@ -77,9 +77,13 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
       // USER
       //
       setUser:function(user, expires){
+        // put a "displayName" on the user
+        user.displayName = afUtil.createDisplayName(user, appTenant.config('app.preferredDisplayName'));
+        // cache user
         store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user, expires);
+
         // support old apps
-        store('userName',     user.username, expires);
+        store('userName',     user.displayName, expires); // this is not username.. its the persons name.. ffs.
         store('userId',       user.userId, expires);
         store('userEmail',    user.email, expires);
         store('authorities',  user.authorities, expires);
