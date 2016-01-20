@@ -441,7 +441,8 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
         // cache decoded as user...
         afAuthManager.setUser(decodedToken, timeTillExpires);
 
-        $log.info('Your session will expire at', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
+        $log.info('afAuthManager - Session Set:', decodedToken);
+        $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
       webToken:function(priorities){
         return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
@@ -463,12 +464,12 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
       //
       setUser:function(user, expires){
         store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user, expires);
-
-        console.log(user);
-        store('userName', user.username, expires);
-        store('userId', user.userId, expires);
-        store('userEmail', user.email, expires);
-        store('authorities', user.authorities, expires);
+        // support old apps
+        store('userName',     user.username, expires);
+        store('userId',       user.userId, expires);
+        store('userEmail',    user.email, expires);
+        store('authorities',  user.authorities, expires);
+        store('tenantId',     user.tenant, expires);
       },
       user:function(){
         return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
