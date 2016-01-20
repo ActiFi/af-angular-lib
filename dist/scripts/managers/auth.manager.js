@@ -75,6 +75,16 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
       //
       setUser:function(user, expires){
         store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user, expires);
+
+        console.log(user);
+        store('userName', user.username, expires);
+        store('userId', user.userId, expires);
+        store('userEmail', user.email, expires);
+        store('authorities', user.authorities, expires);
+        //userName: amplify.store("userName"),
+        //userId: amplify.store("userId"),
+        //userEmail: amplify.store("userEmail"),
+        //authorities: amplify.store("authorities")
       },
       user:function(){
         return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
