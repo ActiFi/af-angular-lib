@@ -86,7 +86,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         store('userName',     user.displayName, expires); // this is not username.. its the persons name.. ffs.
         store('userId',       user.userId, expires);
         store('userEmail',    user.email, expires);
-        store('authorities',  user.authorities, expires);
+        store('authorities',  user.roles, expires);
         store('tenantId',     user.tenant, expires);
       },
       user:function(){
