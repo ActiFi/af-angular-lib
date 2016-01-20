@@ -51,7 +51,8 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
 
         // cache both coded and decoded version till it expires
         store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt, timeTillExpires);
-        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, decodedToken, timeTillExpires);
+        // cache decoded as user...
+        afAuthManager.setUser(decodedToken, timeTillExpires);
 
         $log.info('Your session will expire at', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
@@ -81,10 +82,6 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
         store('userId', user.userId, expires);
         store('userEmail', user.email, expires);
         store('authorities', user.authorities, expires);
-        //userName: amplify.store("userName"),
-        //userId: amplify.store("userId"),
-        //userEmail: amplify.store("userEmail"),
-        //authorities: amplify.store("authorities")
       },
       user:function(){
         return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
