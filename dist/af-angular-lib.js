@@ -1413,13 +1413,10 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               err = response.data || {};
               if(err.code) errorObject.code = err.code;
               if(err.name) errorObject.name = err.name;
-              if(err.message && (''+err.message).indexOf('<?xml') !== 0) errorObject.message = err.message;
-              if((''+err.message).indexOf('<?xml') === 0){
-                errorObject.message = err.code + ' ' + afApiUtil.error.getErrCodeLabel(err.code);
-              } else {
-                if(err.message) errorObject.message = err.message;
+              if(err.message) errorObject.message = err.message;
+              if(_.isString(err)) {
+                errorObject.message = errorObject.code + ' ' + afApiUtil.error.getErrCodeLabel(err.code);
               }
-
 
               // attach additional debug if
               if(_.has(response, 'config')){
