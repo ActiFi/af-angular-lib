@@ -1,5 +1,5 @@
 
-angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jwtManager'])
 
   .constant('AF_AUTH_MANAGER_CONFIG', {
 
@@ -54,7 +54,8 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.jwtManager'])
         // cache decoded as user...
         afAuthManager.setUser(decodedToken, timeTillExpires);
 
-        $log.info('afAuthManager - Session Set:', decodedToken);
+        if(appEnv.ENV() !== 'production')
+          $log.info('afAuthManager - Session Set:', decodedToken);
         $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
       webToken:function(priorities){
