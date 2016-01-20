@@ -52,7 +52,6 @@ var appCatch = {
     appCatch.error(message, extra, tags);
   },
   error:function(message, extra, tags){
-    if(!appCatch.isEnabled()) return;
     console.log('SENTRY - error()', message);
     extra = extra || {};
     tags = tags || {};
@@ -64,6 +63,11 @@ var appCatch = {
     // tags
     options.tags.env = tags.env || appEnv.ENV();
     options.tags.subDomain = tags.subDomain || tags.host || appEnv.HOST();
+
+    if(!appCatch.isEnabled()){
+      console.log('SENTRY - error!', 'Not sent. Sentry disabled:', message, options);
+      return;
+    }
     Raven.captureMessage(message, options)
   },
 
