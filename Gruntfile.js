@@ -17,7 +17,7 @@ module.exports = function(grunt) {
 
     dirs:{
       js: {
-        out: 'dist/scripts'
+        out: 'dist/js'
       },
       css:{
         in:'src/styles',
