@@ -10,6 +10,19 @@
   "moduleType": [],
   "ignore": [],
   "dependencies": {
-    "bootstrap": "3.3.6"
+    "jquery": "2.1.4",
+    "amplify": "1.1.2",
+    "angular": "1.4.9",
+    "angular-sanitize": "1.4.9",
+    "angular-animate": "1.4.9",
+    "angular-messages": "1.4.9",
+    "angular-ui-router": "0.2.15",
+    "bootstrap": "3.3.6",
+    "lodash": "4.0.0",
+    "moment": "2.10.6",
+    "raven-js": "*"
+  },
+  "resolutions": {
+    "angular": "1.4.9"
   }
 }
