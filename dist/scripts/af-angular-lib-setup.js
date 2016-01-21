@@ -320,3 +320,4 @@ navigator.sayswho= (function(){
   if((tem= ua.match(/version\/(\d+)/i))!= null) M.splice(1, 1, tem[1]);
   return M.join(' ');
 })();
+//# sourceMappingURL=af-angular-lib-setup.js.map
