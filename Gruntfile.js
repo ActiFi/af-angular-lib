@@ -5,9 +5,13 @@ module.exports = function(grunt) {
   var utils = require('./grunt/grunt_utils.js')(grunt);
 
 
-  grunt.registerTask('default', ['bower-update', 'concat', 'less']);
+  grunt.registerTask('default', ['concat:af-lib', 'less']);
   grunt.registerTask('dev', ['default', 'watch']);
+
+
+  // bower updaters
   grunt.registerTask('bower-update', 'updating dependencies', utils.bower.update());
+  grunt.registerTask('bower-install', 'updating dependencies', utils.bower.install());
 
 
   grunt.initConfig({
@@ -124,7 +128,7 @@ module.exports = function(grunt) {
       options: { livereload: false },
       js: {
         files: ['src/scripts/**/*.js', 'src/setup/**/*.js'],
-        tasks: ['concat']
+        tasks: ['concat:af-lib']
       },
       themes: {
         files: ['src/styles/themes/**/*.less'],
