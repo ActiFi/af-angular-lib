@@ -20,8 +20,8 @@ module.exports = function(grunt) {
     concat: {
       'af-lib': {
         options: {
-          separator: grunt.util.linefeed + ';' + grunt.util.linefeed,
-          sourceMap:true
+          separator: grunt.util.linefeed + ';' + grunt.util.linefeed
+          //sourceMap:true
         },
         files: {
           'dist/scripts/af-angular-lib-core.js':[
