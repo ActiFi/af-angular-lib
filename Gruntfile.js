@@ -5,12 +5,20 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
 
+    less:{
+      options: {compress: true},
+      files: {
+        'dist/afLib.css': 'src/assets/less/afLib.less',
+        'dist/afInit.css':'src/assets/less/afInit.less'
+      }
+    },
+
     concat: {
       js: {
         options: {separator: grunt.util.linefeed + ';' + grunt.util.linefeed },
         files: {
           'dist/af-angular-lib.js':[
-            'dist/scripts/**/*'
+            'src/scripts/**/*'
           ],
           'dist/af-angular-setup.js':[
             'dist/setup/console-fix.js',
