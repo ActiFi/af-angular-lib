@@ -1,11 +1,11 @@
 module.exports = function(grunt) {
 
-  grunt.registerTask('default', ['less','concat']);
-  grunt.registerTask('dev', ['default', 'watch']);
+  grunt.registerTask('default', ['concat', 'less', 'watch']);
 
   grunt.initConfig({
 
 
+    // compile less
     less:{
       'af-lib':{
         //options: {compress: true},
@@ -16,6 +16,7 @@ module.exports = function(grunt) {
       }
     },
 
+    // compile js
     concat: {
       'af-lib': {
         options: {separator: grunt.util.linefeed + ';' + grunt.util.linefeed },
@@ -36,17 +37,23 @@ module.exports = function(grunt) {
       }
     },
 
-
-
+    // watch files... (for dev)
     watch: {
+      options: { livereload: false },
       js: {
-        files: ['dist/scripts/**/*.js', 'dist/setup/**/*.js'],
-        tasks: ['concat'],
-        options: { livereload: true }
+        files: ['src/scripts/**/*.js', 'src/setup/**/*.js'],
+        tasks: ['concat']
+      },
+      styles: {
+        files: ['src/styles/**/*.less'],
+        tasks: ['less']
       }
     }
 
   });
+
+
+
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');

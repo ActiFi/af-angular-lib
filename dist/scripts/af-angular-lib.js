@@ -324,12 +324,16 @@ navigator.sayswho= (function(){
 // master module which includes all other modules
 angular.module('af.lib',
   [
+  // api
     'af.httpInterceptor',
     'af.api',
     'af.apiUtil',
+    'af.jwtManager',
+  // managers
     'af.authManager',
     'af.roleManager',
     'af.moduleManager',
+  // system
     'af.bsIcons',
     'af.event',
     'af.filters',
@@ -338,7 +342,6 @@ angular.module('af.lib',
     'af.msg',
     'af.storage',
     'af.util',
-    'af.jwtManager',
 
   // forms
     'af.directive.formGroup',
@@ -354,9 +357,12 @@ angular.module('af.lib',
     '_',
     'moment'
 
-    // these are not included by default
+  // these are not included by default
     //'ui.bootstrap.dropdown'
     //'af.validators'
+
+  // shims
+    //'ng.shims.placeholder''
   ]
 );
 ;
@@ -691,7 +697,6 @@ angular.module('af.validators', [])
 ;
 
 angular.module('af.filters', ['af.appTenant'])
-
 
   // eg {{'user.name' | appTenant}}
   // <span ng-bind="'user' | tenantLabel | plural"></span>
