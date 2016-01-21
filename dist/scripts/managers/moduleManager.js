@@ -61,7 +61,7 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           // whats available to user
           var availableModules = afModuleManager.getEnabledModules();
           if(availableModules.length == 0)
-            return defer.reject('You do not have access to any enabled modules.');
+            return defer.reject(availableModules);
 
           // what do they want?
           if(!desiredModule) desiredModule = availableModules[0].key;
