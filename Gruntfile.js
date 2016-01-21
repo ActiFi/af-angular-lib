@@ -8,7 +8,6 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['concat:af-lib', 'less']);
   grunt.registerTask('dev', ['default', 'watch']);
 
-
   // bower updaters
   grunt.registerTask('bower-update', 'updating dependencies', utils.bower.update());
   grunt.registerTask('bower-install', 'updating dependencies', utils.bower.install());
