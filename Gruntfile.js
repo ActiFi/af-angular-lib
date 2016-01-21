@@ -1,32 +1,42 @@
 module.exports = function(grunt) {
 
-  grunt.registerTask('default', ['concat']);
-  grunt.registerTask('dev', ['concat', 'watch']);
+  grunt.registerTask('default', ['less','concat']);
+  grunt.registerTask('dev', ['default', 'watch']);
 
   grunt.initConfig({
 
+
     less:{
-      options: {compress: true},
-      files: {
-        'dist/afLib.css': 'src/assets/less/afLib.less',
-        'dist/afInit.css':'src/assets/less/afInit.less'
+      'af-lib':{
+        //options: {compress: true},
+        files: {
+          'dist/styles/af-lib.css': 'src/styles/af-lib.less',
+          'dist/styles/af-init.css':'src/styles/af-init.less'
+        }
       }
     },
 
     concat: {
-      js: {
+      'af-lib': {
         options: {separator: grunt.util.linefeed + ';' + grunt.util.linefeed },
         files: {
-          'dist/af-angular-lib.js':[
+          'dist/scripts/af-angular-lib-core.js':[
             'src/scripts/**/*'
           ],
-          'dist/af-angular-setup.js':[
-            'dist/setup/console-fix.js',
-            'dist/setup/**/*'
+          'dist/scripts/af-angular-lib-setup.js':[
+            'src/setup/console-fix.js',
+            'src/setup/**/*'
+          ],
+          'dist/scripts/af-angular-lib.js':[
+            'src/setup/console-fix.js',
+            'src/setup/**/*',
+            'src/scripts/**/*'
           ]
         }
       }
     },
+
+
 
     watch: {
       js: {
@@ -35,6 +45,7 @@ module.exports = function(grunt) {
         options: { livereload: true }
       }
     }
+
   });
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-concat');

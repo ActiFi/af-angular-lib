@@ -1,7 +1,6 @@
 
 angular.module('af.filters', ['af.appTenant'])
 
-
   // eg {{'user.name' | appTenant}}
   // <span ng-bind="'user' | tenantLabel | plural"></span>
 
