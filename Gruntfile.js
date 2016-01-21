@@ -1,19 +1,13 @@
+
+
 module.exports = function(grunt) {
+
+  var utils = require('./grunt/grunt_utils.js')(grunt);
+
 
   grunt.registerTask('default', ['bower-update', 'concat', 'less']);
   grunt.registerTask('dev', ['default', 'watch']);
-
-
-  var concatLibs = function(filename, files){
-    return {
-      options: {
-        separator: grunt.util.linefeed + ';' + grunt.util.linefeed
-      },
-      nonull: true,
-      dest:'<%= dirs.js.out %>/'+filename,
-      src: files
-    }
-  };
+  grunt.registerTask('bower-update', 'updating dependencies', utils.bower.update());
 
 
   grunt.initConfig({
@@ -27,6 +21,7 @@ module.exports = function(grunt) {
         out:'dist/css'
       }
     },
+
 
     //
     // LESS
@@ -84,11 +79,10 @@ module.exports = function(grunt) {
       },
 
 
-
       //
       // AF-CORE
       //
-      libs: concatLibs('af-core-libs.js', [
+      libs: utils.concat.files('<%= dirs.js.out %>/af-core-libs.js', [
         // angular
         'bower_components/jquery/dist/jquery.min.js',
         'bower_components/amplify/lib/amplify.core.js',
@@ -105,7 +99,7 @@ module.exports = function(grunt) {
         // raven
         'bower_components/raven-js/dist/raven.min.js'
       ]),
-      libsMin: concatLibs('af-core-libs.min.js', [
+      libsMin: utils.concat.files('<%= dirs.js.out %>/af-core-libs.min.js', [
         // angular
         'bower_components/jquery/dist/jquery.min.js',
         'bower_components/amplify/lib/amplify.core.min.js',
@@ -140,17 +134,6 @@ module.exports = function(grunt) {
 
   });
 
-
-
-  // ensure we have correct dependencies loaded
-  grunt.registerTask('bower-update', 'updating dependencies', function() {
-    var exec = require('child_process').exec;
-    var cb = this.async();
-    exec('bower update', {cwd: './'}, function(err, stdout, stderr) {
-      console.log(stdout);
-      cb();
-    });
-  });
 
 
   grunt.loadNpmTasks('grunt-contrib-less');
