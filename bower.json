@@ -9,7 +9,7 @@
   "homepage": "https://github.com/ActiFi/af-angular-lib",
   "moduleType": [],
   "ignore": [],
-  "dependencies": {
+  "devDependencies": {
     "jquery": "2.1.4",
     "amplify": "1.1.2",
     "angular": "1.4.9",
@@ -19,7 +19,7 @@
     "angular-ui-router": "0.2.15",
     "bootstrap": "3.3.6",
     "lodash": "4.0.0",
-    "moment": "2.10.6",
+    "moment": "2.11.1",
     "raven-js": "*"
   },
   "resolutions": {
