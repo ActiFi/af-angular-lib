@@ -9,7 +9,7 @@
   "homepage": "https://github.com/ActiFi/af-angular-lib",
   "moduleType": [],
   "ignore": [],
-  "devDependencies": {
+  "dependencies": {
     "jquery": "2.1.4",
     "amplify": "1.1.2",
     "angular": "1.4.9",
