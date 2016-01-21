@@ -142,8 +142,8 @@ module.exports = function(grunt) {
 
 
 
-  // updates af lib
-  grunt.registerTask('bower-update', 'install the backend and frontend dependencies', function() {
+  // ensure we have correct dependencies loaded
+  grunt.registerTask('bower-update', 'updating dependencies', function() {
     var exec = require('child_process').exec;
     var cb = this.async();
     exec('bower update', {cwd: './'}, function(err, stdout, stderr) {
