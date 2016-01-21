@@ -126,9 +126,13 @@ module.exports = function(grunt) {
         files: ['src/scripts/**/*.js', 'src/setup/**/*.js'],
         tasks: ['concat']
       },
-      styles: {
-        files: ['src/styles/**/*.less'],
-        tasks: ['less']
+      themes: {
+        files: ['src/styles/themes/**/*.less'],
+        tasks: ['less:themes']
+      },
+      booty: {
+        files: ['src/styles/af-lib/**/*.less'],
+        tasks: ['less:af-lib']
       }
     }
 
