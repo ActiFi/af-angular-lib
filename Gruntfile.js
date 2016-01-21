@@ -1,9 +1,8 @@
 module.exports = function(grunt) {
 
-  grunt.registerTask('default', ['concat', 'less', 'watch']);
+  grunt.registerTask('default', ['bower-update', 'concat', 'less']);
+  grunt.registerTask('dev', ['default', 'watch']);
 
-
-  var angularVersion = '1.4.9';
 
   var concatLibs = function(filename, files){
     return {
@@ -16,33 +15,53 @@ module.exports = function(grunt) {
     }
   };
 
+
   grunt.initConfig({
 
     dirs:{
-      version:angularVersion,
       js: {
-        out: 'dist/scripts/<%= dirs.version %>'
+        out: 'dist/scripts'
       },
       css:{
         in:'src/styles',
-        out:'dist/styles'
+        out:'dist/css'
       }
     },
 
-    // compile less
+    //
+    // LESS
+    //
     less:{
       'af-lib':{
         //options: {compress: true},
         files: {
-          '<%= dirs.css.out %>/af-lib.css': '<%= dirs.css.in %>/af-lib.less',
-          '<%= dirs.css.out %>/af-init.css':'<%= dirs.css.in %>/af-init.less'
+          '<%= dirs.css.out %>/af-lib.css': '<%= dirs.css.in %>/af-lib/af-lib.less',
+          '<%= dirs.css.out %>/af-init.css':'<%= dirs.css.in %>/af-lib/af-init.less'
+        }
+      },
+      themes:{
+        options: {compress: true},
+        files: {
+          '<%= dirs.css.out %>/theme-blue.css':      '<%= dirs.css.in %>/themes/theme-blue.less',
+          '<%= dirs.css.out %>/theme-brown.css':     '<%= dirs.css.in %>/themes/theme-brown.less',
+          '<%= dirs.css.out %>/theme-green.css':     '<%= dirs.css.in %>/themes/theme-green.less',
+          '<%= dirs.css.out %>/theme-litegreen.css': '<%= dirs.css.in %>/themes/theme-litegreen.less',
+          '<%= dirs.css.out %>/theme-orange.css':    '<%= dirs.css.in %>/themes/theme-orange.less',
+          '<%= dirs.css.out %>/theme-red.css':       '<%= dirs.css.in %>/themes/theme-red.less'
         }
       }
     },
 
-    // compile js
+    
+    //
+    // SCRIPTS
+    //
     concat: {
 
+
+      //
+      // AF-LIB
+      //
       'af-lib': {
         options: {
           separator: grunt.util.linefeed + ';' + grunt.util.linefeed
@@ -64,6 +83,11 @@ module.exports = function(grunt) {
         }
       },
 
+
+
+      //
+      // AF-CORE
+      //
       libs: concatLibs('af-core-libs.js', [
         // angular
         'bower_components/jquery/dist/jquery.min.js',
@@ -100,6 +124,7 @@ module.exports = function(grunt) {
       ])
     },
 
+
     // watch files... (for dev)
     watch: {
       options: { livereload: false },
@@ -116,6 +141,16 @@ module.exports = function(grunt) {
   });
 
 
+
+  // updates af lib
+  grunt.registerTask('bower-update', 'install the backend and frontend dependencies', function() {
+    var exec = require('child_process').exec;
+    var cb = this.async();
+    exec('bower update', {cwd: './'}, function(err, stdout, stderr) {
+      console.log(stdout);
+      cb();
+    });
+  });
 
 
   grunt.loadNpmTasks('grunt-contrib-less');
