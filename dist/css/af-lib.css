@@ -394,9 +394,6 @@ label.fancy.fancy-radio.on {
   border: 1px solid #ebccd1;
   padding: 2px 6px;
 }
-.alert {
-  margin: 0;
-}
 #app-alert {
   position: fixed;
   z-index: 9999;
