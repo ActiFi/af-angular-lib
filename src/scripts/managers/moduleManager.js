@@ -81,6 +81,7 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
             var url = '/'+desiredModule+'/';
             switch(desiredModule){
               case 'portal':
+              case 'roadmap':
               case 'assmt':
                 $window.location = '/portal/login-redirection.php';
                 break;
