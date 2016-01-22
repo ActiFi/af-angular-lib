@@ -649,16 +649,14 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
               case 'portal':
               case 'roadmap':
               case 'assmt':
-                $window.location = '/portal/login-redirection.php';
-                return;
+                url = '/portal/login-redirection.php';
+                break;
               case 'metrics':
-                $window.location = '/metrics/#/login?from=auth&sessionToken='+afAuthManager.sessionToken();
-                return;
-              case 'admin':
-                $window.location = '/admin/';
-                return;
+                url = '/metrics/#/login?from=auth&sessionToken='+afAuthManager.sessionToken();
+                break;
             }
-            defer.resolve(desiredModule);
+            $window.location = url;
+            defer.resolve();
           } else {
             //
             // INVALID REDIRECT (return available modules)
