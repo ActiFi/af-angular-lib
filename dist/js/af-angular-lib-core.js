@@ -607,7 +607,6 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
         return afAuthManager.isAdmin() ? true:false;
       };
 
-
       var afModuleManager;
       return afModuleManager = {
 
@@ -624,49 +623,7 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           var enabledModules = afModuleManager.getEnabledModules();
           var enabledKeys = _.map(enabledModules, 'key');
           return _.includes(enabledKeys, module);
-        },
-
-        // attempts to redirect loggedInUser to a specific module
-        redirectToModule:function(desiredModule){
-
-          var defer = $q.defer();
-
-          // whats available to user
-          var availableModules = afModuleManager.getEnabledModules();
-          if(availableModules.length == 0)
-            return defer.reject(availableModules);
-
-          // what do they want?
-          if(!desiredModule) desiredModule = availableModules[0].key;
-          desiredModule = (''+desiredModule).toLowerCase();
-
-          if(afModuleManager.isEnabled(desiredModule)){
-            //
-            // VALID REDIRECT
-            //
-            var url = '/'+desiredModule+'/';
-            switch(desiredModule){
-              case 'portal':
-              case 'roadmap':
-              case 'assmt':
-                url = '/portal/login-redirection.php';
-                break;
-              case 'metrics':
-                url = '/metrics/#/login?from=auth&sessionToken='+afAuthManager.sessionToken();
-                break;
-            }
-            $window.location = url;
-            defer.resolve();
-          } else {
-            //
-            // INVALID REDIRECT (return available modules)
-            //
-            defer.reject(availableModules);
-          }
-          return defer.promise;
-
         }
-
 
       }
 
