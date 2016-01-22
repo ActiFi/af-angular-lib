@@ -1,0 +1,41 @@
+@fancyRadioDir:     "../img/forms";
+
+// <label class="fancy fancy-radio" ng-class="{on:radio == 'myValue'}"> Test
+//   <input type="radio" class="fancy" ng-model="radio" value="myValue" />
+// </label>
+
+// FANCY RADIOS
+@fancyRadioH:20px;
+@fancyRadioW:23px;
+label.fancy.fancy-checkbox,
+label.fancy.fancy-radio {
+  display:inline-block;
+  cursor: pointer;
+  font-weight:normal;
+  // create area to display label
+  min-height:@fancyRadioH + 1px;
+  line-height:@fancyRadioH + 1px;
+  vertical-align: middle;
+  padding-left: @fancyRadioW + 10px;
+  input{ // hides checkbox
+    margin-right: 5px;
+    position: absolute; left: -9999px;
+  }
+}
+.form-right-column label.fancy.fancy-checkbox,
+.form-right-column label.fancy.fancy-radio{
+  margin:6px 0;
+}
+
+label.fancy.fancy-checkbox {
+  background: url("@{fancyRadioDir}/check-off.gif") no-repeat;
+  &.on{
+    background: url("@{fancyRadioDir}/check-on.gif") no-repeat;
+  }
+}
+label.fancy.fancy-radio {
+  background: url('@{fancyRadioDir}/radio-off.gif') no-repeat;
+  &.on{
+    background: url('@{fancyRadioDir}/radio-on.gif') no-repeat;
+  }
+}

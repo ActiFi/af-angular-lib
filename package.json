@@ -2,7 +2,7 @@
   "name": "af-angular-lib",
   "description":"AcitFi Angular Libraries",
   "repository": "https://github.com/nawlbergs/angular-directives",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "devDependencies": {
     "grunt": "*",
