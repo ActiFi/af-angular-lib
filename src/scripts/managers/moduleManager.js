@@ -6,11 +6,15 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
     .service('afModuleManager', function($q, $window, _, appTenant, afAuthManager) {
 
       var system_modules = [
-        // TODO: need to differentiate portal and roadmap
         {
-          key:'portal',
-          enabled:true,
+          key:'roadmap',
+          enabled:appTenant.config('app.showRoadmap'),
           label:appTenant.config('label.moduleRoadmap')
+        },
+        {
+          key:'assmt',
+          enabled:appTenant.config('app.showAssmt'),
+          label:appTenant.config('label.moduleAssmt')
         },
         {
           key:'metrics',
@@ -48,6 +52,7 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
 
         // checks if module is enabled.
         isEnabled:function(module){
+          module = (''+module).toLowerCase();
           var enabledModules = afModuleManager.getEnabledModules();
           var enabledKeys = _.map(enabledModules, 'key');
           return _.includes(enabledKeys, module);
@@ -57,6 +62,8 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
         redirectToModule:function(desiredModule){
 
           var defer = $q.defer();
+
+          desiredModule = (''+desiredModule).toLowerCase();
 
           // whats available to user
           var availableModules = afModuleManager.getEnabledModules();
@@ -71,13 +78,14 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
             //
             // VALID REDIRECT
             //
-            var url = '/' + desiredModule + '/';
+            var url = '/'+desiredModule+'/';
             switch(desiredModule){
               case 'portal':
-                url = '/portal/login-redirection.php';
+              case 'assmt':
+                $window.location = '/portal/login-redirection.php';
                 break;
               case 'metrics':
-                url = '/metrics/#/login?from=auth&sessionToken='+afAuthManager.sessionToken();
+                $window.location = '/metrics/#/login?from=auth&sessionToken='+afAuthManager.sessionToken();
                 break;
             }
             $window.location = url;
