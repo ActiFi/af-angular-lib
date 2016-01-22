@@ -631,8 +631,6 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
 
           var defer = $q.defer();
 
-          desiredModule = (''+desiredModule).toLowerCase();
-
           // whats available to user
           var availableModules = afModuleManager.getEnabledModules();
           if(availableModules.length == 0)
