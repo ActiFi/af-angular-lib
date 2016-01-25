@@ -1056,7 +1056,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
       return afApi = {
 
         call: function(url, params, options) {
-
+          options = options || {};
           var defaults = {
             url:url,
             method: options.method || 'post',
