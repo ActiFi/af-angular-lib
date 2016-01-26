@@ -20,6 +20,9 @@ angular.module('af.lib',
     'af.storage',
     'af.util',
 
+  // ui
+    'af.bar',
+
   // forms
     'af.directive.formGroup',
 
