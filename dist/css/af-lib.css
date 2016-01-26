@@ -480,3 +480,65 @@ label.fancy.fancy-radio.on {
 ng\:form {
   display: block;
 }
+#af-bar {
+  height: 26px;
+  background-color: #EEE;
+  border-top: 1px solid #BBB;
+  padding: 0;
+  margin: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+#af-bar .af-bar-title {
+  line-height: 26px;
+  vertical-align: middle;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.4);
+  font-size: 10pt;
+  letter-spacing: 6pt;
+  /* mediaMobile */
+  /* iPad and loader */
+}
+#af-bar .af-bar-title span:first-child {
+  color: #336699;
+}
+#af-bar .af-bar-title span {
+  color: #003366;
+}
+@media (max-width: 1024px) {
+  #af-bar .af-bar-title {
+    font-size: 8pt;
+    letter-spacing: 5pt;
+  }
+}
+@media (max-width: 1024px) {
+  #af-bar .af-bar-title {
+    text-shadow: none;
+  }
+}
+#af-bar .af-bar-logo-link:hover {
+  text-decoration: none;
+}
+#af-bar .af-bar-logo {
+  margin-right: 8px;
+  height: 26px;
+  width: 26px;
+}
+#af-bar .af-bar-poweredBy {
+  line-height: 26px;
+  float: right;
+  font-size: 8pt;
+  padding: 0 10px 0 0;
+}
+#af-bar .af-bar-poweredBy a {
+  color: #336699;
+}
+/*
+#rightPane{
+  #af-bar{
+    left:-10px;
+    right:-10px;
+  }
+}
+*/
