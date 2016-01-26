@@ -145,7 +145,7 @@ var appTenant = {
     }
     if(makePlural) {
       var customPluralValue = _.get(appTenant._config, path + '_plural');
-      if(value !== void 0) return customPluralValue;
+      if(customPluralValue !== void 0) return customPluralValue;
       return appTenant.makePlural(value);
     }
     return value;
