@@ -39,6 +39,7 @@ var appTenant = {
     if (lastChar === 'y' && lastTwoChar !== 'ay' && lastTwoChar !== 'ey' && lastTwoChar !== 'iy' && lastTwoChar !== 'oy' && lastTwoChar !== 'uy')
       return value.slice(0, value.length - 1) + 'ies';
     if (lastTwoChar === 'ch') return value + 'es';
+    if (lastTwoChar === 'ss') return value + 'es';
     return value + 's';
   }
 
