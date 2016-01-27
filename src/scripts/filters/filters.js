@@ -1,13 +1,18 @@
 
-angular.module('af.filters', ['af.appTenant'])
+angular.module('af.filters', ['af.appTenant', 'af.util'])
 
-  // eg {{'user.name' | appTenant}}
-  // <span ng-bind="'user' | tenantLabel | plural"></span>
-
-  //
-  //.filter('tenantImage', function(appTenant) {
-  //  return function(file) {
-  //    var tnt = appTenant.config('tenant');
-  //    return '/tenant/' + tnt + '/images/' + tnt + '_' + file;
-  //  };
-  //});
+  .filter('formatNumber', function(afUtil) {
+    return afUtil.format.date;
+  })
+  .filter('formatPercent', function(afUtil) {
+    return afUtil.format.percent;
+  })
+  .filter('formatDate', function(afUtil) {
+    return afUtil.format.number;
+  })
+  .filter('formatCurrency', function(afUtil) {
+    return afUtil.format.currency;
+  })
+  .filter('formatTargetValue', function(afUtil) {
+    return afUtil.format.targetValue;
+  })
