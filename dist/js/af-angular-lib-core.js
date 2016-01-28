@@ -753,7 +753,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
     autoErrorLog:true,        // send errors to sentry
     attachWebToken:true,      // attach webToken to header
     attachSessionToken:false, // attach sessionToken to request params
-    attachTenant:true,        // attach sessionToken to request params
+    attachTenantIndex:true,   // attach sessionToken to request params
     urlEncode:false           // send as urlEncoded instead of json
   })
 
