@@ -5,6 +5,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
     autoErrorLog:true,        // send errors to sentry
     attachWebToken:true,      // attach webToken to header
     attachSessionToken:false, // attach sessionToken to request params
+    attachTenant:true,        // attach sessionToken to request params
     urlEncode:false           // send as urlEncoded instead of json
   })
 
@@ -28,6 +29,8 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
             request = afApiUtil.request.attachWebToken(request);
           if(request.attachSessionToken === true)
             request = afApiUtil.request.attachSessionToken(request);
+          if(request.attachTenantIndex === true)
+            request = afApiUtil.request.attachTenantIndex(request);
           if(request.urlEncode === true)
             request = afApiUtil.request.urlEncode(request);
 

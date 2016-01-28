@@ -32,6 +32,12 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             }
             return request;
           },
+          attachTenantIndex:function(request){
+            var tenant = appEnv.TENANT_INDEX;
+            request.data = request.data || {};
+            request.data.tenant = tenant;
+            return request;
+          },
           attachSessionToken:function(request){
             var token = afAuthManager.sessionToken();
             request.data = request.data || {};

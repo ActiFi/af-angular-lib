@@ -1077,6 +1077,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
     autoErrorLog:true,        // send errors to sentry
     attachWebToken:true,      // attach webToken to header
     attachSessionToken:false, // attach sessionToken to request params
+    attachTenant:true,        // attach sessionToken to request params
     urlEncode:false           // send as urlEncoded instead of json
   })
 
@@ -1100,6 +1101,8 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
             request = afApiUtil.request.attachWebToken(request);
           if(request.attachSessionToken === true)
             request = afApiUtil.request.attachSessionToken(request);
+          if(request.attachTenantIndex === true)
+            request = afApiUtil.request.attachTenantIndex(request);
           if(request.urlEncode === true)
             request = afApiUtil.request.urlEncode(request);
 
@@ -1866,6 +1869,12 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
               request.headers = request.headers || {};
               request.headers.authorization = 'Bearer ' + token;
             }
+            return request;
+          },
+          attachTenantIndex:function(request){
+            var tenant = appEnv.TENANT_INDEX;
+            request.data = request.data || {};
+            request.data.tenant = tenant;
             return request;
           },
           attachSessionToken:function(request){
