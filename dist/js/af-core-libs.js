@@ -39708,7 +39708,7 @@ angular.module('ui.router.state')
 ;
 /**
  * @license
- * lodash 4.0.0 (Custom Build) <https://lodash.com/>
+ * lodash 4.3.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash -o ./dist/lodash.js`
  * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
@@ -39721,7 +39721,7 @@ angular.module('ui.router.state')
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.0.0';
+  var VERSION = '4.3.0';
 
   /** Used to compose bitmasks for wrapper metadata. */
   var BIND_FLAG = 1,
@@ -39790,7 +39790,8 @@ angular.module('ui.router.state')
       setTag = '[object Set]',
       stringTag = '[object String]',
       symbolTag = '[object Symbol]',
-      weakMapTag = '[object WeakMap]';
+      weakMapTag = '[object WeakMap]',
+      weakSetTag = '[object WeakSet]';
 
   var arrayBufferTag = '[object ArrayBuffer]',
       float32Tag = '[object Float32Array]',
@@ -39871,7 +39872,8 @@ angular.module('ui.router.state')
 
   /** Used to compose unicode character classes. */
   var rsAstralRange = '\\ud800-\\udfff',
-      rsComboRange = '\\u0300-\\u036f\\ufe20-\\ufe23',
+      rsComboMarksRange = '\\u0300-\\u036f\\ufe20-\\ufe23',
+      rsComboSymbolsRange = '\\u20d0-\\u20f0',
       rsDingbatRange = '\\u2700-\\u27bf',
       rsLowerRange = 'a-z\\xdf-\\xf6\\xf8-\\xff',
       rsMathOpRange = '\\xac\\xb1\\xd7\\xf7',
@@ -39885,12 +39887,13 @@ angular.module('ui.router.state')
   /** Used to compose unicode capture groups. */
   var rsAstral = '[' + rsAstralRange + ']',
       rsBreak = '[' + rsBreakRange + ']',
-      rsCombo = '[' + rsComboRange + ']',
+      rsCombo = '[' + rsComboMarksRange + rsComboSymbolsRange + ']',
       rsDigits = '\\d+',
       rsDingbat = '[' + rsDingbatRange + ']',
       rsLower = '[' + rsLowerRange + ']',
       rsMisc = '[^' + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + ']',
-      rsModifier = '(?:\\ud83c[\\udffb-\\udfff])',
+      rsFitz = '\\ud83c[\\udffb-\\udfff]',
+      rsModifier = '(?:' + rsCombo + '|' + rsFitz + ')',
       rsNonAstral = '[^' + rsAstralRange + ']',
       rsRegional = '(?:\\ud83c[\\udde6-\\uddff]){2}',
       rsSurrPair = '[\\ud800-\\udbff][\\udc00-\\udfff]',
@@ -39907,14 +39910,17 @@ angular.module('ui.router.state')
       rsEmoji = '(?:' + [rsDingbat, rsRegional, rsSurrPair].join('|') + ')' + rsSeq,
       rsSymbol = '(?:' + [rsNonAstral + rsCombo + '?', rsCombo, rsRegional, rsSurrPair, rsAstral].join('|') + ')';
 
-  /** Used to match [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks). */
+  /**
+   * Used to match [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks) and
+   * [combining diacritical marks for symbols](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks_for_Symbols).
+   */
   var reComboMark = RegExp(rsCombo, 'g');
 
   /** Used to match [string symbols](https://mathiasbynens.be/notes/javascript-unicode). */
-  var reComplexSymbol = RegExp(rsSymbol + rsSeq, 'g');
+  var reComplexSymbol = RegExp(rsFitz + '(?=' + rsFitz + ')|' + rsSymbol + rsSeq, 'g');
 
   /** Used to detect strings with [zero-width joiners or code points from the astral planes](http://eev.ee/blog/2015/09/12/dark-corners-of-unicode/). */
-  var reHasComplexSymbol = RegExp('[' + rsZWJ + rsAstralRange + rsComboRange + rsVarRange + ']');
+  var reHasComplexSymbol = RegExp('[' + rsZWJ + rsAstralRange  + rsComboMarksRange + rsComboSymbolsRange + rsVarRange + ']');
 
   /** Used to match non-compound words composed of alphanumeric characters. */
   var reBasicWord = /[a-zA-Z0-9]+/g;
@@ -39924,7 +39930,8 @@ angular.module('ui.router.state')
     rsUpper + '?' + rsLower + '+(?=' + [rsBreak, rsUpper, '$'].join('|') + ')',
     rsUpperMisc + '+(?=' + [rsBreak, rsUpper + rsLowerMisc, '$'].join('|') + ')',
     rsUpper + '?' + rsLowerMisc + '+',
-    rsDigits + '(?:' + rsLowerMisc + '+)?',
+    rsUpper + '+',
+    rsDigits,
     rsEmoji
   ].join('|'), 'g');
 
@@ -39933,8 +39940,8 @@ angular.module('ui.router.state')
 
   /** Used to assign default `context` object properties. */
   var contextProps = [
-    'Array', 'Date', 'Error', 'Float32Array', 'Float64Array', 'Function',
-    'Int8Array', 'Int16Array', 'Int32Array', 'Map', 'Math', 'Object',
+    'Array', 'Buffer', 'Date', 'Error', 'Float32Array', 'Float64Array',
+    'Function', 'Int8Array', 'Int16Array', 'Int32Array', 'Map', 'Math', 'Object',
     'Reflect', 'RegExp', 'Set', 'String', 'Symbol', 'TypeError', 'Uint8Array',
     'Uint8ClampedArray', 'Uint16Array', 'Uint32Array', 'WeakMap', '_',
     'clearTimeout', 'isFinite', 'parseInt', 'setTimeout'
@@ -40099,11 +40106,11 @@ angular.module('ui.router.state')
    * @private
    * @param {Function} func The function to invoke.
    * @param {*} thisArg The `this` binding of `func`.
-   * @param {...*} [args] The arguments to invoke `func` with.
+   * @param {...*} args The arguments to invoke `func` with.
    * @returns {*} Returns the result of `func`.
    */
   function apply(func, thisArg, args) {
-    var length = args ? args.length : 0;
+    var length = args.length;
     switch (length) {
       case 0: return func.call(thisArg);
       case 1: return func.call(thisArg, args[0]);
@@ -40111,6 +40118,27 @@ angular.module('ui.router.state')
       case 3: return func.call(thisArg, args[0], args[1], args[2]);
     }
     return func.apply(thisArg, args);
+  }
+
+  /**
+   * A specialized version of `baseAggregator` for arrays.
+   *
+   * @private
+   * @param {Array} array The array to iterate over.
+   * @param {Function} setter The function to set `accumulator` values.
+   * @param {Function} iteratee The iteratee to transform keys.
+   * @param {Object} accumulator The initial aggregated object.
+   * @returns {Function} Returns `accumulator`.
+   */
+  function arrayAggregator(array, setter, iteratee, accumulator) {
+    var index = -1,
+        length = array.length;
+
+    while (++index < length) {
+      var value = array[index];
+      setter(accumulator, value, iteratee(value), array);
+    }
+    return accumulator;
   }
 
   /**
@@ -40305,14 +40333,14 @@ angular.module('ui.router.state')
    * @param {Array} array The array to iterate over.
    * @param {Function} iteratee The function invoked per iteration.
    * @param {*} [accumulator] The initial value.
-   * @param {boolean} [initFromArray] Specify using the first element of `array` as the initial value.
+   * @param {boolean} [initAccum] Specify using the first element of `array` as the initial value.
    * @returns {*} Returns the accumulated value.
    */
-  function arrayReduce(array, iteratee, accumulator, initFromArray) {
+  function arrayReduce(array, iteratee, accumulator, initAccum) {
     var index = -1,
         length = array.length;
 
-    if (initFromArray && length) {
+    if (initAccum && length) {
       accumulator = array[++index];
     }
     while (++index < length) {
@@ -40329,12 +40357,12 @@ angular.module('ui.router.state')
    * @param {Array} array The array to iterate over.
    * @param {Function} iteratee The function invoked per iteration.
    * @param {*} [accumulator] The initial value.
-   * @param {boolean} [initFromArray] Specify using the last element of `array` as the initial value.
+   * @param {boolean} [initAccum] Specify using the last element of `array` as the initial value.
    * @returns {*} Returns the accumulated value.
    */
-  function arrayReduceRight(array, iteratee, accumulator, initFromArray) {
+  function arrayReduceRight(array, iteratee, accumulator, initAccum) {
     var length = array.length;
-    if (initFromArray && length) {
+    if (initAccum && length) {
       accumulator = array[--length];
     }
     while (length--) {
@@ -40396,7 +40424,7 @@ angular.module('ui.router.state')
   /**
    * The base implementation of methods like `_.find` and `_.findKey`, without
    * support for iteratee shorthands, which iterates over `collection` using
-   * the provided `eachFunc`.
+   * `eachFunc`.
    *
    * @private
    * @param {Array|Object} collection The collection to search.
@@ -40464,21 +40492,20 @@ angular.module('ui.router.state')
 
   /**
    * The base implementation of `_.reduce` and `_.reduceRight`, without support
-   * for iteratee shorthands, which iterates over `collection` using the provided
-   * `eachFunc`.
+   * for iteratee shorthands, which iterates over `collection` using `eachFunc`.
    *
    * @private
    * @param {Array|Object} collection The collection to iterate over.
    * @param {Function} iteratee The function invoked per iteration.
    * @param {*} accumulator The initial value.
-   * @param {boolean} initFromCollection Specify using the first or last element of `collection` as the initial value.
+   * @param {boolean} initAccum Specify using the first or last element of `collection` as the initial value.
    * @param {Function} eachFunc The function to iterate over `collection`.
    * @returns {*} Returns the accumulated value.
    */
-  function baseReduce(collection, iteratee, accumulator, initFromCollection, eachFunc) {
+  function baseReduce(collection, iteratee, accumulator, initAccum, eachFunc) {
     eachFunc(collection, function(value, index, collection) {
-      accumulator = initFromCollection
-        ? (initFromCollection = false, value)
+      accumulator = initAccum
+        ? (initAccum = false, value)
         : iteratee(accumulator, value, index, collection);
     });
     return accumulator;
@@ -40872,6 +40899,7 @@ angular.module('ui.router.state')
   /**
    * Gets the number of symbols in `string`.
    *
+   * @private
    * @param {string} string The string to inspect.
    * @returns {number} Returns the string size.
    */
@@ -40935,14 +40963,14 @@ angular.module('ui.router.state')
    * lodash.isFunction(lodash.bar);
    * // => true
    *
-   * // using `context` to mock `Date#getTime` use in `_.now`
+   * // Use `context` to mock `Date#getTime` use in `_.now`.
    * var mock = _.runInContext({
    *   'Date': function() {
    *     return { 'getTime': getTimeMock };
    *   }
    * });
    *
-   * // or creating a suped-up `defer` in Node.js
+   * // Create a suped-up `defer` in Node.js.
    * var defer = _.runInContext({ 'setTimeout': setImmediate }).defer;
    */
   function runInContext(context) {
@@ -40987,14 +41015,15 @@ angular.module('ui.router.state')
     );
 
     /** Built-in value references. */
-    var _Symbol = context.Symbol,
+    var Buffer = moduleExports ? context.Buffer : undefined,
         Reflect = context.Reflect,
+        Symbol = context.Symbol,
         Uint8Array = context.Uint8Array,
         clearTimeout = context.clearTimeout,
         enumerate = Reflect ? Reflect.enumerate : undefined,
         getPrototypeOf = Object.getPrototypeOf,
         getOwnPropertySymbols = Object.getOwnPropertySymbols,
-        iteratorSymbol = typeof (iteratorSymbol = _Symbol && _Symbol.iterator) == 'symbol' ? iteratorSymbol : undefined,
+        iteratorSymbol = typeof (iteratorSymbol = Symbol && Symbol.iterator) == 'symbol' ? iteratorSymbol : undefined,
         propertyIsEnumerable = objectProto.propertyIsEnumerable,
         setTimeout = context.setTimeout,
         splice = arrayProto.splice;
@@ -41020,14 +41049,15 @@ angular.module('ui.router.state')
     /** Used to store function metadata. */
     var metaMap = WeakMap && new WeakMap;
 
-    /** Used to detect maps and sets. */
+    /** Used to detect maps, sets, and weakmaps. */
     var mapCtorString = Map ? funcToString.call(Map) : '',
-        setCtorString = Set ? funcToString.call(Set) : '';
+        setCtorString = Set ? funcToString.call(Set) : '',
+        weakMapCtorString = WeakMap ? funcToString.call(WeakMap) : '';
 
     /** Used to convert symbols to primitives and strings. */
-    var symbolProto = _Symbol ? _Symbol.prototype : undefined,
-        symbolValueOf = _Symbol ? symbolProto.valueOf : undefined,
-        symbolToString = _Symbol ? symbolProto.toString : undefined;
+    var symbolProto = Symbol ? Symbol.prototype : undefined,
+        symbolValueOf = Symbol ? symbolProto.valueOf : undefined,
+        symbolToString = Symbol ? symbolProto.toString : undefined;
 
     /** Used to lookup unminified function names. */
     var realNames = {};
@@ -41075,47 +41105,48 @@ angular.module('ui.router.state')
      * The chainable wrapper methods are:
      * `after`, `ary`, `assign`, `assignIn`, `assignInWith`, `assignWith`,
      * `at`, `before`, `bind`, `bindAll`, `bindKey`, `chain`, `chunk`, `commit`,
-     * `compact`, `concat`, `conforms`,  `constant`, `countBy`, `create`, `curry`,
+     * `compact`, `concat`, `conforms`, `constant`, `countBy`, `create`, `curry`,
      * `debounce`, `defaults`, `defaultsDeep`, `defer`, `delay`, `difference`,
-     * `differenceBy`, `differenceWith`,  `drop`, `dropRight`, `dropRightWhile`,
+     * `differenceBy`, `differenceWith`, `drop`, `dropRight`, `dropRightWhile`,
      * `dropWhile`, `fill`, `filter`, `flatten`, `flattenDeep`, `flip`, `flow`,
-     * `flowRight`, `forEach`, `forEachRight`, `forIn`, `forInRight`, `forOwn`,
-     * `forOwnRight`, `fromPairs`, `functions`, `functionsIn`, `groupBy`, `initial`,
-     * `intersection`, `intersectionBy`, `intersectionWith`, invert`, `invokeMap`,
-     * `iteratee`, `keyBy`, `keys`, `keysIn`, `map`, `mapKeys`, `mapValues`,
-     * `matches`, `matchesProperty`, `memoize`, `merge`, `mergeWith`, `method`,
-     * `methodOf`, `mixin`, `negate`, `nthArg`, `omit`, `omitBy`, `once`, `orderBy`,
-     * `over`, `overArgs`, `overEvery`, `overSome`, `partial`, `partialRight`,
-     * `partition`, `pick`, `pickBy`, `plant`, `property`, `propertyOf`, `pull`,
-     * `pullAll`, `pullAllBy`, `pullAt`, `push`, `range`, `rangeRight`, `rearg`,
-     * `reject`, `remove`, `rest`, `reverse`, `sampleSize`, `set`, `setWith`,
-     * `shuffle`, `slice`, `sort`, `sortBy`, `splice`, `spread`, `tail`, `take`,
-     * `takeRight`, `takeRightWhile`, `takeWhile`, `tap`, `throttle`, `thru`,
-     * `toArray`, `toPairs`, `toPairsIn`, `toPath`, `toPlainObject`, `transform`,
-     * `unary`, `union`, `unionBy`, `unionWith`, `uniq`, `uniqBy`, `uniqWith`,
-     * `unset`, `unshift`, `unzip`, `unzipWith`, `values`, `valuesIn`, `without`,
-     * `wrap`, `xor`, `xorBy`, `xorWith`, `zip`, `zipObject`, and `zipWith`
+     * `flowRight`, `fromPairs`, `functions`, `functionsIn`, `groupBy`, `initial`,
+     * `intersection`, `intersectionBy`, `intersectionWith`, `invert`, `invertBy`,
+     * `invokeMap`, `iteratee`, `keyBy`, `keys`, `keysIn`, `map`, `mapKeys`,
+     * `mapValues`, `matches`, `matchesProperty`, `memoize`, `merge`, `mergeWith`,
+     * `method`, `methodOf`, `mixin`, `negate`, `nthArg`, `omit`, `omitBy`, `once`,
+     * `orderBy`, `over`, `overArgs`, `overEvery`, `overSome`, `partial`,
+     * `partialRight`, `partition`, `pick`, `pickBy`, `plant`, `property`,
+     * `propertyOf`, `pull`, `pullAll`, `pullAllBy`, `pullAt`, `push`, `range`,
+     * `rangeRight`, `rearg`, `reject`, `remove`, `rest`, `reverse`, `sampleSize`,
+     * `set`, `setWith`, `shuffle`, `slice`, `sort`, `sortBy`, `splice`, `spread`,
+     * `tail`, `take`, `takeRight`, `takeRightWhile`, `takeWhile`, `tap`, `throttle`,
+     * `thru`, `toArray`, `toPairs`, `toPairsIn`, `toPath`, `toPlainObject`,
+     * `transform`, `unary`, `union`, `unionBy`, `unionWith`, `uniq`, `uniqBy`,
+     * `uniqWith`, `unset`, `unshift`, `unzip`, `unzipWith`, `values`, `valuesIn`,
+     * `without`, `wrap`, `xor`, `xorBy`, `xorWith`, `zip`, `zipObject`,
+     * `zipObjectDeep`, and `zipWith`
      *
      * The wrapper methods that are **not** chainable by default are:
      * `add`, `attempt`, `camelCase`, `capitalize`, `ceil`, `clamp`, `clone`,
      * `cloneDeep`, `cloneDeepWith`, `cloneWith`, `deburr`, `endsWith`, `eq`,
      * `escape`, `escapeRegExp`, `every`, `find`, `findIndex`, `findKey`,
-     * `findLast`, `findLastIndex`, `findLastKey`, `floor`, `get`, `gt`, `gte`,
-     * `has`, `hasIn`, `head`, `identity`, `includes`, `indexOf`, `inRange`,
-     * `invoke`, `isArguments`, `isArray`, `isArrayLike`, `isArrayLikeObject`,
-     * `isBoolean`, `isDate`, `isElement`, `isEmpty`, `isEqual`, `isEqualWith`,
-     * `isError`, `isFinite`, `isFunction`, `isInteger`, `isLength`, `isMatch`,
-     * `isMatchWith`, `isNaN`, `isNative`, `isNil`, `isNull`, `isNumber`,
-     * `isObject`, `isObjectLike`, `isPlainObject`, `isRegExp`, `isSafeInteger`,
-     * `isString`, `isUndefined`, `isTypedArray`, `join`, `kebabCase`, `last`,
-     * `lastIndexOf`, `lowerCase`, `lowerFirst`, `lt`, `lte`, `max`, `maxBy`,
-     * `mean`, `min`, `minBy`, `noConflict`, `noop`, `now`, `pad`, `padEnd`,
-     * `padStart`, `parseInt`, `pop`, `random`, `reduce`, `reduceRight`, `repeat`,
-     * `result`, `round`, `runInContext`, `sample`, `shift`, `size`, `snakeCase`,
-     * `some`, `sortedIndex`, `sortedIndexBy`, `sortedLastIndex`, `sortedLastIndexBy`,
-     * `startCase`, `startsWith`, `subtract`, `sum`, sumBy`, `template`, `times`,
-     * `toLower`, `toInteger`, `toLength`, `toNumber`, `toSafeInteger`, toString`,
-     * `toUpper`, `trim`, `trimEnd`, `trimStart`, `truncate`, `unescape`, `uniqueId`,
+     * `findLast`, `findLastIndex`, `findLastKey`, `floor`, `forEach`, `forEachRight`,
+     * `forIn`, `forInRight`, `forOwn`, `forOwnRight`, `get`, `gt`, `gte`, `has`,
+     * `hasIn`, `head`, `identity`, `includes`, `indexOf`, `inRange`, `invoke`,
+     * `isArguments`, `isArray`, `isArrayLike`, `isArrayLikeObject`, `isBoolean`,
+     * `isDate`, `isElement`, `isEmpty`, `isEqual`, `isEqualWith`, `isError`,
+     * `isFinite`, `isFunction`, `isInteger`, `isLength`, `isMatch`, `isMatchWith`,
+     * `isNaN`, `isNative`, `isNil`, `isNull`, `isNumber`, `isObject`, `isObjectLike`,
+     * `isPlainObject`, `isRegExp`, `isSafeInteger`, `isString`, `isUndefined`,
+     * `isTypedArray`, `join`, `kebabCase`, `last`, `lastIndexOf`, `lowerCase`,
+     * `lowerFirst`, `lt`, `lte`, `max`, `maxBy`, `mean`, `min`, `minBy`,
+     * `noConflict`, `noop`, `now`, `pad`, `padEnd`, `padStart`, `parseInt`,
+     * `pop`, `random`, `reduce`, `reduceRight`, `repeat`, `result`, `round`,
+     * `runInContext`, `sample`, `shift`, `size`, `snakeCase`, `some`, `sortedIndex`,
+     * `sortedIndexBy`, `sortedLastIndex`, `sortedLastIndexBy`, `startCase`,
+     * `startsWith`, `subtract`, `sum`, `sumBy`, `template`, `times`, `toLower`,
+     * `toInteger`, `toLength`, `toNumber`, `toSafeInteger`, `toString`, `toUpper`,
+     * `trim`, `trimEnd`, `trimStart`, `truncate`, `unescape`, `uniqueId`,
      * `upperCase`, `upperFirst`, `value`, and `words`
      *
      * @name _
@@ -41131,11 +41162,11 @@ angular.module('ui.router.state')
      *
      * var wrapped = _([1, 2, 3]);
      *
-     * // returns an unwrapped value
+     * // Returns an unwrapped value.
      * wrapped.reduce(_.add);
      * // => 6
      *
-     * // returns a wrapped value
+     * // Returns a wrapped value.
      * var squares = wrapped.map(square);
      *
      * _.isArray(squares);
@@ -41826,6 +41857,24 @@ angular.module('ui.router.state')
     }
 
     /**
+     * Aggregates elements of `collection` on `accumulator` with keys transformed
+     * by `iteratee` and values set by `setter`.
+     *
+     * @private
+     * @param {Array|Object} collection The collection to iterate over.
+     * @param {Function} setter The function to set `accumulator` values.
+     * @param {Function} iteratee The iteratee to transform keys.
+     * @param {Object} accumulator The initial aggregated object.
+     * @returns {Function} Returns `accumulator`.
+     */
+    function baseAggregator(collection, setter, iteratee, accumulator) {
+      baseEach(collection, function(value, key, collection) {
+        setter(accumulator, value, iteratee(value), collection);
+      });
+      return accumulator;
+    }
+
+    /**
      * The base implementation of `_.assign` without support for multiple sources
      * or `customizer` functions.
      *
@@ -41913,6 +41962,9 @@ angular.module('ui.router.state')
         var tag = getTag(value),
             isFunc = tag == funcTag || tag == genTag;
 
+        if (isBuffer(value)) {
+          return cloneBuffer(value, isDeep);
+        }
         if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
           if (isHostObject(value)) {
             return object ? value : {};
@@ -41998,7 +42050,7 @@ angular.module('ui.router.state')
      * @private
      * @param {Function} func The function to delay.
      * @param {number} wait The number of milliseconds to delay invocation.
-     * @param {Object} args The arguments provide to `func`.
+     * @param {Object} args The arguments to provide to `func`.
      * @returns {number} Returns the timer id.
      */
     function baseDelay(func, wait, args) {
@@ -42243,7 +42295,7 @@ angular.module('ui.router.state')
 
     /**
      * The base implementation of `_.functions` which creates an array of
-     * `object` function property names filtered from those provided.
+     * `object` function property names filtered from `props`.
      *
      * @private
      * @param {Object} object The object to inspect.
@@ -42372,9 +42424,26 @@ angular.module('ui.router.state')
     }
 
     /**
+     * The base implementation of `_.invert` and `_.invertBy` which inverts
+     * `object` with values transformed by `iteratee` and set by `setter`.
+     *
+     * @private
+     * @param {Object} object The object to iterate over.
+     * @param {Function} setter The function to set `accumulator` values.
+     * @param {Function} iteratee The iteratee to transform values.
+     * @param {Object} accumulator The initial inverted object.
+     * @returns {Function} Returns `accumulator`.
+     */
+    function baseInverter(object, setter, iteratee, accumulator) {
+      baseForOwn(object, function(value, key, object) {
+        setter(accumulator, iteratee(value), key, object);
+      });
+      return accumulator;
+    }
+
+    /**
      * The base implementation of `_.invoke` without support for individual
      * method arguments.
-     *
      *
      * @private
      * @param {Object} object The object to query.
@@ -42518,7 +42587,10 @@ angular.module('ui.router.state')
           var stack = new Stack,
               result = customizer ? customizer(objValue, srcValue, key, object, source, stack) : undefined;
 
-          if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG, stack) : result)) {
+          if (!(result === undefined
+                ? baseIsEqual(srcValue, objValue, customizer, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG, stack)
+                : result
+              )) {
             return false;
           }
         }
@@ -42654,10 +42726,11 @@ angular.module('ui.router.state')
      * @private
      * @param {Object} object The destination object.
      * @param {Object} source The source object.
+     * @param {number} srcIndex The index of `source`.
      * @param {Function} [customizer] The function to customize merged values.
      * @param {Object} [stack] Tracks traversed source values and their merged counterparts.
      */
-    function baseMerge(object, source, customizer, stack) {
+    function baseMerge(object, source, srcIndex, customizer, stack) {
       if (object === source) {
         return;
       }
@@ -42669,7 +42742,7 @@ angular.module('ui.router.state')
         }
         if (isObject(srcValue)) {
           stack || (stack = new Stack);
-          baseMergeDeep(object, source, key, baseMerge, customizer, stack);
+          baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
         }
         else {
           var newValue = customizer ? customizer(object[key], srcValue, (key + ''), object, source, stack) : undefined;
@@ -42690,14 +42763,15 @@ angular.module('ui.router.state')
      * @param {Object} object The destination object.
      * @param {Object} source The source object.
      * @param {string} key The key of the value to merge.
+     * @param {number} srcIndex The index of `source`.
      * @param {Function} mergeFunc The function to merge values.
      * @param {Function} [customizer] The function to customize assigned values.
      * @param {Object} [stack] Tracks traversed source values and their merged counterparts.
      */
-    function baseMergeDeep(object, source, key, mergeFunc, customizer, stack) {
+    function baseMergeDeep(object, source, key, srcIndex, mergeFunc, customizer, stack) {
       var objValue = object[key],
           srcValue = source[key],
-          stacked = stack.get(srcValue) || stack.get(objValue);
+          stacked = stack.get(srcValue);
 
       if (stacked) {
         assignMergeValue(object, key, stacked);
@@ -42709,24 +42783,38 @@ angular.module('ui.router.state')
       if (isCommon) {
         newValue = srcValue;
         if (isArray(srcValue) || isTypedArray(srcValue)) {
-          newValue = isArray(objValue)
-            ? objValue
-            : ((isArrayLikeObject(objValue)) ? copyArray(objValue) : baseClone(srcValue));
+          if (isArray(objValue)) {
+            newValue = srcIndex ? copyArray(objValue) : objValue;
+          }
+          else if (isArrayLikeObject(objValue)) {
+            newValue = copyArray(objValue);
+          }
+          else {
+            isCommon = false;
+            newValue = baseClone(srcValue);
+          }
         }
         else if (isPlainObject(srcValue) || isArguments(srcValue)) {
-          newValue = isArguments(objValue)
-            ? toPlainObject(objValue)
-            : (isObject(objValue) ? objValue : baseClone(srcValue));
+          if (isArguments(objValue)) {
+            newValue = toPlainObject(objValue);
+          }
+          else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
+            isCommon = false;
+            newValue = baseClone(srcValue);
+          }
+          else {
+            newValue = srcIndex ? baseClone(objValue) : objValue;
+          }
         }
         else {
-          isCommon = isFunction(srcValue);
+          isCommon = false;
         }
       }
       stack.set(srcValue, newValue);
 
       if (isCommon) {
         // Recursively merge objects and arrays (susceptible to call stack limits).
-        mergeFunc(newValue, srcValue, customizer, stack);
+        mergeFunc(newValue, srcValue, srcIndex, customizer, stack);
       }
       assignMergeValue(object, key, newValue);
     }
@@ -42790,7 +42878,7 @@ angular.module('ui.router.state')
     function basePickBy(object, predicate) {
       var result = {};
       baseForIn(object, function(value, key) {
-        if (predicate(value)) {
+        if (predicate(value, key)) {
           result[key] = value;
         }
       });
@@ -43313,18 +43401,58 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Creates a clone of `buffer`.
+     * This base implementation of `_.zipObject` which assigns values using `assignFunc`.
      *
      * @private
-     * @param {ArrayBuffer} buffer The array buffer to clone.
+     * @param {Array} props The property names.
+     * @param {Array} values The property values.
+     * @param {Function} assignFunc The function to assign values.
+     * @returns {Object} Returns the new object.
+     */
+    function baseZipObject(props, values, assignFunc) {
+      var index = -1,
+          length = props.length,
+          valsLength = values.length,
+          result = {};
+
+      while (++index < length) {
+        assignFunc(result, props[index], index < valsLength ? values[index] : undefined);
+      }
+      return result;
+    }
+
+    /**
+     * Creates a clone of  `buffer`.
+     *
+     * @private
+     * @param {Buffer} buffer The buffer to clone.
+     * @param {boolean} [isDeep] Specify a deep clone.
+     * @returns {Buffer} Returns the cloned buffer.
+     */
+    function cloneBuffer(buffer, isDeep) {
+      if (isDeep) {
+        return buffer.slice();
+      }
+      var Ctor = buffer.constructor,
+          result = new Ctor(buffer.length);
+
+      buffer.copy(result);
+      return result;
+    }
+
+    /**
+     * Creates a clone of `arrayBuffer`.
+     *
+     * @private
+     * @param {ArrayBuffer} arrayBuffer The array buffer to clone.
      * @returns {ArrayBuffer} Returns the cloned array buffer.
      */
-    function cloneBuffer(buffer) {
-      var Ctor = buffer.constructor,
-          result = new Ctor(buffer.byteLength),
+    function cloneArrayBuffer(arrayBuffer) {
+      var Ctor = arrayBuffer.constructor,
+          result = new Ctor(arrayBuffer.byteLength),
           view = new Uint8Array(result);
 
-      view.set(new Uint8Array(buffer));
+      view.set(new Uint8Array(arrayBuffer));
       return result;
     }
 
@@ -43375,7 +43503,7 @@ angular.module('ui.router.state')
      * @returns {Object} Returns the cloned symbol object.
      */
     function cloneSymbol(symbol) {
-      return _Symbol ? Object(symbolValueOf.call(symbol)) : {};
+      return Symbol ? Object(symbolValueOf.call(symbol)) : {};
     }
 
     /**
@@ -43390,7 +43518,7 @@ angular.module('ui.router.state')
       var buffer = typedArray.buffer,
           Ctor = typedArray.constructor;
 
-      return new Ctor(isDeep ? cloneBuffer(buffer) : buffer, typedArray.byteOffset, typedArray.length);
+      return new Ctor(isDeep ? cloneArrayBuffer(buffer) : buffer, typedArray.byteOffset, typedArray.length);
     }
 
     /**
@@ -43529,29 +43657,16 @@ angular.module('ui.router.state')
      * Creates a function like `_.groupBy`.
      *
      * @private
-     * @param {Function} setter The function to set keys and values of the accumulator object.
-     * @param {Function} [initializer] The function to initialize the accumulator object.
+     * @param {Function} setter The function to set accumulator values.
+     * @param {Function} [initializer] The accumulator object initializer.
      * @returns {Function} Returns the new aggregator function.
      */
     function createAggregator(setter, initializer) {
       return function(collection, iteratee) {
-        var result = initializer ? initializer() : {};
-        iteratee = getIteratee(iteratee);
+        var func = isArray(collection) ? arrayAggregator : baseAggregator,
+            accumulator = initializer ? initializer() : {};
 
-        if (isArray(collection)) {
-          var index = -1,
-              length = collection.length;
-
-          while (++index < length) {
-            var value = collection[index];
-            setter(result, value, iteratee(value), collection);
-          }
-        } else {
-          baseEach(collection, function(value, key, collection) {
-            setter(result, value, iteratee(value), collection);
-          });
-        }
-        return result;
+        return func(collection, setter, getIteratee(iteratee), accumulator);
       };
     }
 
@@ -43578,7 +43693,7 @@ angular.module('ui.router.state')
         while (++index < length) {
           var source = sources[index];
           if (source) {
-            assigner(object, source, customizer);
+            assigner(object, source, index, customizer);
           }
         }
         return object;
@@ -43741,7 +43856,7 @@ angular.module('ui.router.state')
             index = length,
             args = Array(length),
             fn = (this && this !== root && this instanceof wrapper) ? Ctor : func,
-            placeholder = wrapper.placeholder;
+            placeholder = lodash.placeholder || wrapper.placeholder;
 
         while (index--) {
           args[index] = arguments[index];
@@ -43857,7 +43972,7 @@ angular.module('ui.router.state')
           args = composeArgsRight(args, partialsRight, holdersRight);
         }
         if (isCurry || isCurryRight) {
-          var placeholder = wrapper.placeholder,
+          var placeholder = lodash.placeholder || wrapper.placeholder,
               argsHolders = replaceHolders(args, placeholder);
 
           length -= argsHolders.length;
@@ -43882,6 +43997,20 @@ angular.module('ui.router.state')
         return fn.apply(thisBinding, args);
       }
       return wrapper;
+    }
+
+    /**
+     * Creates a function like `_.invertBy`.
+     *
+     * @private
+     * @param {Function} setter The function to set accumulator values.
+     * @param {Function} toIteratee The function to resolve iteratees.
+     * @returns {Function} Returns the new inverter function.
+     */
+    function createInverter(setter, toIteratee) {
+      return function(object, iteratee) {
+        return baseInverter(object, setter, toIteratee(iteratee), {});
+      };
     }
 
     /**
@@ -44263,7 +44392,7 @@ angular.module('ui.router.state')
             equalFunc(convert(object), convert(other), customizer, bitmask | UNORDERED_COMPARE_FLAG);
 
         case symbolTag:
-          return !!_Symbol && (symbolValueOf.call(object) == symbolValueOf.call(other));
+          return !!Symbol && (symbolValueOf.call(object) == symbolValueOf.call(other));
       }
       return false;
     }
@@ -44283,7 +44412,6 @@ angular.module('ui.router.state')
      */
     function equalObjects(object, other, equalFunc, customizer, bitmask, stack) {
       var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
-          isUnordered = bitmask & UNORDERED_COMPARE_FLAG,
           objProps = keys(object),
           objLength = objProps.length,
           othProps = keys(other),
@@ -44295,8 +44423,7 @@ angular.module('ui.router.state')
       var index = objLength;
       while (index--) {
         var key = objProps[index];
-        if (!(isPartial ? key in other : baseHas(other, key)) ||
-            !(isUnordered || key == othProps[index])) {
+        if (!(isPartial ? key in other : baseHas(other, key))) {
           return false;
         }
       }
@@ -44366,7 +44493,7 @@ angular.module('ui.router.state')
     function getFuncName(func) {
       var result = (func.name + ''),
           array = realNames[result],
-          length = array ? array.length : 0;
+          length = hasOwnProperty.call(realNames, result) ? array.length : 0;
 
       while (length--) {
         var data = array[length],
@@ -44459,19 +44586,20 @@ angular.module('ui.router.state')
       return objectToString.call(value);
     }
 
-    // Fallback for IE 11 providing `toStringTag` values for maps and sets.
-    if ((Map && getTag(new Map) != mapTag) || (Set && getTag(new Set) != setTag)) {
+    // Fallback for IE 11 providing `toStringTag` values for maps, sets, and weakmaps.
+    if ((Map && getTag(new Map) != mapTag) ||
+        (Set && getTag(new Set) != setTag) ||
+        (WeakMap && getTag(new WeakMap) != weakMapTag)) {
       getTag = function(value) {
         var result = objectToString.call(value),
             Ctor = result == objectTag ? value.constructor : null,
             ctorString = typeof Ctor == 'function' ? funcToString.call(Ctor) : '';
 
         if (ctorString) {
-          if (ctorString == mapCtorString) {
-            return mapTag;
-          }
-          if (ctorString == setCtorString) {
-            return setTag;
+          switch (ctorString) {
+            case mapCtorString: return mapTag;
+            case setCtorString: return setTag;
+            case weakMapCtorString: return weakMapTag;
           }
         }
         return result;
@@ -44528,8 +44656,11 @@ angular.module('ui.router.state')
           result = hasFunc(object, path);
         }
       }
-      return result || (isLength(object && object.length) && isIndex(path, object.length) &&
-        (isArray(object) || isString(object) || isArguments(object)));
+      var length = object ? object.length : undefined;
+      return result || (
+        !!length && isLength(length) && isIndex(path, length) &&
+        (isArray(object) || isString(object) || isArguments(object))
+      );
     }
 
     /**
@@ -44559,6 +44690,9 @@ angular.module('ui.router.state')
      * @returns {Object} Returns the initialized clone.
      */
     function initCloneObject(object) {
+      if (isPrototype(object)) {
+        return {};
+      }
       var Ctor = object.constructor;
       return baseCreate(isFunction(Ctor) ? Ctor.prototype : undefined);
     }
@@ -44579,7 +44713,7 @@ angular.module('ui.router.state')
       var Ctor = object.constructor;
       switch (tag) {
         case arrayBufferTag:
-          return cloneBuffer(object);
+          return cloneArrayBuffer(object);
 
         case boolTag:
         case dateTag:
@@ -44618,13 +44752,15 @@ angular.module('ui.router.state')
      */
     function indexKeys(object) {
       var length = object ? object.length : undefined;
-      return (isLength(length) && (isArray(object) || isString(object) || isArguments(object)))
-        ? baseTimes(length, String)
-        : null;
+      if (isLength(length) &&
+          (isArray(object) || isString(object) || isArguments(object))) {
+        return baseTimes(length, String);
+      }
+      return null;
     }
 
     /**
-     * Checks if the provided arguments are from an iteratee call.
+     * Checks if the given arguments are from an iteratee call.
      *
      * @private
      * @param {*} value The potential iteratee value argument.
@@ -44807,9 +44943,9 @@ angular.module('ui.router.state')
     function mergeDefaults(objValue, srcValue, key, object, source, stack) {
       if (isObject(objValue) && isObject(srcValue)) {
         stack.set(srcValue, objValue);
-        baseMerge(objValue, srcValue, mergeDefaults, stack);
+        baseMerge(objValue, srcValue, undefined, mergeDefaults, stack);
       }
-      return objValue === undefined ? baseClone(srcValue) : objValue;
+      return objValue;
     }
 
     /**
@@ -45023,13 +45159,16 @@ angular.module('ui.router.state')
      * // => [1]
      */
     var concat = rest(function(array, values) {
+      if (!isArray(array)) {
+        array = array == null ? [] : [Object(array)];
+      }
       values = baseFlatten(values);
-      return arrayConcat(isArray(array) ? array : [Object(array)], values);
+      return arrayConcat(array, values);
     });
 
     /**
      * Creates an array of unique `array` values not included in the other
-     * provided arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+     * given arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -45066,7 +45205,7 @@ angular.module('ui.router.state')
      * _.differenceBy([3.1, 2.2, 1.3], [4.4, 2.5], Math.floor);
      * // => [3.1, 1.3]
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.differenceBy([{ 'x': 2 }, { 'x': 1 }], [{ 'x': 1 }], 'x');
      * // => [{ 'x': 2 }]
      */
@@ -45198,15 +45337,15 @@ angular.module('ui.router.state')
      * _.dropRightWhile(users, function(o) { return !o.active; });
      * // => objects for ['barney']
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.dropRightWhile(users, { 'user': 'pebbles', 'active': false });
      * // => objects for ['barney', 'fred']
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.dropRightWhile(users, ['active', false]);
      * // => objects for ['barney']
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.dropRightWhile(users, 'active');
      * // => objects for ['barney', 'fred', 'pebbles']
      */
@@ -45238,15 +45377,15 @@ angular.module('ui.router.state')
      * _.dropWhile(users, function(o) { return !o.active; });
      * // => objects for ['pebbles']
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.dropWhile(users, { 'user': 'barney', 'active': false });
      * // => objects for ['fred', 'pebbles']
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.dropWhile(users, ['active', false]);
      * // => objects for ['pebbles']
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.dropWhile(users, 'active');
      * // => objects for ['barney', 'fred', 'pebbles']
      */
@@ -45317,15 +45456,15 @@ angular.module('ui.router.state')
      * _.findIndex(users, function(o) { return o.user == 'barney'; });
      * // => 0
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.findIndex(users, { 'user': 'fred', 'active': false });
      * // => 1
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.findIndex(users, ['active', false]);
      * // => 0
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.findIndex(users, 'active');
      * // => 2
      */
@@ -45356,15 +45495,15 @@ angular.module('ui.router.state')
      * _.findLastIndex(users, function(o) { return o.user == 'pebbles'; });
      * // => 2
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.findLastIndex(users, { 'user': 'barney', 'active': true });
      * // => 0
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.findLastIndex(users, ['active', false]);
      * // => 2
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.findLastIndex(users, 'active');
      * // => 0
      */
@@ -45372,31 +45511,6 @@ angular.module('ui.router.state')
       return (array && array.length)
         ? baseFindIndex(array, getIteratee(predicate, 3), true)
         : -1;
-    }
-
-    /**
-     * Creates an array of flattened values by running each element in `array`
-     * through `iteratee` and concating its result to the other mapped values.
-     * The iteratee is invoked with three arguments: (value, index|key, array).
-     *
-     * @static
-     * @memberOf _
-     * @category Array
-     * @param {Array} array The array to iterate over.
-     * @param {Function|Object|string} [iteratee=_.identity] The function invoked per iteration.
-     * @returns {Array} Returns the new array.
-     * @example
-     *
-     * function duplicate(n) {
-     *   return [n, n];
-     * }
-     *
-     * _.flatMap([1, 2], duplicate);
-     * // => [1, 1, 2, 2]
-     */
-    function flatMap(array, iteratee) {
-      var length = array ? array.length : 0;
-      return length ? baseFlatten(arrayMap(array, getIteratee(iteratee, 3))) : [];
     }
 
     /**
@@ -45456,7 +45570,7 @@ angular.module('ui.router.state')
 
       while (++index < length) {
         var pair = pairs[index];
-        baseSet(result, pair[0], pair[1]);
+        result[pair[0]] = pair[1];
       }
       return result;
     }
@@ -45486,8 +45600,7 @@ angular.module('ui.router.state')
      * Gets the index at which the first occurrence of `value` is found in `array`
      * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons. If `fromIndex` is negative, it's used as the offset
-     * from the end of `array`. If `array` is sorted providing `true` for `fromIndex`
-     * performs a faster binary search.
+     * from the end of `array`.
      *
      * @static
      * @memberOf _
@@ -45501,7 +45614,7 @@ angular.module('ui.router.state')
      * _.indexOf([1, 2, 1, 2], 2);
      * // => 1
      *
-     * // using `fromIndex`
+     * // Search from the `fromIndex`.
      * _.indexOf([1, 2, 1, 2], 2, 2);
      * // => 3
      */
@@ -45535,8 +45648,8 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Creates an array of unique values that are included in all of the provided
-     * arrays using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+     * Creates an array of unique values that are included in all given arrays
+     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -45545,6 +45658,7 @@ angular.module('ui.router.state')
      * @param {...Array} [arrays] The arrays to inspect.
      * @returns {Array} Returns the new array of shared values.
      * @example
+     *
      * _.intersection([2, 1], [4, 2], [1, 2]);
      * // => [2]
      */
@@ -45571,7 +45685,7 @@ angular.module('ui.router.state')
      * _.intersectionBy([2.1, 1.2], [4.3, 2.4], Math.floor);
      * // => [2.1]
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.intersectionBy([{ 'x': 1 }], [{ 'x': 2 }, { 'x': 1 }], 'x');
      * // => [{ 'x': 1 }]
      */
@@ -45674,7 +45788,7 @@ angular.module('ui.router.state')
      * _.lastIndexOf([1, 2, 1, 2], 2);
      * // => 3
      *
-     * // using `fromIndex`
+     * // Search from the `fromIndex`.
      * _.lastIndexOf([1, 2, 1, 2], 2, 2);
      * // => 1
      */
@@ -45700,7 +45814,7 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Removes all provided values from `array` using
+     * Removes all given values from `array` using
      * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
@@ -45737,7 +45851,7 @@ angular.module('ui.router.state')
      *
      * var array = [1, 2, 3, 1, 2, 3];
      *
-     * _.pull(array, [2, 3]);
+     * _.pullAll(array, [2, 3]);
      * console.log(array);
      * // => [1, 1]
      */
@@ -45749,7 +45863,7 @@ angular.module('ui.router.state')
 
     /**
      * This method is like `_.pullAll` except that it accepts `iteratee` which is
-     * invoked for each element of `array` and `values` to to generate the criterion
+     * invoked for each element of `array` and `values` to generate the criterion
      * by which uniqueness is computed. The iteratee is invoked with one argument: (value).
      *
      * **Note:** Unlike `_.differenceBy`, this method mutates `array`.
@@ -45861,6 +45975,7 @@ angular.module('ui.router.state')
      * **Note:** This method mutates `array` and is based on
      * [`Array#reverse`](https://mdn.io/Array/reverse).
      *
+     * @static
      * @memberOf _
      * @category Array
      * @returns {Array} Returns `array`.
@@ -45949,7 +46064,7 @@ angular.module('ui.router.state')
      * _.sortedIndexBy(['thirty', 'fifty'], 'forty', _.propertyOf(dict));
      * // => 1
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.sortedIndexBy([{ 'x': 4 }, { 'x': 5 }], { 'x': 4 }, 'x');
      * // => 0
      */
@@ -46017,7 +46132,7 @@ angular.module('ui.router.state')
      * @returns {number} Returns the index at which `value` should be inserted into `array`.
      * @example
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.sortedLastIndexBy([{ 'x': 4 }, { 'x': 5 }], { 'x': 4 }, 'x');
      * // => 1
      */
@@ -46084,7 +46199,7 @@ angular.module('ui.router.state')
      * @example
      *
      * _.sortedUniqBy([1.1, 1.2, 2.3, 2.4], Math.floor);
-     * // => [1.1, 2.2]
+     * // => [1.1, 2.3]
      */
     function sortedUniqBy(array, iteratee) {
       return (array && array.length)
@@ -46197,15 +46312,15 @@ angular.module('ui.router.state')
      * _.takeRightWhile(users, function(o) { return !o.active; });
      * // => objects for ['fred', 'pebbles']
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.takeRightWhile(users, { 'user': 'pebbles', 'active': false });
      * // => objects for ['pebbles']
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.takeRightWhile(users, ['active', false]);
      * // => objects for ['fred', 'pebbles']
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.takeRightWhile(users, 'active');
      * // => []
      */
@@ -46237,15 +46352,15 @@ angular.module('ui.router.state')
      * _.takeWhile(users, function(o) { return !o.active; });
      * // => objects for ['barney', 'fred']
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.takeWhile(users, { 'user': 'barney', 'active': false });
      * // => objects for ['barney']
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.takeWhile(users, ['active', false]);
      * // => objects for ['barney', 'fred']
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.takeWhile(users, 'active');
      * // => []
      */
@@ -46256,8 +46371,8 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Creates an array of unique values, in order, from all of the provided arrays
-     * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
+     * Creates an array of unique values, in order, from all given arrays using
+     * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
      * @static
@@ -46290,7 +46405,7 @@ angular.module('ui.router.state')
      * _.unionBy([2.1, 1.2], [4.3, 2.4], Math.floor);
      * // => [2.1, 1.2, 4.3]
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.unionBy([{ 'x': 1 }], [{ 'x': 2 }, { 'x': 1 }], 'x');
      * // => [{ 'x': 1 }, { 'x': 2 }]
      */
@@ -46367,7 +46482,7 @@ angular.module('ui.router.state')
      * _.uniqBy([2.1, 1.2, 2.3], Math.floor);
      * // => [2.1, 1.2]
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.uniqBy([{ 'x': 1 }, { 'x': 2 }, { 'x': 1 }], 'x');
      * // => [{ 'x': 1 }, { 'x': 2 }]
      */
@@ -46468,7 +46583,7 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Creates an array excluding all provided values using
+     * Creates an array excluding all given values using
      * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
      * for equality comparisons.
      *
@@ -46491,7 +46606,7 @@ angular.module('ui.router.state')
 
     /**
      * Creates an array of unique values that is the [symmetric difference](https://en.wikipedia.org/wiki/Symmetric_difference)
-     * of the provided arrays.
+     * of the given arrays.
      *
      * @static
      * @memberOf _
@@ -46523,7 +46638,7 @@ angular.module('ui.router.state')
      * _.xorBy([2.1, 1.2], [4.3, 2.4], Math.floor);
      * // => [1.2, 4.3]
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.xorBy([{ 'x': 1 }], [{ 'x': 2 }, { 'x': 1 }], 'x');
      * // => [{ 'x': 2 }]
      */
@@ -46591,19 +46706,29 @@ angular.module('ui.router.state')
      * @returns {Object} Returns the new object.
      * @example
      *
-     * _.zipObject(['fred', 'barney'], [30, 40]);
-     * // => { 'fred': 30, 'barney': 40 }
+     * _.zipObject(['a', 'b'], [1, 2]);
+     * // => { 'a': 1, 'b': 2 }
      */
     function zipObject(props, values) {
-      var index = -1,
-          length = props ? props.length : 0,
-          valsLength = values ? values.length : 0,
-          result = {};
+      return baseZipObject(props || [], values || [], assignValue);
+    }
 
-      while (++index < length) {
-        baseSet(result, props[index], index < valsLength ? values[index] : undefined);
-      }
-      return result;
+    /**
+     * This method is like `_.zipObject` except that it supports property paths.
+     *
+     * @static
+     * @memberOf _
+     * @category Array
+     * @param {Array} [props=[]] The property names.
+     * @param {Array} [values=[]] The property values.
+     * @returns {Object} Returns the new object.
+     * @example
+     *
+     * _.zipObjectDeep(['a.b[0].c', 'a.b[1].d'], [1, 2]);
+     * // => { 'a': { 'b': [{ 'c': 1 }, { 'd': 2 }] } }
+     */
+    function zipObjectDeep(props, values) {
+      return baseZipObject(props || [], values || [], baseSet);
     }
 
     /**
@@ -46668,10 +46793,9 @@ angular.module('ui.router.state')
     }
 
     /**
-     * This method invokes `interceptor` and returns `value`. The interceptor is
-     * invoked with one argument; (value). The purpose of this method is to "tap into"
-     * a method chain in order to perform operations on intermediate results within
-     * the chain.
+     * This method invokes `interceptor` and returns `value`. The interceptor
+     * is invoked with one argument; (value). The purpose of this method is to
+     * "tap into" a method chain in order to modify intermediate results.
      *
      * @static
      * @memberOf _
@@ -46683,6 +46807,7 @@ angular.module('ui.router.state')
      *
      * _([1, 2, 3])
      *  .tap(function(array) {
+     *    // Mutate input array.
      *    array.pop();
      *  })
      *  .reverse()
@@ -46696,6 +46821,8 @@ angular.module('ui.router.state')
 
     /**
      * This method is like `_.tap` except that it returns the result of `interceptor`.
+     * The purpose of this method is to "pass thru" values replacing intermediate
+     * results in a method chain.
      *
      * @static
      * @memberOf _
@@ -46771,11 +46898,11 @@ angular.module('ui.router.state')
      *   { 'user': 'fred',   'age': 40 }
      * ];
      *
-     * // without explicit chaining
+     * // A sequence without explicit chaining.
      * _(users).head();
      * // => { 'user': 'barney', 'age': 36 }
      *
-     * // with explicit chaining
+     * // A sequence with explicit chaining.
      * _(users)
      *   .chain()
      *   .head()
@@ -46819,7 +46946,7 @@ angular.module('ui.router.state')
     /**
      * This method is the wrapper version of `_.flatMap`.
      *
-     * @static
+     * @name flatMap
      * @memberOf _
      * @category Seq
      * @param {Function|Object|string} [iteratee=_.identity] The function invoked per iteration.
@@ -46970,7 +47097,7 @@ angular.module('ui.router.state')
      *
      * @name value
      * @memberOf _
-     * @alias run, toJSON, valueOf
+     * @alias toJSON, valueOf
      * @category Seq
      * @returns {*} Returns the resolved unwrapped value.
      * @example
@@ -46994,7 +47121,7 @@ angular.module('ui.router.state')
      * @memberOf _
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function|Object|string} [iteratee=_.identity] The iteratee invoked per element.
+     * @param {Function|Object|string} [iteratee=_.identity] The iteratee to transform keys.
      * @returns {Object} Returns the composed aggregate object.
      * @example
      *
@@ -47030,15 +47157,15 @@ angular.module('ui.router.state')
      *   { 'user': 'fred',   'active': false }
      * ];
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.every(users, { 'user': 'barney', 'active': false });
      * // => false
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.every(users, ['active', false]);
      * // => true
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.every(users, 'active');
      * // => false
      */
@@ -47071,15 +47198,15 @@ angular.module('ui.router.state')
      * _.filter(users, function(o) { return !o.active; });
      * // => objects for ['fred']
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.filter(users, { 'age': 36, 'active': true });
      * // => objects for ['barney']
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.filter(users, ['active', false]);
      * // => objects for ['fred']
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.filter(users, 'active');
      * // => objects for ['barney']
      */
@@ -47110,15 +47237,15 @@ angular.module('ui.router.state')
      * _.find(users, function(o) { return o.age < 40; });
      * // => object for 'barney'
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.find(users, { 'age': 1, 'active': true });
      * // => object for 'pebbles'
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.find(users, ['active', false]);
      * // => object for 'fred'
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.find(users, 'active');
      * // => object for 'barney'
      */
@@ -47155,6 +47282,30 @@ angular.module('ui.router.state')
         return index > -1 ? collection[index] : undefined;
       }
       return baseFind(collection, predicate, baseEachRight);
+    }
+
+    /**
+     * Creates an array of flattened values by running each element in `collection`
+     * through `iteratee` and concating its result to the other mapped values.
+     * The iteratee is invoked with three arguments: (value, index|key, collection).
+     *
+     * @static
+     * @memberOf _
+     * @category Collection
+     * @param {Array|Object} collection The collection to iterate over.
+     * @param {Function|Object|string} [iteratee=_.identity] The function invoked per iteration.
+     * @returns {Array} Returns the new flattened array.
+     * @example
+     *
+     * function duplicate(n) {
+     *   return [n, n];
+     * }
+     *
+     * _.flatMap([1, 2], duplicate);
+     * // => [1, 1, 2, 2]
+     */
+    function flatMap(collection, iteratee) {
+      return baseFlatten(map(collection, iteratee));
     }
 
     /**
@@ -47218,21 +47369,21 @@ angular.module('ui.router.state')
     /**
      * Creates an object composed of keys generated from the results of running
      * each element of `collection` through `iteratee`. The corresponding value
-     * of each key is an array of the elements responsible for generating the key.
+     * of each key is an array of elements responsible for generating the key.
      * The iteratee is invoked with one argument: (value).
      *
      * @static
      * @memberOf _
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function|Object|string} [iteratee=_.identity] The iteratee invoked per element.
+     * @param {Function|Object|string} [iteratee=_.identity] The iteratee to transform keys.
      * @returns {Object} Returns the composed aggregate object.
      * @example
      *
      * _.groupBy([6.1, 4.2, 6.3], Math.floor);
      * // => { '4': [4.2], '6': [6.1, 6.3] }
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.groupBy(['one', 'two', 'three'], 'length');
      * // => { '3': ['one', 'two'], '5': ['three'] }
      */
@@ -47330,22 +47481,22 @@ angular.module('ui.router.state')
      * @memberOf _
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function|Object|string} [iteratee=_.identity] The iteratee invoked per element.
+     * @param {Function|Object|string} [iteratee=_.identity] The iteratee to transform keys.
      * @returns {Object} Returns the composed aggregate object.
      * @example
      *
-     * var keyData = [
+     * var array = [
      *   { 'dir': 'left', 'code': 97 },
      *   { 'dir': 'right', 'code': 100 }
      * ];
      *
-     * _.keyBy(keyData, 'dir');
-     * // => { 'left': { 'dir': 'left', 'code': 97 }, 'right': { 'dir': 'right', 'code': 100 } }
-     *
-     * _.keyBy(keyData, function(o) {
+     * _.keyBy(array, function(o) {
      *   return String.fromCharCode(o.code);
      * });
      * // => { 'a': { 'dir': 'left', 'code': 97 }, 'd': { 'dir': 'right', 'code': 100 } }
+     *
+     * _.keyBy(array, 'dir');
+     * // => { 'left': { 'dir': 'left', 'code': 97 }, 'right': { 'dir': 'right', 'code': 100 } }
      */
     var keyBy = createAggregator(function(result, value, key) {
       result[key] = value;
@@ -47377,18 +47528,18 @@ angular.module('ui.router.state')
      *   return n * n;
      * }
      *
-     * _.map([1, 2], square);
-     * // => [3, 6]
+     * _.map([4, 8], square);
+     * // => [16, 64]
      *
-     * _.map({ 'a': 1, 'b': 2 }, square);
-     * // => [3, 6] (iteration order is not guaranteed)
+     * _.map({ 'a': 4, 'b': 8 }, square);
+     * // => [16, 64] (iteration order is not guaranteed)
      *
      * var users = [
      *   { 'user': 'barney' },
      *   { 'user': 'fred' }
      * ];
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.map(users, 'user');
      * // => ['barney', 'fred']
      */
@@ -47420,7 +47571,7 @@ angular.module('ui.router.state')
      *   { 'user': 'barney', 'age': 36 }
      * ];
      *
-     * // sort by `user` in ascending order and by `age` in descending order
+     * // Sort by `user` in ascending order and by `age` in descending order.
      * _.orderBy(users, ['user', 'age'], ['asc', 'desc']);
      * // => objects for [['barney', 36], ['barney', 34], ['fred', 48], ['fred', 42]]
      */
@@ -47440,9 +47591,9 @@ angular.module('ui.router.state')
 
     /**
      * Creates an array of elements split into two groups, the first of which
-     * contains elements `predicate` returns truthy for, while the second of which
-     * contains elements `predicate` returns falsey for. The predicate is invoked
-     * with three arguments: (value, index|key, collection).
+     * contains elements `predicate` returns truthy for, the second of which
+     * contains elements `predicate` returns falsey for. The predicate is
+     * invoked with one argument: (value).
      *
      * @static
      * @memberOf _
@@ -47461,15 +47612,15 @@ angular.module('ui.router.state')
      * _.partition(users, function(o) { return o.active; });
      * // => objects for [['fred'], ['barney', 'pebbles']]
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.partition(users, { 'age': 1, 'active': false });
      * // => objects for [['pebbles'], ['barney', 'fred']]
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.partition(users, ['active', false]);
      * // => objects for [['barney', 'pebbles'], ['fred']]
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.partition(users, 'active');
      * // => objects for [['fred'], ['barney', 'pebbles']]
      */
@@ -47481,7 +47632,7 @@ angular.module('ui.router.state')
      * Reduces `collection` to a value which is the accumulated result of running
      * each element in `collection` through `iteratee`, where each successive
      * invocation is supplied the return value of the previous. If `accumulator`
-     * is not provided the first element of `collection` is used as the initial
+     * is not given the first element of `collection` is used as the initial
      * value. The iteratee is invoked with four arguments:
      * (accumulator, value, index|key, collection).
      *
@@ -47503,7 +47654,7 @@ angular.module('ui.router.state')
      *
      * _.reduce([1, 2], function(sum, n) {
      *   return sum + n;
-     * });
+     * }, 0);
      * // => 3
      *
      * _.reduce({ 'a': 1, 'b': 2, 'c': 1 }, function(result, value, key) {
@@ -47514,9 +47665,9 @@ angular.module('ui.router.state')
      */
     function reduce(collection, iteratee, accumulator) {
       var func = isArray(collection) ? arrayReduce : baseReduce,
-          initFromCollection = arguments.length < 3;
+          initAccum = arguments.length < 3;
 
-      return func(collection, getIteratee(iteratee, 4), accumulator, initFromCollection, baseEach);
+      return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEach);
     }
 
     /**
@@ -47541,9 +47692,9 @@ angular.module('ui.router.state')
      */
     function reduceRight(collection, iteratee, accumulator) {
       var func = isArray(collection) ? arrayReduceRight : baseReduce,
-          initFromCollection = arguments.length < 3;
+          initAccum = arguments.length < 3;
 
-      return func(collection, getIteratee(iteratee, 4), accumulator, initFromCollection, baseEachRight);
+      return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEachRight);
     }
 
     /**
@@ -47566,15 +47717,15 @@ angular.module('ui.router.state')
      * _.reject(users, function(o) { return !o.active; });
      * // => objects for ['fred']
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.reject(users, { 'age': 40, 'active': true });
      * // => objects for ['barney']
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.reject(users, ['active', false]);
      * // => objects for ['fred']
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.reject(users, 'active');
      * // => objects for ['barney']
      */
@@ -47607,7 +47758,8 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Gets `n` random elements from `collection`.
+     * Gets `n` random elements at unique keys from `collection` up to the
+     * size of `collection`.
      *
      * @static
      * @memberOf _
@@ -47617,8 +47769,11 @@ angular.module('ui.router.state')
      * @returns {Array} Returns the random elements.
      * @example
      *
-     * _.sampleSize([1, 2, 3, 4], 2);
+     * _.sampleSize([1, 2, 3], 2);
      * // => [3, 1]
+     *
+     * _.sampleSize([1, 2, 3], 4);
+     * // => [2, 3, 1]
      */
     function sampleSize(collection, n) {
       var index = -1,
@@ -47709,15 +47864,15 @@ angular.module('ui.router.state')
      *   { 'user': 'fred',   'active': false }
      * ];
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.some(users, { 'user': 'barney', 'active': false });
      * // => false
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.some(users, ['active', false]);
      * // => true
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.some(users, 'active');
      * // => true
      */
@@ -47917,7 +48072,7 @@ angular.module('ui.router.state')
      * bound('!');
      * // => 'hi fred!'
      *
-     * // using placeholders
+     * // Bound with placeholders.
      * var bound = _.bind(greet, object, _, '!');
      * bound('hi');
      * // => 'hi fred!'
@@ -47925,7 +48080,9 @@ angular.module('ui.router.state')
     var bind = rest(function(func, thisArg, partials) {
       var bitmask = BIND_FLAG;
       if (partials.length) {
-        var holders = replaceHolders(partials, bind.placeholder);
+        var placeholder = lodash.placeholder || bind.placeholder,
+            holders = replaceHolders(partials, placeholder);
+
         bitmask |= PARTIAL_FLAG;
       }
       return createWrapper(func, bitmask, thisArg, partials, holders);
@@ -47970,7 +48127,7 @@ angular.module('ui.router.state')
      * bound('!');
      * // => 'hiya fred!'
      *
-     * // using placeholders
+     * // Bound with placeholders.
      * var bound = _.bindKey(object, 'greet', _, '!');
      * bound('hi');
      * // => 'hiya fred!'
@@ -47978,7 +48135,9 @@ angular.module('ui.router.state')
     var bindKey = rest(function(object, key, partials) {
       var bitmask = BIND_FLAG | BIND_KEY_FLAG;
       if (partials.length) {
-        var holders = replaceHolders(partials, bindKey.placeholder);
+        var placeholder = lodash.placeholder || bindKey.placeholder,
+            holders = replaceHolders(partials, placeholder);
+
         bitmask |= PARTIAL_FLAG;
       }
       return createWrapper(key, bitmask, object, partials, holders);
@@ -48020,14 +48179,14 @@ angular.module('ui.router.state')
      * curried(1, 2, 3);
      * // => [1, 2, 3]
      *
-     * // using placeholders
+     * // Curried with placeholders.
      * curried(1)(_, 3)(2);
      * // => [1, 2, 3]
      */
     function curry(func, arity, guard) {
       arity = guard ? undefined : arity;
       var result = createWrapper(func, CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
-      result.placeholder = curry.placeholder;
+      result.placeholder = lodash.placeholder || curry.placeholder;
       return result;
     }
 
@@ -48064,14 +48223,14 @@ angular.module('ui.router.state')
      * curried(1, 2, 3);
      * // => [1, 2, 3]
      *
-     * // using placeholders
+     * // Curried with placeholders.
      * curried(3)(1, _)(2);
      * // => [1, 2, 3]
      */
     function curryRight(func, arity, guard) {
       arity = guard ? undefined : arity;
       var result = createWrapper(func, CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
-      result.placeholder = curryRight.placeholder;
+      result.placeholder = lodash.placeholder || curryRight.placeholder;
       return result;
     }
 
@@ -48086,7 +48245,7 @@ angular.module('ui.router.state')
      * to the debounced function return the result of the last `func` invocation.
      *
      * **Note:** If `leading` and `trailing` options are `true`, `func` is invoked
-     * on the trailing edge of the timeout only if the the debounced function is
+     * on the trailing edge of the timeout only if the debounced function is
      * invoked more than once during the `wait` timeout.
      *
      * See [David Corbacho's article](http://drupalmotion.com/article/debounce-and-throttle-visual-explanation)
@@ -48107,21 +48266,21 @@ angular.module('ui.router.state')
      * @returns {Function} Returns the new debounced function.
      * @example
      *
-     * // avoid costly calculations while the window size is in flux
+     * // Avoid costly calculations while the window size is in flux.
      * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
      *
-     * // invoke `sendMail` when clicked, debouncing subsequent calls
+     * // Invoke `sendMail` when clicked, debouncing subsequent calls.
      * jQuery(element).on('click', _.debounce(sendMail, 300, {
      *   'leading': true,
      *   'trailing': false
      * }));
      *
-     * // ensure `batchLog` is invoked once after 1 second of debounced calls
+     * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
      * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
      * var source = new EventSource('/stream');
      * jQuery(source).on('message', debounced);
      *
-     * // cancel a trailing debounced invocation
+     * // Cancel the trailing debounced invocation.
      * jQuery(window).on('popstate', debounced.cancel);
      */
     function debounce(func, wait, options) {
@@ -48202,7 +48361,7 @@ angular.module('ui.router.state')
         if (maxWait === false) {
           var leadingCall = leading && !timeoutId;
         } else {
-          if (!maxTimeoutId && !leading) {
+          if (!lastCalled && !maxTimeoutId && !leading) {
             lastCalled = stamp;
           }
           var remaining = maxWait - (stamp - lastCalled),
@@ -48254,7 +48413,7 @@ angular.module('ui.router.state')
      * _.defer(function(text) {
      *   console.log(text);
      * }, 'deferred');
-     * // logs 'deferred' after one or more milliseconds
+     * // => logs 'deferred' after one or more milliseconds
      */
     var defer = rest(function(func, args) {
       return baseDelay(func, 1, args);
@@ -48337,12 +48496,12 @@ angular.module('ui.router.state')
      * values(object);
      * // => [1, 2]
      *
-     * // modifying the result cache
+     * // Modify the result cache.
      * values.cache.set(object, ['a', 'b']);
      * values(object);
      * // => ['a', 'b']
      *
-     * // replacing `_.memoize.Cache`
+     * // Replace `_.memoize.Cache`.
      * _.memoize.Cache = WeakMap;
      */
     function memoize(func, resolver) {
@@ -48487,13 +48646,15 @@ angular.module('ui.router.state')
      * sayHelloTo('fred');
      * // => 'hello fred'
      *
-     * // using placeholders
+     * // Partially applied with placeholders.
      * var greetFred = _.partial(greet, _, 'fred');
      * greetFred('hi');
      * // => 'hi fred'
      */
     var partial = rest(function(func, partials) {
-      var holders = replaceHolders(partials, partial.placeholder);
+      var placeholder = lodash.placeholder || partial.placeholder,
+          holders = replaceHolders(partials, placeholder);
+
       return createWrapper(func, PARTIAL_FLAG, undefined, partials, holders);
     });
 
@@ -48523,13 +48684,15 @@ angular.module('ui.router.state')
      * greetFred('hi');
      * // => 'hi fred'
      *
-     * // using placeholders
+     * // Partially applied with placeholders.
      * var sayHelloTo = _.partialRight(greet, 'hello', _);
      * sayHelloTo('fred');
      * // => 'hello fred'
      */
     var partialRight = rest(function(func, partials) {
-      var holders = replaceHolders(partials, partialRight.placeholder);
+      var placeholder = lodash.placeholder || partialRight.placeholder,
+          holders = replaceHolders(partials, placeholder);
+
       return createWrapper(func, PARTIAL_RIGHT_FLAG, undefined, partials, holders);
     });
 
@@ -48620,6 +48783,7 @@ angular.module('ui.router.state')
      * @memberOf _
      * @category Function
      * @param {Function} func The function to spread arguments over.
+     * @param {number} [start=0] The start position of the spread.
      * @returns {Function} Returns the new function.
      * @example
      *
@@ -48630,7 +48794,6 @@ angular.module('ui.router.state')
      * say(['fred', 'hello']);
      * // => 'fred says hello'
      *
-     * // with a Promise
      * var numbers = Promise.all([
      *   Promise.resolve(40),
      *   Promise.resolve(36)
@@ -48641,13 +48804,20 @@ angular.module('ui.router.state')
      * }));
      * // => a Promise of 76
      */
-    function spread(func) {
+    function spread(func, start) {
       if (typeof func != 'function') {
         throw new TypeError(FUNC_ERROR_TEXT);
       }
-      return function(array) {
-        return apply(func, this, array);
-      };
+      start = start === undefined ? 0 : nativeMax(toInteger(start), 0);
+      return rest(function(args) {
+        var array = args[start],
+            otherArgs = args.slice(0, start);
+
+        if (array) {
+          arrayPush(otherArgs, array);
+        }
+        return apply(func, this, otherArgs);
+      });
     }
 
     /**
@@ -48661,7 +48831,7 @@ angular.module('ui.router.state')
      * result of the last `func` invocation.
      *
      * **Note:** If `leading` and `trailing` options are `true`, `func` is invoked
-     * on the trailing edge of the timeout only if the the throttled function is
+     * on the trailing edge of the timeout only if the throttled function is
      * invoked more than once during the `wait` timeout.
      *
      * See [David Corbacho's article](http://drupalmotion.com/article/debounce-and-throttle-visual-explanation)
@@ -48680,14 +48850,14 @@ angular.module('ui.router.state')
      * @returns {Function} Returns the new throttled function.
      * @example
      *
-     * // avoid excessively updating the position while scrolling
+     * // Avoid excessively updating the position while scrolling.
      * jQuery(window).on('scroll', _.throttle(updatePosition, 100));
      *
-     * // invoke `renewToken` when the click event is fired, but not more than once every 5 minutes
+     * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
      * var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
      * jQuery(element).on('click', throttled);
      *
-     * // cancel a trailing throttled invocation
+     * // Cancel the trailing throttled invocation.
      * jQuery(window).on('popstate', throttled.cancel);
      */
     function throttle(func, wait, options) {
@@ -48782,7 +48952,7 @@ angular.module('ui.router.state')
      * This method is like `_.clone` except that it accepts `customizer` which
      * is invoked to produce the cloned value. If `customizer` returns `undefined`
      * cloning is handled by the method instead. The `customizer` is invoked with
-     * up to five arguments; (value [, index|key, object, stack]).
+     * up to four arguments; (value [, index|key, object, stack]).
      *
      * @static
      * @memberOf _
@@ -48798,7 +48968,7 @@ angular.module('ui.router.state')
      *   }
      * }
      *
-     * var el = _.clone(document.body, customizer);
+     * var el = _.cloneWith(document.body, customizer);
      *
      * console.log(el === document.body);
      * // => false
@@ -48848,7 +49018,7 @@ angular.module('ui.router.state')
      *   }
      * }
      *
-     * var el = _.cloneDeep(document.body, customizer);
+     * var el = _.cloneDeepWith(document.body, customizer);
      *
      * console.log(el === document.body);
      * // => false
@@ -48991,6 +49161,27 @@ angular.module('ui.router.state')
     var isArray = Array.isArray;
 
     /**
+     * Checks if `value` is classified as an `ArrayBuffer` object.
+     *
+     * @static
+     * @memberOf _
+     * @type Function
+     * @category Lang
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+     * @example
+     *
+     * _.isArrayBuffer(new ArrayBuffer(2));
+     * // => true
+     *
+     * _.isArrayBuffer(new Array(2));
+     * // => false
+     */
+    function isArrayBuffer(value) {
+      return isObjectLike(value) && objectToString.call(value) == arrayBufferTag;
+    }
+
+    /**
      * Checks if `value` is array-like. A value is considered array-like if it's
      * not a function and has a `value.length` that's an integer greater than or
      * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
@@ -49070,6 +49261,26 @@ angular.module('ui.router.state')
     }
 
     /**
+     * Checks if `value` is a buffer.
+     *
+     * @static
+     * @memberOf _
+     * @category Lang
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+     * @example
+     *
+     * _.isBuffer(new Buffer(2));
+     * // => true
+     *
+     * _.isBuffer(new Uint8Array(2));
+     * // => false
+     */
+    var isBuffer = !Buffer ? constant(false) : function(value) {
+      return value instanceof Buffer;
+    };
+
+    /**
      * Checks if `value` is classified as a `Date` object.
      *
      * @static
@@ -49137,9 +49348,16 @@ angular.module('ui.router.state')
      * // => false
      */
     function isEmpty(value) {
-      return (!isObjectLike(value) || isFunction(value.splice))
-        ? !size(value)
-        : !keys(value).length;
+      if (isArrayLike(value) &&
+          (isArray(value) || isString(value) || isFunction(value.splice) || isArguments(value))) {
+        return !value.length;
+      }
+      for (var key in value) {
+        if (hasOwnProperty.call(value, key)) {
+          return false;
+        }
+      }
+      return true;
     }
 
     /**
@@ -49176,7 +49394,7 @@ angular.module('ui.router.state')
     /**
      * This method is like `_.isEqual` except that it accepts `customizer` which is
      * invoked to compare values. If `customizer` returns `undefined` comparisons are
-     * handled by the method instead. The `customizer` is invoked with up to seven arguments:
+     * handled by the method instead. The `customizer` is invoked with up to six arguments:
      * (objValue, othValue [, index|key, object, other, stack]).
      *
      * @static
@@ -49364,8 +49582,6 @@ angular.module('ui.router.state')
      * // => false
      */
     function isObject(value) {
-      // Avoid a V8 JIT bug in Chrome 19-20.
-      // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
       var type = typeof value;
       return !!value && (type == 'object' || type == 'function');
     }
@@ -49398,6 +49614,26 @@ angular.module('ui.router.state')
     }
 
     /**
+     * Checks if `value` is classified as a `Map` object.
+     *
+     * @static
+     * @memberOf _
+     * @category Lang
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+     * @example
+     *
+     * _.isMap(new Map);
+     * // => true
+     *
+     * _.isMap(new WeakMap);
+     * // => false
+     */
+    function isMap(value) {
+      return isObjectLike(value) && getTag(value) == mapTag;
+    }
+
+    /**
      * Performs a deep comparison between `object` and `source` to determine if
      * `object` contains equivalent property values.
      *
@@ -49426,7 +49662,7 @@ angular.module('ui.router.state')
     /**
      * This method is like `_.isMatch` except that it accepts `customizer` which
      * is invoked to compare values. If `customizer` returns `undefined` comparisons
-     * are handled by the method instead. The `customizer` is invoked with three
+     * are handled by the method instead. The `customizer` is invoked with five
      * arguments: (objValue, srcValue, index|key, object, source).
      *
      * @static
@@ -49683,6 +49919,26 @@ angular.module('ui.router.state')
     }
 
     /**
+     * Checks if `value` is classified as a `Set` object.
+     *
+     * @static
+     * @memberOf _
+     * @category Lang
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+     * @example
+     *
+     * _.isSet(new Set);
+     * // => true
+     *
+     * _.isSet(new WeakSet);
+     * // => false
+     */
+    function isSet(value) {
+      return isObjectLike(value) && getTag(value) == setTag;
+    }
+
+    /**
      * Checks if `value` is classified as a `String` primitive or object.
      *
      * @static
@@ -49762,6 +50018,46 @@ angular.module('ui.router.state')
      */
     function isUndefined(value) {
       return value === undefined;
+    }
+
+    /**
+     * Checks if `value` is classified as a `WeakMap` object.
+     *
+     * @static
+     * @memberOf _
+     * @category Lang
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+     * @example
+     *
+     * _.isWeakMap(new WeakMap);
+     * // => true
+     *
+     * _.isWeakMap(new Map);
+     * // => false
+     */
+    function isWeakMap(value) {
+      return isObjectLike(value) && getTag(value) == weakMapTag;
+    }
+
+    /**
+     * Checks if `value` is classified as a `WeakSet` object.
+     *
+     * @static
+     * @memberOf _
+     * @category Lang
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+     * @example
+     *
+     * _.isWeakSet(new WeakSet);
+     * // => true
+     *
+     * _.isWeakSet(new Set);
+     * // => false
+     */
+    function isWeakSet(value) {
+      return isObjectLike(value) && objectToString.call(value) == weakSetTag;
     }
 
     /**
@@ -49897,7 +50193,7 @@ angular.module('ui.router.state')
      * @memberOf _
      * @category Lang
      * @param {*} value The value to convert.
-     * @return {number} Returns the converted integer.
+     * @returns {number} Returns the converted integer.
      * @example
      *
      * _.toLength(3);
@@ -50036,7 +50332,7 @@ angular.module('ui.router.state')
         return '';
       }
       if (isSymbol(value)) {
-        return _Symbol ? symbolToString.call(value) : '';
+        return Symbol ? symbolToString.call(value) : '';
       }
       var result = (value + '');
       return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
@@ -50138,7 +50434,7 @@ angular.module('ui.router.state')
      * defaults({ 'a': 1 }, { 'b': 2 }, { 'a': 3 });
      * // => { 'a': 1, 'b': 2 }
      */
-    var assignInWith = createAssigner(function(object, source, customizer) {
+    var assignInWith = createAssigner(function(object, source, srcIndex, customizer) {
       copyObjectWith(source, keysIn(source), object, customizer);
     });
 
@@ -50168,7 +50464,7 @@ angular.module('ui.router.state')
      * defaults({ 'a': 1 }, { 'b': 2 }, { 'a': 3 });
      * // => { 'a': 1, 'b': 2 }
      */
-    var assignWith = createAssigner(function(object, source, customizer) {
+    var assignWith = createAssigner(function(object, source, srcIndex, customizer) {
       copyObjectWith(source, keys(source), object, customizer);
     });
 
@@ -50198,7 +50494,7 @@ angular.module('ui.router.state')
 
     /**
      * Creates an object that inherits from the `prototype` object. If a `properties`
-     * object is provided its own enumerable properties are assigned to the created object.
+     * object is given its own enumerable properties are assigned to the created object.
      *
      * @static
      * @memberOf _
@@ -50301,15 +50597,15 @@ angular.module('ui.router.state')
      * _.findKey(users, function(o) { return o.age < 40; });
      * // => 'barney' (iteration order is not guaranteed)
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.findKey(users, { 'age': 1, 'active': true });
      * // => 'pebbles'
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.findKey(users, ['active', false]);
      * // => 'fred'
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.findKey(users, 'active');
      * // => 'barney'
      */
@@ -50338,15 +50634,15 @@ angular.module('ui.router.state')
      * _.findLastKey(users, function(o) { return o.age < 40; });
      * // => returns 'pebbles' assuming `_.findKey` returns 'barney'
      *
-     * // using the `_.matches` iteratee shorthand
+     * // The `_.matches` iteratee shorthand.
      * _.findLastKey(users, { 'age': 36, 'active': true });
      * // => 'barney'
      *
-     * // using the `_.matchesProperty` iteratee shorthand
+     * // The `_.matchesProperty` iteratee shorthand.
      * _.findLastKey(users, ['active', false]);
      * // => 'fred'
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.findLastKey(users, 'active');
      * // => 'pebbles'
      */
@@ -50611,14 +50907,12 @@ angular.module('ui.router.state')
     /**
      * Creates an object composed of the inverted keys and values of `object`.
      * If `object` contains duplicate values, subsequent values overwrite property
-     * assignments of previous values unless `multiVal` is `true`.
+     * assignments of previous values.
      *
      * @static
      * @memberOf _
      * @category Object
      * @param {Object} object The object to invert.
-     * @param {boolean} [multiVal] Allow multiple values per key.
-     * @param- {Object} [guard] Enables use as an iteratee for functions like `_.map`.
      * @returns {Object} Returns the new inverted object.
      * @example
      *
@@ -50626,27 +50920,43 @@ angular.module('ui.router.state')
      *
      * _.invert(object);
      * // => { '1': 'c', '2': 'b' }
-     *
-     * // with `multiVal`
-     * _.invert(object, true);
-     * // => { '1': ['a', 'c'], '2': ['b'] }
      */
-    function invert(object, multiVal, guard) {
-      return arrayReduce(keys(object), function(result, key) {
-        var value = object[key];
-        if (multiVal && !guard) {
-          if (hasOwnProperty.call(result, value)) {
-            result[value].push(key);
-          } else {
-            result[value] = [key];
-          }
-        }
-        else {
-          result[value] = key;
-        }
-        return result;
-      }, {});
-    }
+    var invert = createInverter(function(result, value, key) {
+      result[value] = key;
+    }, constant(identity));
+
+    /**
+     * This method is like `_.invert` except that the inverted object is generated
+     * from the results of running each element of `object` through `iteratee`.
+     * The corresponding inverted value of each inverted key is an array of keys
+     * responsible for generating the inverted value. The iteratee is invoked
+     * with one argument: (value).
+     *
+     * @static
+     * @memberOf _
+     * @category Object
+     * @param {Object} object The object to invert.
+     * @param {Function|Object|string} [iteratee=_.identity] The iteratee invoked per element.
+     * @returns {Object} Returns the new inverted object.
+     * @example
+     *
+     * var object = { 'a': 1, 'b': 2, 'c': 1 };
+     *
+     * _.invertBy(object);
+     * // => { '1': ['a', 'c'], '2': ['b'] }
+     *
+     * _.invertBy(object, function(value) {
+     *   return 'group' + value;
+     * });
+     * // => { 'group1': ['a', 'c'], 'group2': ['b'] }
+     */
+    var invertBy = createInverter(function(result, value, key) {
+      if (hasOwnProperty.call(result, value)) {
+        result[value].push(key);
+      } else {
+        result[value] = [key];
+      }
+    }, getIteratee);
 
     /**
      * Invokes the method at `path` of `object`.
@@ -50805,7 +51115,7 @@ angular.module('ui.router.state')
      * _.mapValues(users, function(o) { return o.age; });
      * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.mapValues(users, 'age');
      * // => { 'fred': 40, 'pebbles': 1 } (iteration order is not guaranteed)
      */
@@ -50848,8 +51158,8 @@ angular.module('ui.router.state')
      * _.merge(users, ages);
      * // => { 'data': [{ 'user': 'barney', 'age': 36 }, { 'user': 'fred', 'age': 40 }] }
      */
-    var merge = createAssigner(function(object, source) {
-      baseMerge(object, source);
+    var merge = createAssigner(function(object, source, srcIndex) {
+      baseMerge(object, source, srcIndex);
     });
 
     /**
@@ -50858,6 +51168,8 @@ angular.module('ui.router.state')
      * properties. If `customizer` returns `undefined` merging is handled by the
      * method instead. The `customizer` is invoked with seven arguments:
      * (objValue, srcValue, key, object, source, stack).
+     *
+     * **Note:** This method mutates `object`.
      *
      * @static
      * @memberOf _
@@ -50887,8 +51199,8 @@ angular.module('ui.router.state')
      * _.mergeWith(object, other, customizer);
      * // => { 'fruits': ['apple', 'banana'], 'vegetables': ['beet', 'carrot'] }
      */
-    var mergeWith = createAssigner(function(object, source, customizer) {
-      baseMerge(object, source, customizer);
+    var mergeWith = createAssigner(function(object, source, srcIndex, customizer) {
+      baseMerge(object, source, srcIndex, customizer);
     });
 
     /**
@@ -50936,9 +51248,9 @@ angular.module('ui.router.state')
      * // => { 'b': '2' }
      */
     function omitBy(object, predicate) {
-      predicate = getIteratee(predicate);
-      return basePickBy(object, function(value) {
-        return !predicate(value);
+      predicate = getIteratee(predicate, 2);
+      return basePickBy(object, function(value, key) {
+        return !predicate(value, key);
       });
     }
 
@@ -50965,7 +51277,7 @@ angular.module('ui.router.state')
 
     /**
      * Creates an object composed of the `object` properties `predicate` returns
-     * truthy for. The predicate is invoked with one argument: (value).
+     * truthy for. The predicate is invoked with two arguments: (value, key).
      *
      * @static
      * @memberOf _
@@ -50981,7 +51293,7 @@ angular.module('ui.router.state')
      * // => { 'a': 1, 'c': 3 }
      */
     function pickBy(object, predicate) {
-      return object == null ? {} : basePickBy(object, getIteratee(predicate));
+      return object == null ? {} : basePickBy(object, getIteratee(predicate, 2));
     }
 
     /**
@@ -51032,6 +51344,8 @@ angular.module('ui.router.state')
      * are created for all other missing properties. Use `_.setWith` to customize
      * `path` creation.
      *
+     * **Note:** This method mutates `object`.
+     *
      * @static
      * @memberOf _
      * @category Object
@@ -51060,6 +51374,8 @@ angular.module('ui.router.state')
      * invoked to produce the objects of `path`.  If `customizer` returns `undefined`
      * path creation is handled by the method instead. The `customizer` is invoked
      * with three arguments: (nsValue, key, nsObject).
+     *
+     * **Note:** This method mutates `object`.
      *
      * @static
      * @memberOf _
@@ -51147,12 +51463,12 @@ angular.module('ui.router.state')
      * _.transform([2, 3, 4], function(result, n) {
      *   result.push(n *= n);
      *   return n % 2 == 0;
-     * });
+     * }, []);
      * // => [4, 9]
      *
      * _.transform({ 'a': 1, 'b': 2, 'c': 1 }, function(result, value, key) {
      *   (result[value] || (result[value] = [])).push(key);
-     * });
+     * }, {});
      * // => { '1': ['a', 'c'], '2': ['b'] }
      */
     function transform(object, iteratee, accumulator) {
@@ -51179,6 +51495,8 @@ angular.module('ui.router.state')
 
     /**
      * Removes the property at `path` of `object`.
+     *
+     * **Note:** This method mutates `object`.
      *
      * @static
      * @memberOf _
@@ -51748,7 +52066,7 @@ angular.module('ui.router.state')
      * `undefined` or `0`, a `radix` of `10` is used unless `value` is a hexadecimal,
      * in which case a `radix` of `16` is used.
      *
-     * **Note:** This method aligns with the [ES5 implementation](https://es5.github.io/#E)
+     * **Note:** This method aligns with the [ES5 implementation](https://es5.github.io/#x15.1.2.2)
      * of `parseInt`.
      *
      * @static
@@ -51942,7 +52260,7 @@ angular.module('ui.router.state')
      * in "interpolate" delimiters, HTML-escape interpolated data properties in
      * "escape" delimiters, and execute JavaScript in "evaluate" delimiters. Data
      * properties may be accessed as free variables in the template. If a setting
-     * object is provided it takes precedence over `_.templateSettings` values.
+     * object is given it takes precedence over `_.templateSettings` values.
      *
      * **Note:** In the development build `_.template` utilizes
      * [sourceURLs](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/#toc-sourceurl)
@@ -51969,54 +52287,54 @@ angular.module('ui.router.state')
      * @returns {Function} Returns the compiled template function.
      * @example
      *
-     * // using the "interpolate" delimiter to create a compiled template
+     * // Use the "interpolate" delimiter to create a compiled template.
      * var compiled = _.template('hello <%= user %>!');
      * compiled({ 'user': 'fred' });
      * // => 'hello fred!'
      *
-     * // using the HTML "escape" delimiter to escape data property values
+     * // Use the HTML "escape" delimiter to escape data property values.
      * var compiled = _.template('<b><%- value %></b>');
      * compiled({ 'value': '<script>' });
      * // => '<b>&lt;script&gt;</b>'
      *
-     * // using the "evaluate" delimiter to execute JavaScript and generate HTML
+     * // Use the "evaluate" delimiter to execute JavaScript and generate HTML.
      * var compiled = _.template('<% _.forEach(users, function(user) { %><li><%- user %></li><% }); %>');
      * compiled({ 'users': ['fred', 'barney'] });
      * // => '<li>fred</li><li>barney</li>'
      *
-     * // using the internal `print` function in "evaluate" delimiters
+     * // Use the internal `print` function in "evaluate" delimiters.
      * var compiled = _.template('<% print("hello " + user); %>!');
      * compiled({ 'user': 'barney' });
      * // => 'hello barney!'
      *
-     * // using the ES delimiter as an alternative to the default "interpolate" delimiter
+     * // Use the ES delimiter as an alternative to the default "interpolate" delimiter.
      * var compiled = _.template('hello ${ user }!');
      * compiled({ 'user': 'pebbles' });
      * // => 'hello pebbles!'
      *
-     * // using custom template delimiters
+     * // Use custom template delimiters.
      * _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
      * var compiled = _.template('hello {{ user }}!');
      * compiled({ 'user': 'mustache' });
      * // => 'hello mustache!'
      *
-     * // using backslashes to treat delimiters as plain text
+     * // Use backslashes to treat delimiters as plain text.
      * var compiled = _.template('<%= "\\<%- value %\\>" %>');
      * compiled({ 'value': 'ignored' });
      * // => '<%- value %>'
      *
-     * // using the `imports` option to import `jQuery` as `jq`
+     * // Use the `imports` option to import `jQuery` as `jq`.
      * var text = '<% jq.each(users, function(user) { %><li><%- user %></li><% }); %>';
      * var compiled = _.template(text, { 'imports': { 'jq': jQuery } });
      * compiled({ 'users': ['fred', 'barney'] });
      * // => '<li>fred</li><li>barney</li>'
      *
-     * // using the `sourceURL` option to specify a custom sourceURL for the template
+     * // Use the `sourceURL` option to specify a custom sourceURL for the template.
      * var compiled = _.template('hello <%= user %>!', { 'sourceURL': '/basic/greeting.jst' });
      * compiled(data);
      * // => find the source of "greeting.jst" under the Sources tab or Resources panel of the web inspector
      *
-     * // using the `variable` option to ensure a with-statement isn't used in the compiled template
+     * // Use the `variable` option to ensure a with-statement isn't used in the compiled template.
      * var compiled = _.template('hi <%= data.user %>!', { 'variable': 'data' });
      * compiled.source;
      * // => function(data) {
@@ -52025,8 +52343,8 @@ angular.module('ui.router.state')
      * //   return __p;
      * // }
      *
-     * // using the `source` property to inline compiled templates for meaningful
-     * // line numbers in error messages and a stack trace
+     * // Use the `source` property to inline compiled templates for meaningful
+     * // line numbers in error messages and stack traces.
      * fs.writeFileSync(path.join(cwd, 'jst.js'), '\
      *   var JST = {\
      *     "main": ' + _.template(mainText).source + '\
@@ -52473,7 +52791,7 @@ angular.module('ui.router.state')
      * @returns {*} Returns the `func` result or error object.
      * @example
      *
-     * // avoid throwing errors for invalid selectors
+     * // Avoid throwing errors for invalid selectors.
      * var elements = _.attempt(function(selector) {
      *   return document.querySelectorAll(selector);
      * }, '>_>');
@@ -52486,7 +52804,7 @@ angular.module('ui.router.state')
       try {
         return apply(func, undefined, args);
       } catch (e) {
-        return isError(e) ? e : new Error(e);
+        return isObject(e) ? e : new Error(e);
       }
     });
 
@@ -52540,7 +52858,7 @@ angular.module('ui.router.state')
      *   [_.matches({ 'a': 1 }),           _.constant('matches A')],
      *   [_.conforms({ 'b': _.isNumber }), _.constant('matches B')],
      *   [_.constant(true),                _.constant('no match')]
-     * ])
+     * ]);
      *
      * func({ 'a': 1, 'b': 2 });
      * // => 'matches A'
@@ -52620,9 +52938,9 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Creates a function that returns the result of invoking the provided
-     * functions with the `this` binding of the created function, where each
-     * successive invocation is supplied the return value of the previous.
+     * Creates a function that returns the result of invoking the given functions
+     * with the `this` binding of the created function, where each successive
+     * invocation is supplied the return value of the previous.
      *
      * @static
      * @memberOf _
@@ -52643,7 +52961,7 @@ angular.module('ui.router.state')
 
     /**
      * This method is like `_.flow` except that it creates a function that
-     * invokes the provided functions from right to left.
+     * invokes the given functions from right to left.
      *
      * @static
      * @memberOf _
@@ -52663,7 +52981,7 @@ angular.module('ui.router.state')
     var flowRight = createFlow(true);
 
     /**
-     * This method returns the first argument provided to it.
+     * This method returns the first argument given to it.
      *
      * @static
      * @memberOf _
@@ -52699,7 +53017,7 @@ angular.module('ui.router.state')
      *   { 'user': 'fred',   'age': 40 }
      * ];
      *
-     * // create custom iteratee shorthands
+     * // Create custom iteratee shorthands.
      * _.iteratee = _.wrap(_.iteratee, function(callback, func) {
      *   var p = /^(\S+)\s*([<>])\s*(\S+)$/.exec(func);
      *   return !p ? callback(func) : function(object) {
@@ -52711,9 +53029,7 @@ angular.module('ui.router.state')
      * // => [{ 'user': 'fred', 'age': 40 }]
      */
     function iteratee(func) {
-      return (isObjectLike(func) && !isArray(func))
-        ? matches(func)
-        : baseIteratee(func);
+      return baseIteratee(typeof func == 'function' ? func : baseClone(func, true));
     }
 
     /**
@@ -52911,7 +53227,9 @@ angular.module('ui.router.state')
      * var lodash = _.noConflict();
      */
     function noConflict() {
-      root._ = oldDash;
+      if (root._ === this) {
+        root._ = oldDash;
+      }
       return this;
     }
 
@@ -53076,8 +53394,7 @@ angular.module('ui.router.state')
      * Creates an array of numbers (positive and/or negative) progressing from
      * `start` up to, but not including, `end`. A step of `-1` is used if a negative
      * `start` is specified without an `end` or `step`. If `end` is not specified
-     * it's set to `start` with `start` then set to `0`.  If `end` is less than
-     * `start` a zero-length range is created unless a negative `step` is specified.
+     * it's set to `start` with `start` then set to `0`.
      *
      * **Note:** JavaScript follows the IEEE-754 standard for resolving
      * floating-point values which can produce unexpected results.
@@ -53216,7 +53533,7 @@ angular.module('ui.router.state')
     }
 
     /**
-     * Generates a unique ID. If `prefix` is provided the ID is appended to it.
+     * Generates a unique ID. If `prefix` is given the ID is appended to it.
      *
      * @static
      * @memberOf _
@@ -53254,6 +53571,9 @@ angular.module('ui.router.state')
      */
     function add(augend, addend) {
       var result;
+      if (augend === undefined && addend === undefined) {
+        return 0;
+      }
       if (augend !== undefined) {
         result = augend;
       }
@@ -53345,10 +53665,10 @@ angular.module('ui.router.state')
      *
      * var objects = [{ 'n': 1 }, { 'n': 2 }];
      *
-     * _.maxBy(objects, function(o) { return o.a; });
+     * _.maxBy(objects, function(o) { return o.n; });
      * // => { 'n': 2 }
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.maxBy(objects, 'n');
      * // => { 'n': 2 }
      */
@@ -53413,10 +53733,10 @@ angular.module('ui.router.state')
      *
      * var objects = [{ 'n': 1 }, { 'n': 2 }];
      *
-     * _.minBy(objects, function(o) { return o.a; });
+     * _.minBy(objects, function(o) { return o.n; });
      * // => { 'n': 1 }
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.minBy(objects, 'n');
      * // => { 'n': 1 }
      */
@@ -53464,6 +53784,9 @@ angular.module('ui.router.state')
      */
     function subtract(minuend, subtrahend) {
       var result;
+      if (minuend === undefined && subtrahend === undefined) {
+        return 0;
+      }
       if (minuend !== undefined) {
         result = minuend;
       }
@@ -53489,7 +53812,7 @@ angular.module('ui.router.state')
     function sum(array) {
       return (array && array.length)
         ? baseSum(array, identity)
-        : undefined;
+        : 0;
     }
 
     /**
@@ -53510,14 +53833,14 @@ angular.module('ui.router.state')
      * _.sumBy(objects, function(o) { return o.n; });
      * // => 20
      *
-     * // using the `_.property` iteratee shorthand
+     * // The `_.property` iteratee shorthand.
      * _.sumBy(objects, 'n');
      * // => 20
      */
     function sumBy(array, iteratee) {
       return (array && array.length)
         ? baseSum(array, getIteratee(iteratee))
-        : undefined;
+        : 0;
     }
 
     /*------------------------------------------------------------------------*/
@@ -53606,6 +53929,7 @@ angular.module('ui.router.state')
     lodash.intersectionBy = intersectionBy;
     lodash.intersectionWith = intersectionWith;
     lodash.invert = invert;
+    lodash.invertBy = invertBy;
     lodash.invokeMap = invokeMap;
     lodash.iteratee = iteratee;
     lodash.keyBy = keyBy;
@@ -53694,11 +54018,10 @@ angular.module('ui.router.state')
     lodash.xorWith = xorWith;
     lodash.zip = zip;
     lodash.zipObject = zipObject;
+    lodash.zipObjectDeep = zipObjectDeep;
     lodash.zipWith = zipWith;
 
     // Add aliases.
-    lodash.each = forEach;
-    lodash.eachRight = forEachRight;
     lodash.extend = assignIn;
     lodash.extendWith = assignInWith;
 
@@ -53750,9 +54073,11 @@ angular.module('ui.router.state')
     lodash.invoke = invoke;
     lodash.isArguments = isArguments;
     lodash.isArray = isArray;
+    lodash.isArrayBuffer = isArrayBuffer;
     lodash.isArrayLike = isArrayLike;
     lodash.isArrayLikeObject = isArrayLikeObject;
     lodash.isBoolean = isBoolean;
+    lodash.isBuffer = isBuffer;
     lodash.isDate = isDate;
     lodash.isElement = isElement;
     lodash.isEmpty = isEmpty;
@@ -53763,6 +54088,7 @@ angular.module('ui.router.state')
     lodash.isFunction = isFunction;
     lodash.isInteger = isInteger;
     lodash.isLength = isLength;
+    lodash.isMap = isMap;
     lodash.isMatch = isMatch;
     lodash.isMatchWith = isMatchWith;
     lodash.isNaN = isNaN;
@@ -53775,10 +54101,13 @@ angular.module('ui.router.state')
     lodash.isPlainObject = isPlainObject;
     lodash.isRegExp = isRegExp;
     lodash.isSafeInteger = isSafeInteger;
+    lodash.isSet = isSet;
     lodash.isString = isString;
     lodash.isSymbol = isSymbol;
     lodash.isTypedArray = isTypedArray;
     lodash.isUndefined = isUndefined;
+    lodash.isWeakMap = isWeakMap;
+    lodash.isWeakSet = isWeakSet;
     lodash.join = join;
     lodash.kebabCase = kebabCase;
     lodash.last = last;
@@ -53841,6 +54170,8 @@ angular.module('ui.router.state')
     lodash.upperFirst = upperFirst;
 
     // Add aliases.
+    lodash.each = forEach;
+    lodash.eachRight = forEachRight;
     lodash.first = head;
 
     mixin(lodash, (function() {
@@ -57715,6 +58046,6 @@ angular.module('ui.router.state')
 
 }));
 ;
-/*! Raven.js 2.1.0 (9ca11cd) | github.com/getsentry/raven-js */
-!function(a){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=a();else if("function"==typeof define&&define.amd)define([],a);else{var b;b="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self?self:this,b.Raven=a()}}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);var j=new Error("Cannot find module '"+g+"'");throw j.code="MODULE_NOT_FOUND",j}var k=c[g]={exports:{}};b[g][0].call(k.exports,function(a){var c=b[g][1][a];return e(c?c:a)},k,k.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b,c){"use strict";function d(a){this.name="RavenConfigError",this.message=a}d.prototype=new Error,d.prototype.constructor=d,b.exports=d},{}],2:[function(a,b,c){"use strict";function d(){return+new Date}function e(){this._hasJSON=!("object"!=typeof JSON||!JSON.stringify),this._hasDocument="undefined"!=typeof document,this._lastCapturedException=null,this._lastEventId=null,this._globalServer=null,this._globalKey=null,this._globalProject=null,this._globalContext={},this._globalOptions={logger:"javascript",ignoreErrors:[],ignoreUrls:[],whitelistUrls:[],includePaths:[],crossOrigin:"anonymous",collectWindowErrors:!0,maxMessageLength:0,stackTraceLimit:50},this._ignoreOnError=0,this._isRavenInstalled=!1,this._originalErrorStackTraceLimit=Error.stackTraceLimit,this._originalConsole=window.console||{},this._originalConsoleMethods={},this._plugins=[],this._startTime=d(),this._wrappedBuiltIns=[];for(var a in this._originalConsole)this._originalConsoleMethods[a]=this._originalConsole[a]}var f=a("../vendor/TraceKit/tracekit"),g=a("./configError"),h=a("./utils"),i=h.isFunction,j=h.isUndefined,k=h.isError,l=h.isEmptyObject,m=h.hasKey,n=h.joinRegExp,o=h.each,p=h.objectMerge,q=h.truncate,r=h.urlencode,s=h.uuid4,t="source protocol user pass host port path".split(" "),u=/^(?:(\w+):)?\/\/(?:(\w+)(:\w+)?@)?([\w\.-]+)(?::(\d+))?(\/.*)/;e.prototype={VERSION:"2.1.0",debug:!1,TraceKit:f,config:function(a,b){var c=this;if(this._globalServer)return this._logDebug("error","Error: Raven has already been configured"),this;if(!a)return this;var d=this._parseDSN(a),e=d.path.lastIndexOf("/"),g=d.path.substr(1,e);return b&&o(b,function(a,b){"tags"===a||"extra"===a?c._globalContext[a]=b:c._globalOptions[a]=b}),this._dsn=a,this._globalOptions.ignoreErrors.push(/^Script error\.?$/),this._globalOptions.ignoreErrors.push(/^Javascript error: Script error\.? on line 0$/),this._globalOptions.ignoreErrors=n(this._globalOptions.ignoreErrors),this._globalOptions.ignoreUrls=this._globalOptions.ignoreUrls.length?n(this._globalOptions.ignoreUrls):!1,this._globalOptions.whitelistUrls=this._globalOptions.whitelistUrls.length?n(this._globalOptions.whitelistUrls):!1,this._globalOptions.includePaths=n(this._globalOptions.includePaths),this._globalKey=d.user,this._globalProject=d.path.substr(e+1),this._globalServer=this._getGlobalServer(d),this._globalEndpoint=this._globalServer+"/"+g+"api/"+this._globalProject+"/store/",this._globalOptions.fetchContext&&(f.remoteFetching=!0),this._globalOptions.linesOfContext&&(f.linesOfContext=this._globalOptions.linesOfContext),f.collectWindowErrors=!!this._globalOptions.collectWindowErrors,this},install:function(){var a=this;return this.isSetup()&&!this._isRavenInstalled&&(f.report.subscribe(function(){a._handleOnErrorStackInfo.apply(a,arguments)}),this._wrapBuiltIns(),this._drainPlugins(),this._isRavenInstalled=!0),Error.stackTraceLimit=this._globalOptions.stackTraceLimit,this},context:function(a,b,c){return i(a)&&(c=b||[],b=a,a=void 0),this.wrap(a,b).apply(this,c)},wrap:function(a,b){function c(){for(var c=[],e=arguments.length,f=!a||a&&a.deep!==!1;e--;)c[e]=f?d.wrap(a,arguments[e]):arguments[e];try{return b.apply(this,c)}catch(g){throw d._ignoreNextOnError(),d.captureException(g,a),g}}var d=this;if(j(b)&&!i(a))return a;if(i(a)&&(b=a,a=void 0),!i(b))return b;if(b.__raven__)return b;if(b.__raven_wrapper__)return b.__raven_wrapper__;for(var e in b)m(b,e)&&(c[e]=b[e]);return b.__raven_wrapper__=c,c.prototype=b.prototype,c.__raven__=!0,c.__inner__=b,c},uninstall:function(){return f.report.uninstall(),this._restoreBuiltIns(),Error.stackTraceLimit=this._originalErrorStackTraceLimit,this._isRavenInstalled=!1,this},captureException:function(a,b){if(!k(a))return this.captureMessage(a,b);this._lastCapturedException=a;try{var c=f.computeStackTrace(a);this._handleStackInfo(c,b)}catch(d){if(a!==d)throw d}return this},captureMessage:function(a,b){return this._globalOptions.ignoreErrors.test&&this._globalOptions.ignoreErrors.test(a)?void 0:(this._send(p({message:a+""},b)),this)},addPlugin:function(a){var b=Array.prototype.slice.call(arguments,1);return this._plugins.push([a,b]),this._isRavenInstalled&&this._drainPlugins(),this},setUserContext:function(a){return this._globalContext.user=a,this},setExtraContext:function(a){return this._mergeContext("extra",a),this},setTagsContext:function(a){return this._mergeContext("tags",a),this},clearContext:function(){return this._globalContext={},this},getContext:function(){return JSON.parse(JSON.stringify(this._globalContext))},setRelease:function(a){return this._globalOptions.release=a,this},setDataCallback:function(a){return this._globalOptions.dataCallback=a,this},setShouldSendCallback:function(a){return this._globalOptions.shouldSendCallback=a,this},setTransport:function(a){return this._globalOptions.transport=a,this},lastException:function(){return this._lastCapturedException},lastEventId:function(){return this._lastEventId},isSetup:function(){return this._hasJSON?this._globalServer?!0:(this.ravenNotConfiguredError||(this.ravenNotConfiguredError=!0,this._logDebug("error","Error: Raven has not been configured.")),!1):!1},afterLoad:function(){var a=window.RavenConfig;a&&this.config(a.dsn,a.config).install()},showReportDialog:function(a){if(window.document){a=a||{};var b=a.eventId||this.lastEventId();if(!b)throw new g("Missing eventId");var c=a.dsn||this._dsn;if(!c)throw new g("Missing DSN");var d=encodeURIComponent,e="";e+="?eventId="+d(b),e+="&dsn="+d(c);var f=a.user||this._globalContext.user;f&&(f.name&&(e+="&name="+d(f.name)),f.email&&(e+="&email="+d(f.email)));var h=this._getGlobalServer(this._parseDSN(c)),i=document.createElement("script");i.async=!0,i.src=h+"/api/embed/error-page/"+e,(document.head||document.body).appendChild(i)}},_ignoreNextOnError:function(){var a=this;this._ignoreOnError+=1,setTimeout(function(){a._ignoreOnError-=1})},_triggerEvent:function(a,b){var c,d;if(this._hasDocument){b=b||{},a="raven"+a.substr(0,1).toUpperCase()+a.substr(1),document.createEvent?(c=document.createEvent("HTMLEvents"),c.initEvent(a,!0,!0)):(c=document.createEventObject(),c.eventType=a);for(d in b)m(b,d)&&(c[d]=b[d]);if(document.createEvent)document.dispatchEvent(c);else try{document.fireEvent("on"+c.eventType.toLowerCase(),c)}catch(e){}}},_wrapBuiltIns:function(){function a(a,b,d,e){var f=a[b];a[b]=d(f),e||c._wrappedBuiltIns.push([a,b,f])}function b(a){return function(b,d){var e=[].slice.call(arguments),f=e[0];return i(f)&&(e[0]=c.wrap(f)),a.apply?a.apply(this,e):a(e[0],e[1])}}var c=this;a(window,"setTimeout",b),a(window,"setInterval",b),window.requestAnimationFrame&&a(window,"requestAnimationFrame",function(a){return function(b){return a(c.wrap(b))}}),"EventTarget Window Node ApplicationCache AudioTrackList ChannelMergerNode CryptoOperation EventSource FileReader HTMLUnknownElement IDBDatabase IDBRequest IDBTransaction KeyOperation MediaController MessagePort ModalWindow Notification SVGElementInstance Screen TextTrack TextTrackCue TextTrackList WebSocket WebSocketWorker Worker XMLHttpRequest XMLHttpRequestEventTarget XMLHttpRequestUpload".replace(/\w+/g,function(b){var d=window[b]&&window[b].prototype;d&&d.hasOwnProperty&&d.hasOwnProperty("addEventListener")&&(a(d,"addEventListener",function(a){return function(b,d,e,f){try{d&&d.handleEvent&&(d.handleEvent=c.wrap(d.handleEvent))}catch(g){}return a.call(this,b,c.wrap(d),e,f)}}),a(d,"removeEventListener",function(a){return function(b,c,d,e){return c=c&&(c.__raven_wrapper__?c.__raven_wrapper__:c),a.call(this,b,c,d,e)}}))}),"XMLHttpRequest"in window&&a(XMLHttpRequest.prototype,"send",function(b){return function(d){var e=this;return"onreadystatechange onload onerror onprogress".replace(/\w+/g,function(b){b in e&&"[object Function]"===Object.prototype.toString.call(e[b])&&a(e,b,function(a){return c.wrap(a)},!0)}),b.apply(this,arguments)}});var d=window.jQuery||window.$;d&&d.fn&&d.fn.ready&&a(d.fn,"ready",function(a){return function(b){return a.call(this,c.wrap(b))}})},_restoreBuiltIns:function(){for(var a;this._wrappedBuiltIns.length;){a=this._wrappedBuiltIns.shift();var b=a[0],c=a[1],d=a[2];b[c]=d}},_drainPlugins:function(){var a=this;o(this._plugins,function(b,c){var d=c[0],e=c[1];d.apply(a,[a].concat(e))})},_parseDSN:function(a){var b=u.exec(a),c={},d=7;try{for(;d--;)c[t[d]]=b[d]||""}catch(e){throw new g("Invalid DSN: "+a)}if(c.pass)throw new g("Do not specify your private key in the DSN!");return c},_getGlobalServer:function(a){var b="//"+a.host+(a.port?":"+a.port:"");return a.protocol&&(b=a.protocol+":"+b),b},_handleOnErrorStackInfo:function(){this._ignoreOnError||this._handleStackInfo.apply(this,arguments)},_handleStackInfo:function(a,b){var c=this,d=[];a.stack&&a.stack.length&&o(a.stack,function(a,b){var e=c._normalizeFrame(b);e&&d.push(e)}),this._triggerEvent("handle",{stackInfo:a,options:b}),this._processException(a.name,a.message,a.url,a.lineno,d.slice(0,this._globalOptions.stackTraceLimit),b)},_normalizeFrame:function(a){if(a.url){var b,c={filename:a.url,lineno:a.line,colno:a.column,"function":a.func||"?"},d=this._extractContextFromFrame(a);if(d){var e=["pre_context","context_line","post_context"];for(b=3;b--;)c[e[b]]=d[b]}return c.in_app=!(this._globalOptions.includePaths.test&&!this._globalOptions.includePaths.test(c.filename)||/(Raven|TraceKit)\./.test(c["function"])||/raven\.(min\.)?js$/.test(c.filename)),c}},_extractContextFromFrame:function(a){if(a.context&&this._globalOptions.fetchContext){for(var b=a.context,c=~~(b.length/2),d=b.length,e=!1;d--;)if(b[d].length>300){e=!0;break}if(e){if(j(a.column))return;return[[],b[c].substr(a.column,50),[]]}return[b.slice(0,c),b[c],b.slice(c+1)]}},_processException:function(a,b,c,d,e,f){var g,h;if((!this._globalOptions.ignoreErrors.test||!this._globalOptions.ignoreErrors.test(b))&&(b+="",b=q(b,this._globalOptions.maxMessageLength),h=a+": "+b,h=q(h,this._globalOptions.maxMessageLength),e&&e.length?(c=e[0].filename||c,e.reverse(),g={frames:e}):c&&(g={frames:[{filename:c,lineno:d,in_app:!0}]}),(!this._globalOptions.ignoreUrls.test||!this._globalOptions.ignoreUrls.test(c))&&(!this._globalOptions.whitelistUrls.test||this._globalOptions.whitelistUrls.test(c)))){var i=p({exception:{values:[{type:a,value:b,stacktrace:g}]},culprit:c,message:h},f);this._send(i)}},_trimPacket:function(a){var b=this._globalOptions.maxMessageLength;if(a.message=q(a.message,b),a.exception){var c=a.exception.values[0];c.value=q(c.value,b)}return a},_getHttpData:function(){if(this._hasDocument&&document.location&&document.location.href){var a={headers:{"User-Agent":navigator.userAgent}};return a.url=document.location.href,document.referrer&&(a.headers.Referer=document.referrer),a}},_send:function(a){var b=this,c=this._globalOptions,e={project:this._globalProject,logger:c.logger,platform:"javascript"},f=this._getHttpData();if(f&&(e.request=f),a=p(e,a),a.tags=p(p({},this._globalContext.tags),a.tags),a.extra=p(p({},this._globalContext.extra),a.extra),a.extra["session:duration"]=d()-this._startTime,l(a.tags)&&delete a.tags,this._globalContext.user&&(a.user=this._globalContext.user),c.release&&(a.release=c.release),c.serverName&&(a.server_name=c.serverName),c.release&&(a.release=c.release),i(c.dataCallback)&&(a=c.dataCallback(a)||a),a&&!l(a)&&(!i(c.shouldSendCallback)||c.shouldSendCallback(a))&&(this._lastEventId=a.event_id||(a.event_id=s()),a=this._trimPacket(a),this._logDebug("debug","Raven about to send:",a),this.isSetup())){var g=this._globalEndpoint;(c.transport||this._makeRequest).call(this,{url:g,auth:{sentry_version:"7",sentry_client:"raven-js/"+this.VERSION,sentry_key:this._globalKey},data:a,options:c,onSuccess:function(){b._triggerEvent("success",{data:a,src:g})},onError:function(){b._triggerEvent("failure",{data:a,src:g})}})}},_makeImageRequest:function(a){a.auth.sentry_data=JSON.stringify(a.data);var b=this._newImage(),c=a.url+"?"+r(a.auth),d=a.options.crossOrigin;(d||""===d)&&(b.crossOrigin=d),b.onload=a.onSuccess,b.onerror=b.onabort=a.onError,b.src=c},_makeXhrRequest:function(a){function b(){200===c.status?a.onSuccess&&a.onSuccess():a.onError&&a.onError()}var c,d=a.url;c=new XMLHttpRequest,"withCredentials"in c?c.onreadystatechange=function(){4===c.readyState&&b()}:(c=new XDomainRequest,d=d.replace(/^https?:/,""),c.onload=b),c.open("POST",d+"?"+r(a.auth)),c.send(JSON.stringify(a.data))},_makeRequest:function(a){var b="withCredentials"in new XMLHttpRequest||"undefined"!=typeof XDomainRequest;return(b?this._makeXhrRequest:this._makeImageRequest)(a)},_newImage:function(){return document.createElement("img")},_logDebug:function(a){this._originalConsoleMethods[a]&&this.debug&&Function.prototype.apply.call(this._originalConsoleMethods[a],this._originalConsole,[].slice.call(arguments,1))},_mergeContext:function(a,b){j(b)?delete this._globalContext[a]:this._globalContext[a]=p(this._globalContext[a]||{},b)}},e.prototype.setUser=e.prototype.setUserContext,e.prototype.setReleaseContext=e.prototype.setRelease,b.exports=e},{"../vendor/TraceKit/tracekit":5,"./configError":1,"./utils":4}],3:[function(a,b,c){"use strict";var d=a("./raven"),e=window.Raven,f=new d;f.noConflict=function(){return window.Raven=e,f},f.afterLoad(),b.exports=f},{"./raven":2}],4:[function(a,b,c){"use strict";function d(a){return void 0===a}function e(a){return"function"==typeof a}function f(a){return"[object String]"===q.toString.call(a)}function g(a){return"object"==typeof a&&null!==a}function h(a){for(var b in a)return!1;return!0}function i(a){return g(a)&&"[object Error]"===q.toString.call(a)||a instanceof Error}function j(a,b){var c,e;if(d(a.length))for(c in a)m(a,c)&&b.call(null,c,a[c]);else if(e=a.length)for(c=0;e>c;c++)b.call(null,c,a[c])}function k(a,b){return b?(j(b,function(b,c){a[b]=c}),a):a}function l(a,b){return!b||a.length<=b?a:a.substr(0,b)+"…"}function m(a,b){return q.hasOwnProperty.call(a,b)}function n(a){for(var b,c=[],d=0,e=a.length;e>d;d++)b=a[d],f(b)?c.push(b.replace(/([.*+?^=!:${}()|\[\]\/\\])/g,"\\$1")):b&&b.source&&c.push(b.source);return new RegExp(c.join("|"),"i")}function o(a){var b=[];return j(a,function(a,c){b.push(encodeURIComponent(a)+"="+encodeURIComponent(c))}),b.join("&")}function p(){var a=window.crypto||window.msCrypto;if(!d(a)&&a.getRandomValues){var b=new Uint16Array(8);a.getRandomValues(b),b[3]=4095&b[3]|16384,b[4]=16383&b[4]|32768;var c=function(a){for(var b=a.toString(16);b.length<4;)b="0"+b;return b};return c(b[0])+c(b[1])+c(b[2])+c(b[3])+c(b[4])+c(b[5])+c(b[6])+c(b[7])}return"xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g,function(a){var b=16*Math.random()|0,c="x"===a?b:3&b|8;return c.toString(16)})}var q=Object.prototype;b.exports={isUndefined:d,isFunction:e,isString:f,isObject:g,isEmptyObject:h,isError:i,each:j,objectMerge:k,truncate:l,hasKey:m,joinRegExp:n,urlencode:o,uuid4:p}},{}],5:[function(a,b,c){"use strict";function d(){return"undefined"==typeof document?"":document.location.href}var e=a("../../src/utils"),f=e.hasKey,g=e.isString,h=e.isUndefined,i={remoteFetching:!1,collectWindowErrors:!0,linesOfContext:7,debug:!1},j=[].slice,k="?";i.report=function(){function a(a){h(),p.push(a)}function b(a){for(var b=p.length-1;b>=0;--b)p[b]===a&&p.splice(b,1)}function c(){k(),p=[]}function e(a,b){var c=null;if(!b||i.collectWindowErrors){for(var d in p)if(f(p,d))try{p[d].apply(null,[a].concat(j.call(arguments,2)))}catch(e){c=e}if(c)throw c}}function g(a,b,c,f,g){var h=null;if(s)i.computeStackTrace.augmentStackTraceWithInitialElement(s,b,c,a),l();else if(g)h=i.computeStackTrace(g),e(h,!0);else{var j={url:b,line:c,column:f};j.func=i.computeStackTrace.guessFunctionName(j.url,j.line),j.context=i.computeStackTrace.gatherContext(j.url,j.line),h={message:a,url:d(),stack:[j]},e(h,!0)}return n?n.apply(this,arguments):!1}function h(){o||(n=window.onerror,window.onerror=g,o=!0)}function k(){o&&(window.onerror=n,o=!1,n=void 0)}function l(){var a=s,b=q;q=null,s=null,r=null,e.apply(null,[a,!1].concat(b))}function m(a,b){var c=j.call(arguments,1);if(s){if(r===a)return;l()}var d=i.computeStackTrace(a);if(s=d,r=a,q=c,window.setTimeout(function(){r===a&&l()},d.incomplete?2e3:0),b!==!1)throw a}var n,o,p=[],q=null,r=null,s=null;return m.subscribe=a,m.unsubscribe=b,m.uninstall=c,m}(),i.computeStackTrace=function(){function a(a){if(!i.remoteFetching)return"";try{var b=function(){try{return new window.XMLHttpRequest}catch(a){return new window.ActiveXObject("Microsoft.XMLHTTP")}},c=b();return c.open("GET",a,!1),c.send(""),c.responseText}catch(d){return""}}function b(b){if(!g(b))return[];if(!f(v,b)){var c="",d="";try{d=document.domain}catch(e){}-1!==b.indexOf(d)&&(c=a(b)),v[b]=c?c.split("\n"):[]}return v[b]}function c(a,c){var d,e=/function ([^(]*)\(([^)]*)\)/,f=/['"]?([0-9A-Za-z$_]+)['"]?\s*[:=]\s*(function|eval|new Function)/,g="",i=10,j=b(a);if(!j.length)return k;for(var l=0;i>l;++l)if(g=j[c-l]+g,!h(g)){if(d=f.exec(g))return d[1];if(d=e.exec(g))return d[1]}return k}function e(a,c){var d=b(a);if(!d.length)return null;var e=[],f=Math.floor(i.linesOfContext/2),g=f+i.linesOfContext%2,j=Math.max(0,c-f-1),k=Math.min(d.length,c+g-1);c-=1;for(var l=j;k>l;++l)h(d[l])||e.push(d[l]);return e.length>0?e:null}function j(a){return a.replace(/[\-\[\]{}()*+?.,\\\^$|#]/g,"\\$&")}function l(a){return j(a).replace("<","(?:<|&lt;)").replace(">","(?:>|&gt;)").replace("&","(?:&|&amp;)").replace('"','(?:"|&quot;)').replace(/\s+/g,"\\s+")}function m(a,c){for(var d,e,f=0,g=c.length;g>f;++f)if((d=b(c[f])).length&&(d=d.join("\n"),e=a.exec(d)))return{url:c[f],line:d.substring(0,e.index).split("\n").length,column:e.index-d.lastIndexOf("\n",e.index)-1};return null}function n(a,c,d){var e,f=b(c),g=new RegExp("\\b"+j(a)+"\\b");return d-=1,f&&f.length>d&&(e=g.exec(f[d]))?e.index:null}function o(a){if("undefined"!=typeof document){for(var b,c,d,e,f=[window.location.href],g=document.getElementsByTagName("script"),h=""+a,i=/^function(?:\s+([\w$]+))?\s*\(([\w\s,]*)\)\s*\{\s*(\S[\s\S]*\S)\s*\}\s*$/,k=/^function on([\w$]+)\s*\(event\)\s*\{\s*(\S[\s\S]*\S)\s*\}\s*$/,n=0;n<g.length;++n){var o=g[n];o.src&&f.push(o.src)}if(d=i.exec(h)){var p=d[1]?"\\s+"+d[1]:"",q=d[2].split(",").join("\\s*,\\s*");b=j(d[3]).replace(/;$/,";?"),c=new RegExp("function"+p+"\\s*\\(\\s*"+q+"\\s*\\)\\s*{\\s*"+b+"\\s*}")}else c=new RegExp(j(h).replace(/\s+/g,"\\s+"));if(e=m(c,f))return e;if(d=k.exec(h)){var r=d[1];if(b=l(d[2]),c=new RegExp("on"+r+"=[\\'\"]\\s*"+b+"\\s*[\\'\"]","i"),e=m(c,f[0]))return e;if(c=new RegExp(b),e=m(c,f))return e}return null}}function p(a){if(!h(a.stack)&&a.stack){for(var b,f,g=/^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,i=/^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,j=/^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,l=a.stack.split("\n"),m=[],o=/^(.*) is undefined$/.exec(a.message),p=0,q=l.length;q>p;++p){if(b=g.exec(l[p])){var r=b[2]&&-1!==b[2].indexOf("native");f={url:r?null:b[2],func:b[1]||k,args:r?[b[2]]:[],line:b[3]?+b[3]:null,column:b[4]?+b[4]:null}}else if(b=j.exec(l[p]))f={url:b[2],func:b[1]||k,args:[],line:+b[3],column:b[4]?+b[4]:null};else{if(!(b=i.exec(l[p])))continue;f={url:b[3],func:b[1]||k,args:b[2]?b[2].split(","):[],line:b[4]?+b[4]:null,column:b[5]?+b[5]:null}}!f.func&&f.line&&(f.func=c(f.url,f.line)),f.line&&(f.context=e(f.url,f.line)),m.push(f)}return m.length?(m[0].line&&!m[0].column&&o?m[0].column=n(o[1],m[0].url,m[0].line):m[0].column||h(a.columnNumber)||(m[0].column=a.columnNumber+1),{name:a.name,message:a.message,url:d(),stack:m}):null}}function q(a){var b=a.stacktrace;if(!h(a.stacktrace)&&a.stacktrace){for(var f,g=/ line (\d+).*script (?:in )?(\S+)(?:: in function (\S+))?$/i,i=/ line (\d+), column (\d+)\s*(?:in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\))? in (.*):\s*$/i,j=b.split("\n"),k=[],l=0;l<j.length;l+=2){var m=null;if((f=g.exec(j[l]))?m={url:f[2],line:+f[1],column:null,func:f[3],args:[]}:(f=i.exec(j[l]))&&(m={url:f[6],line:+f[1],column:+f[2],func:f[3]||f[4],args:f[5]?f[5].split(","):[]}),m){if(!m.func&&m.line&&(m.func=c(m.url,m.line)),m.line)try{m.context=e(m.url,m.line)}catch(n){}m.context||(m.context=[j[l+1]]),k.push(m)}}return k.length?{name:a.name,message:a.message,url:d(),stack:k}:null}}function r(a){var g=a.message.split("\n");if(g.length<4)return null;var h,i=/^\s*Line (\d+) of linked script ((?:file|https?|blob)\S+)(?:: in function (\S+))?\s*$/i,j=/^\s*Line (\d+) of inline#(\d+) script in ((?:file|https?|blob)\S+)(?:: in function (\S+))?\s*$/i,k=/^\s*Line (\d+) of function script\s*$/i,n=[],o=document.getElementsByTagName("script"),p=[];for(var q in o)f(o,q)&&!o[q].src&&p.push(o[q]);for(var r=2;r<g.length;r+=2){var s=null;if(h=i.exec(g[r]))s={url:h[2],func:h[3],args:[],line:+h[1],column:null};else if(h=j.exec(g[r])){s={url:h[3],func:h[4],args:[],line:+h[1],column:null};var t=+h[1],u=p[h[2]-1];if(u){var v=b(s.url);if(v){v=v.join("\n");var w=v.indexOf(u.innerText);w>=0&&(s.line=t+v.substring(0,w).split("\n").length)}}}else if(h=k.exec(g[r])){var x=window.location.href.replace(/#.*$/,""),y=new RegExp(l(g[r+1])),z=m(y,[x]);s={url:x,func:"",args:[],line:z?z.line:h[1],column:null}}if(s){s.func||(s.func=c(s.url,s.line));var A=e(s.url,s.line),B=A?A[Math.floor(A.length/2)]:null;A&&B.replace(/^\s*/,"")===g[r+1].replace(/^\s*/,"")?s.context=A:s.context=[g[r+1]],n.push(s)}}return n.length?{name:a.name,message:g[0],url:d(),stack:n}:null}function s(a,b,d,f){var g={url:b,line:d};if(g.url&&g.line){a.incomplete=!1,g.func||(g.func=c(g.url,g.line)),g.context||(g.context=e(g.url,g.line));var h=/ '([^']+)' /.exec(f);if(h&&(g.column=n(h[1],g.url,g.line)),a.stack.length>0&&a.stack[0].url===g.url){if(a.stack[0].line===g.line)return!1;if(!a.stack[0].line&&a.stack[0].func===g.func)return a.stack[0].line=g.line,a.stack[0].context=g.context,!1}return a.stack.unshift(g),a.partial=!0,!0}return a.incomplete=!0,!1}function t(a,b){for(var e,f,g,h=/function\s+([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\s*\(/i,j=[],l={},m=!1,p=t.caller;p&&!m;p=p.caller)if(p!==u&&p!==i.report){if(f={url:null,func:k,line:null,column:null},p.name?f.func=p.name:(e=h.exec(p.toString()))&&(f.func=e[1]),"undefined"==typeof f.func)try{f.func=e.input.substring(0,e.input.indexOf("{"))}catch(q){}if(g=o(p)){f.url=g.url,f.line=g.line,f.func===k&&(f.func=c(f.url,f.line));var r=/ '([^']+)' /.exec(a.message||a.description);r&&(f.column=n(r[1],g.url,g.line))}l[""+p]?m=!0:l[""+p]=!0,j.push(f)}b&&j.splice(0,b);var v={name:a.name,message:a.message,url:d(),stack:j};return s(v,a.sourceURL||a.fileName,a.line||a.lineNumber,a.message||a.description),v}function u(a,b){var c=null;b=null==b?0:+b;try{if(c=q(a))return c}catch(e){if(i.debug)throw e}try{if(c=p(a))return c}catch(e){if(i.debug)throw e}try{if(c=r(a))return c}catch(e){if(i.debug)throw e}try{if(c=t(a,b+1))return c}catch(e){if(i.debug)throw e}return{name:a.name,message:a.message,url:d()}}var v={};return u.augmentStackTraceWithInitialElement=s,u.computeStackTraceFromStackProp=p,u.guessFunctionName=c,u.gatherContext=e,u}(),b.exports=i},{"../../src/utils":4}]},{},[3])(3)});
+/*! Raven.js 2.1.1 (9dbc6bd) | github.com/getsentry/raven-js */
+!function(a){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=a();else if("function"==typeof define&&define.amd)define([],a);else{var b;b="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self?self:this,b.Raven=a()}}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);var j=new Error("Cannot find module '"+g+"'");throw j.code="MODULE_NOT_FOUND",j}var k=c[g]={exports:{}};b[g][0].call(k.exports,function(a){var c=b[g][1][a];return e(c?c:a)},k,k.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b,c){"use strict";function d(a){this.name="RavenConfigError",this.message=a}d.prototype=new Error,d.prototype.constructor=d,b.exports=d},{}],2:[function(a,b,c){"use strict";function d(){return+new Date}function e(){this._hasJSON=!("object"!=typeof JSON||!JSON.stringify),this._hasDocument="undefined"!=typeof document,this._lastCapturedException=null,this._lastEventId=null,this._globalServer=null,this._globalKey=null,this._globalProject=null,this._globalContext={},this._globalOptions={logger:"javascript",ignoreErrors:[],ignoreUrls:[],whitelistUrls:[],includePaths:[],crossOrigin:"anonymous",collectWindowErrors:!0,maxMessageLength:0,stackTraceLimit:50},this._ignoreOnError=0,this._isRavenInstalled=!1,this._originalErrorStackTraceLimit=Error.stackTraceLimit,this._originalConsole=window.console||{},this._originalConsoleMethods={},this._plugins=[],this._startTime=d(),this._wrappedBuiltIns=[];for(var a in this._originalConsole)this._originalConsoleMethods[a]=this._originalConsole[a]}var f=a("../vendor/TraceKit/tracekit"),g=a("./configError"),h=a("./utils"),i=h.isFunction,j=h.isUndefined,k=h.isError,l=h.isEmptyObject,m=h.hasKey,n=h.joinRegExp,o=h.each,p=h.objectMerge,q=h.truncate,r=h.urlencode,s=h.uuid4,t="source protocol user pass host port path".split(" "),u=/^(?:(\w+):)?\/\/(?:(\w+)(:\w+)?@)?([\w\.-]+)(?::(\d+))?(\/.*)/;e.prototype={VERSION:"2.1.1",debug:!1,TraceKit:f,config:function(a,b){var c=this;if(this._globalServer)return this._logDebug("error","Error: Raven has already been configured"),this;if(!a)return this;var d=this._parseDSN(a),e=d.path.lastIndexOf("/"),g=d.path.substr(1,e);return b&&o(b,function(a,b){"tags"===a||"extra"===a?c._globalContext[a]=b:c._globalOptions[a]=b}),this._dsn=a,this._globalOptions.ignoreErrors.push(/^Script error\.?$/),this._globalOptions.ignoreErrors.push(/^Javascript error: Script error\.? on line 0$/),this._globalOptions.ignoreErrors=n(this._globalOptions.ignoreErrors),this._globalOptions.ignoreUrls=this._globalOptions.ignoreUrls.length?n(this._globalOptions.ignoreUrls):!1,this._globalOptions.whitelistUrls=this._globalOptions.whitelistUrls.length?n(this._globalOptions.whitelistUrls):!1,this._globalOptions.includePaths=n(this._globalOptions.includePaths),this._globalKey=d.user,this._globalProject=d.path.substr(e+1),this._globalServer=this._getGlobalServer(d),this._globalEndpoint=this._globalServer+"/"+g+"api/"+this._globalProject+"/store/",this._globalOptions.fetchContext&&(f.remoteFetching=!0),this._globalOptions.linesOfContext&&(f.linesOfContext=this._globalOptions.linesOfContext),f.collectWindowErrors=!!this._globalOptions.collectWindowErrors,this},install:function(){var a=this;return this.isSetup()&&!this._isRavenInstalled&&(f.report.subscribe(function(){a._handleOnErrorStackInfo.apply(a,arguments)}),this._wrapBuiltIns(),this._drainPlugins(),this._isRavenInstalled=!0),Error.stackTraceLimit=this._globalOptions.stackTraceLimit,this},context:function(a,b,c){return i(a)&&(c=b||[],b=a,a=void 0),this.wrap(a,b).apply(this,c)},wrap:function(a,b){function c(){for(var c=[],e=arguments.length,f=!a||a&&a.deep!==!1;e--;)c[e]=f?d.wrap(a,arguments[e]):arguments[e];try{return b.apply(this,c)}catch(g){throw d._ignoreNextOnError(),d.captureException(g,a),g}}var d=this;if(j(b)&&!i(a))return a;if(i(a)&&(b=a,a=void 0),!i(b))return b;try{if(b.__raven__)return b}catch(e){return b}if(b.__raven_wrapper__)return b.__raven_wrapper__;for(var f in b)m(b,f)&&(c[f]=b[f]);return b.__raven_wrapper__=c,c.prototype=b.prototype,c.__raven__=!0,c.__inner__=b,c},uninstall:function(){return f.report.uninstall(),this._restoreBuiltIns(),Error.stackTraceLimit=this._originalErrorStackTraceLimit,this._isRavenInstalled=!1,this},captureException:function(a,b){if(!k(a))return this.captureMessage(a,b);this._lastCapturedException=a;try{var c=f.computeStackTrace(a);this._handleStackInfo(c,b)}catch(d){if(a!==d)throw d}return this},captureMessage:function(a,b){return this._globalOptions.ignoreErrors.test&&this._globalOptions.ignoreErrors.test(a)?void 0:(this._send(p({message:a+""},b)),this)},addPlugin:function(a){var b=Array.prototype.slice.call(arguments,1);return this._plugins.push([a,b]),this._isRavenInstalled&&this._drainPlugins(),this},setUserContext:function(a){return this._globalContext.user=a,this},setExtraContext:function(a){return this._mergeContext("extra",a),this},setTagsContext:function(a){return this._mergeContext("tags",a),this},clearContext:function(){return this._globalContext={},this},getContext:function(){return JSON.parse(JSON.stringify(this._globalContext))},setRelease:function(a){return this._globalOptions.release=a,this},setDataCallback:function(a){return this._globalOptions.dataCallback=a,this},setShouldSendCallback:function(a){return this._globalOptions.shouldSendCallback=a,this},setTransport:function(a){return this._globalOptions.transport=a,this},lastException:function(){return this._lastCapturedException},lastEventId:function(){return this._lastEventId},isSetup:function(){return this._hasJSON?this._globalServer?!0:(this.ravenNotConfiguredError||(this.ravenNotConfiguredError=!0,this._logDebug("error","Error: Raven has not been configured.")),!1):!1},afterLoad:function(){var a=window.RavenConfig;a&&this.config(a.dsn,a.config).install()},showReportDialog:function(a){if(window.document){a=a||{};var b=a.eventId||this.lastEventId();if(!b)throw new g("Missing eventId");var c=a.dsn||this._dsn;if(!c)throw new g("Missing DSN");var d=encodeURIComponent,e="";e+="?eventId="+d(b),e+="&dsn="+d(c);var f=a.user||this._globalContext.user;f&&(f.name&&(e+="&name="+d(f.name)),f.email&&(e+="&email="+d(f.email)));var h=this._getGlobalServer(this._parseDSN(c)),i=document.createElement("script");i.async=!0,i.src=h+"/api/embed/error-page/"+e,(document.head||document.body).appendChild(i)}},_ignoreNextOnError:function(){var a=this;this._ignoreOnError+=1,setTimeout(function(){a._ignoreOnError-=1})},_triggerEvent:function(a,b){var c,d;if(this._hasDocument){b=b||{},a="raven"+a.substr(0,1).toUpperCase()+a.substr(1),document.createEvent?(c=document.createEvent("HTMLEvents"),c.initEvent(a,!0,!0)):(c=document.createEventObject(),c.eventType=a);for(d in b)m(b,d)&&(c[d]=b[d]);if(document.createEvent)document.dispatchEvent(c);else try{document.fireEvent("on"+c.eventType.toLowerCase(),c)}catch(e){}}},_wrapBuiltIns:function(){function a(a,b,d,e){var f=a[b];a[b]=d(f),e||c._wrappedBuiltIns.push([a,b,f])}function b(a){return function(b,d){var e=[].slice.call(arguments),f=e[0];return i(f)&&(e[0]=c.wrap(f)),a.apply?a.apply(this,e):a(e[0],e[1])}}var c=this;a(window,"setTimeout",b),a(window,"setInterval",b),window.requestAnimationFrame&&a(window,"requestAnimationFrame",function(a){return function(b){return a(c.wrap(b))}}),"EventTarget Window Node ApplicationCache AudioTrackList ChannelMergerNode CryptoOperation EventSource FileReader HTMLUnknownElement IDBDatabase IDBRequest IDBTransaction KeyOperation MediaController MessagePort ModalWindow Notification SVGElementInstance Screen TextTrack TextTrackCue TextTrackList WebSocket WebSocketWorker Worker XMLHttpRequest XMLHttpRequestEventTarget XMLHttpRequestUpload".replace(/\w+/g,function(b){var d=window[b]&&window[b].prototype;d&&d.hasOwnProperty&&d.hasOwnProperty("addEventListener")&&(a(d,"addEventListener",function(a){return function(b,d,e,f){try{d&&d.handleEvent&&(d.handleEvent=c.wrap(d.handleEvent))}catch(g){}return a.call(this,b,c.wrap(d),e,f)}}),a(d,"removeEventListener",function(a){return function(b,c,d,e){return c=c&&(c.__raven_wrapper__?c.__raven_wrapper__:c),a.call(this,b,c,d,e)}}))}),"XMLHttpRequest"in window&&a(XMLHttpRequest.prototype,"send",function(b){return function(d){var e=this;return"onreadystatechange onload onerror onprogress".replace(/\w+/g,function(b){b in e&&"[object Function]"===Object.prototype.toString.call(e[b])&&a(e,b,function(a){return c.wrap(a)},!0)}),b.apply(this,arguments)}});var d=window.jQuery||window.$;d&&d.fn&&d.fn.ready&&a(d.fn,"ready",function(a){return function(b){return a.call(this,c.wrap(b))}})},_restoreBuiltIns:function(){for(var a;this._wrappedBuiltIns.length;){a=this._wrappedBuiltIns.shift();var b=a[0],c=a[1],d=a[2];b[c]=d}},_drainPlugins:function(){var a=this;o(this._plugins,function(b,c){var d=c[0],e=c[1];d.apply(a,[a].concat(e))})},_parseDSN:function(a){var b=u.exec(a),c={},d=7;try{for(;d--;)c[t[d]]=b[d]||""}catch(e){throw new g("Invalid DSN: "+a)}if(c.pass)throw new g("Do not specify your private key in the DSN!");return c},_getGlobalServer:function(a){var b="//"+a.host+(a.port?":"+a.port:"");return a.protocol&&(b=a.protocol+":"+b),b},_handleOnErrorStackInfo:function(){this._ignoreOnError||this._handleStackInfo.apply(this,arguments)},_handleStackInfo:function(a,b){var c=this,d=[];a.stack&&a.stack.length&&o(a.stack,function(a,b){var e=c._normalizeFrame(b);e&&d.push(e)}),this._triggerEvent("handle",{stackInfo:a,options:b}),this._processException(a.name,a.message,a.url,a.lineno,d.slice(0,this._globalOptions.stackTraceLimit),b)},_normalizeFrame:function(a){if(a.url){var b,c={filename:a.url,lineno:a.line,colno:a.column,"function":a.func||"?"},d=this._extractContextFromFrame(a);if(d){var e=["pre_context","context_line","post_context"];for(b=3;b--;)c[e[b]]=d[b]}return c.in_app=!(this._globalOptions.includePaths.test&&!this._globalOptions.includePaths.test(c.filename)||/(Raven|TraceKit)\./.test(c["function"])||/raven\.(min\.)?js$/.test(c.filename)),c}},_extractContextFromFrame:function(a){if(a.context&&this._globalOptions.fetchContext){for(var b=a.context,c=~~(b.length/2),d=b.length,e=!1;d--;)if(b[d].length>300){e=!0;break}if(e){if(j(a.column))return;return[[],b[c].substr(a.column,50),[]]}return[b.slice(0,c),b[c],b.slice(c+1)]}},_processException:function(a,b,c,d,e,f){var g,h;if((!this._globalOptions.ignoreErrors.test||!this._globalOptions.ignoreErrors.test(b))&&(b+="",b=q(b,this._globalOptions.maxMessageLength),h=a+": "+b,h=q(h,this._globalOptions.maxMessageLength),e&&e.length?(c=e[0].filename||c,e.reverse(),g={frames:e}):c&&(g={frames:[{filename:c,lineno:d,in_app:!0}]}),(!this._globalOptions.ignoreUrls.test||!this._globalOptions.ignoreUrls.test(c))&&(!this._globalOptions.whitelistUrls.test||this._globalOptions.whitelistUrls.test(c)))){var i=p({exception:{values:[{type:a,value:b,stacktrace:g}]},culprit:c,message:h},f);this._send(i)}},_trimPacket:function(a){var b=this._globalOptions.maxMessageLength;if(a.message=q(a.message,b),a.exception){var c=a.exception.values[0];c.value=q(c.value,b)}return a},_getHttpData:function(){if(this._hasDocument&&document.location&&document.location.href){var a={headers:{"User-Agent":navigator.userAgent}};return a.url=document.location.href,document.referrer&&(a.headers.Referer=document.referrer),a}},_send:function(a){var b=this,c=this._globalOptions,e={project:this._globalProject,logger:c.logger,platform:"javascript"},f=this._getHttpData();if(f&&(e.request=f),a=p(e,a),a.tags=p(p({},this._globalContext.tags),a.tags),a.extra=p(p({},this._globalContext.extra),a.extra),a.extra["session:duration"]=d()-this._startTime,l(a.tags)&&delete a.tags,this._globalContext.user&&(a.user=this._globalContext.user),c.release&&(a.release=c.release),c.serverName&&(a.server_name=c.serverName),c.release&&(a.release=c.release),i(c.dataCallback)&&(a=c.dataCallback(a)||a),a&&!l(a)&&(!i(c.shouldSendCallback)||c.shouldSendCallback(a))&&(this._lastEventId=a.event_id||(a.event_id=s()),a=this._trimPacket(a),this._logDebug("debug","Raven about to send:",a),this.isSetup())){var g=this._globalEndpoint;(c.transport||this._makeRequest).call(this,{url:g,auth:{sentry_version:"7",sentry_client:"raven-js/"+this.VERSION,sentry_key:this._globalKey},data:a,options:c,onSuccess:function(){b._triggerEvent("success",{data:a,src:g})},onError:function(){b._triggerEvent("failure",{data:a,src:g})}})}},_makeImageRequest:function(a){a.auth.sentry_data=JSON.stringify(a.data);var b=this._newImage(),c=a.url+"?"+r(a.auth),d=a.options.crossOrigin;(d||""===d)&&(b.crossOrigin=d),b.onload=a.onSuccess,b.onerror=b.onabort=a.onError,b.src=c},_makeXhrRequest:function(a){function b(){200===c.status?a.onSuccess&&a.onSuccess():a.onError&&a.onError()}var c,d=a.url;c=new XMLHttpRequest,"withCredentials"in c?c.onreadystatechange=function(){4===c.readyState&&b()}:(c=new XDomainRequest,d=d.replace(/^https?:/,""),c.onload=b),c.open("POST",d+"?"+r(a.auth)),c.send(JSON.stringify(a.data))},_makeRequest:function(a){var b="withCredentials"in new XMLHttpRequest||"undefined"!=typeof XDomainRequest;return(b?this._makeXhrRequest:this._makeImageRequest)(a)},_newImage:function(){return document.createElement("img")},_logDebug:function(a){this._originalConsoleMethods[a]&&this.debug&&Function.prototype.apply.call(this._originalConsoleMethods[a],this._originalConsole,[].slice.call(arguments,1))},_mergeContext:function(a,b){j(b)?delete this._globalContext[a]:this._globalContext[a]=p(this._globalContext[a]||{},b)}},e.prototype.setUser=e.prototype.setUserContext,e.prototype.setReleaseContext=e.prototype.setRelease,b.exports=e},{"../vendor/TraceKit/tracekit":5,"./configError":1,"./utils":4}],3:[function(a,b,c){"use strict";var d=a("./raven"),e=window.Raven,f=new d;f.noConflict=function(){return window.Raven=e,f},f.afterLoad(),b.exports=f},{"./raven":2}],4:[function(a,b,c){"use strict";function d(a){return void 0===a}function e(a){return"function"==typeof a}function f(a){return"[object String]"===q.toString.call(a)}function g(a){return"object"==typeof a&&null!==a}function h(a){for(var b in a)return!1;return!0}function i(a){return g(a)&&"[object Error]"===q.toString.call(a)||a instanceof Error}function j(a,b){var c,e;if(d(a.length))for(c in a)m(a,c)&&b.call(null,c,a[c]);else if(e=a.length)for(c=0;e>c;c++)b.call(null,c,a[c])}function k(a,b){return b?(j(b,function(b,c){a[b]=c}),a):a}function l(a,b){return!b||a.length<=b?a:a.substr(0,b)+"…"}function m(a,b){return q.hasOwnProperty.call(a,b)}function n(a){for(var b,c=[],d=0,e=a.length;e>d;d++)b=a[d],f(b)?c.push(b.replace(/([.*+?^=!:${}()|\[\]\/\\])/g,"\\$1")):b&&b.source&&c.push(b.source);return new RegExp(c.join("|"),"i")}function o(a){var b=[];return j(a,function(a,c){b.push(encodeURIComponent(a)+"="+encodeURIComponent(c))}),b.join("&")}function p(){var a=window.crypto||window.msCrypto;if(!d(a)&&a.getRandomValues){var b=new Uint16Array(8);a.getRandomValues(b),b[3]=4095&b[3]|16384,b[4]=16383&b[4]|32768;var c=function(a){for(var b=a.toString(16);b.length<4;)b="0"+b;return b};return c(b[0])+c(b[1])+c(b[2])+c(b[3])+c(b[4])+c(b[5])+c(b[6])+c(b[7])}return"xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g,function(a){var b=16*Math.random()|0,c="x"===a?b:3&b|8;return c.toString(16)})}var q=Object.prototype;b.exports={isUndefined:d,isFunction:e,isString:f,isObject:g,isEmptyObject:h,isError:i,each:j,objectMerge:k,truncate:l,hasKey:m,joinRegExp:n,urlencode:o,uuid4:p}},{}],5:[function(a,b,c){"use strict";function d(){return"undefined"==typeof document?"":document.location.href}var e=a("../../src/utils"),f=e.hasKey,g=e.isString,h=e.isUndefined,i={remoteFetching:!1,collectWindowErrors:!0,linesOfContext:7,debug:!1},j=[].slice,k="?";i.report=function(){function a(a){h(),p.push(a)}function b(a){for(var b=p.length-1;b>=0;--b)p[b]===a&&p.splice(b,1)}function c(){k(),p=[]}function e(a,b){var c=null;if(!b||i.collectWindowErrors){for(var d in p)if(f(p,d))try{p[d].apply(null,[a].concat(j.call(arguments,2)))}catch(e){c=e}if(c)throw c}}function g(a,b,c,f,g){var h=null;if(s)i.computeStackTrace.augmentStackTraceWithInitialElement(s,b,c,a),l();else if(g)h=i.computeStackTrace(g),e(h,!0);else{var j={url:b,line:c,column:f};j.func=i.computeStackTrace.guessFunctionName(j.url,j.line),j.context=i.computeStackTrace.gatherContext(j.url,j.line),h={message:a,url:d(),stack:[j]},e(h,!0)}return n?n.apply(this,arguments):!1}function h(){o||(n=window.onerror,window.onerror=g,o=!0)}function k(){o&&(window.onerror=n,o=!1,n=void 0)}function l(){var a=s,b=q;q=null,s=null,r=null,e.apply(null,[a,!1].concat(b))}function m(a,b){var c=j.call(arguments,1);if(s){if(r===a)return;l()}var d=i.computeStackTrace(a);if(s=d,r=a,q=c,window.setTimeout(function(){r===a&&l()},d.incomplete?2e3:0),b!==!1)throw a}var n,o,p=[],q=null,r=null,s=null;return m.subscribe=a,m.unsubscribe=b,m.uninstall=c,m}(),i.computeStackTrace=function(){function a(a){if(!i.remoteFetching)return"";try{var b=function(){try{return new window.XMLHttpRequest}catch(a){return new window.ActiveXObject("Microsoft.XMLHTTP")}},c=b();return c.open("GET",a,!1),c.send(""),c.responseText}catch(d){return""}}function b(b){if(!g(b))return[];if(!f(v,b)){var c="",d="";try{d=document.domain}catch(e){}-1!==b.indexOf(d)&&(c=a(b)),v[b]=c?c.split("\n"):[]}return v[b]}function c(a,c){var d,e=/function ([^(]*)\(([^)]*)\)/,f=/['"]?([0-9A-Za-z$_]+)['"]?\s*[:=]\s*(function|eval|new Function)/,g="",i=10,j=b(a);if(!j.length)return k;for(var l=0;i>l;++l)if(g=j[c-l]+g,!h(g)){if(d=f.exec(g))return d[1];if(d=e.exec(g))return d[1]}return k}function e(a,c){var d=b(a);if(!d.length)return null;var e=[],f=Math.floor(i.linesOfContext/2),g=f+i.linesOfContext%2,j=Math.max(0,c-f-1),k=Math.min(d.length,c+g-1);c-=1;for(var l=j;k>l;++l)h(d[l])||e.push(d[l]);return e.length>0?e:null}function j(a){return a.replace(/[\-\[\]{}()*+?.,\\\^$|#]/g,"\\$&")}function l(a){return j(a).replace("<","(?:<|&lt;)").replace(">","(?:>|&gt;)").replace("&","(?:&|&amp;)").replace('"','(?:"|&quot;)').replace(/\s+/g,"\\s+")}function m(a,c){for(var d,e,f=0,g=c.length;g>f;++f)if((d=b(c[f])).length&&(d=d.join("\n"),e=a.exec(d)))return{url:c[f],line:d.substring(0,e.index).split("\n").length,column:e.index-d.lastIndexOf("\n",e.index)-1};return null}function n(a,c,d){var e,f=b(c),g=new RegExp("\\b"+j(a)+"\\b");return d-=1,f&&f.length>d&&(e=g.exec(f[d]))?e.index:null}function o(a){if("undefined"!=typeof document){for(var b,c,d,e,f=[window.location.href],g=document.getElementsByTagName("script"),h=""+a,i=/^function(?:\s+([\w$]+))?\s*\(([\w\s,]*)\)\s*\{\s*(\S[\s\S]*\S)\s*\}\s*$/,k=/^function on([\w$]+)\s*\(event\)\s*\{\s*(\S[\s\S]*\S)\s*\}\s*$/,n=0;n<g.length;++n){var o=g[n];o.src&&f.push(o.src)}if(d=i.exec(h)){var p=d[1]?"\\s+"+d[1]:"",q=d[2].split(",").join("\\s*,\\s*");b=j(d[3]).replace(/;$/,";?"),c=new RegExp("function"+p+"\\s*\\(\\s*"+q+"\\s*\\)\\s*{\\s*"+b+"\\s*}")}else c=new RegExp(j(h).replace(/\s+/g,"\\s+"));if(e=m(c,f))return e;if(d=k.exec(h)){var r=d[1];if(b=l(d[2]),c=new RegExp("on"+r+"=[\\'\"]\\s*"+b+"\\s*[\\'\"]","i"),e=m(c,f[0]))return e;if(c=new RegExp(b),e=m(c,f))return e}return null}}function p(a){if(!h(a.stack)&&a.stack){for(var b,f,g=/^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,i=/^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,j=/^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,l=a.stack.split("\n"),m=[],o=/^(.*) is undefined$/.exec(a.message),p=0,q=l.length;q>p;++p){if(b=g.exec(l[p])){var r=b[2]&&-1!==b[2].indexOf("native");f={url:r?null:b[2],func:b[1]||k,args:r?[b[2]]:[],line:b[3]?+b[3]:null,column:b[4]?+b[4]:null}}else if(b=j.exec(l[p]))f={url:b[2],func:b[1]||k,args:[],line:+b[3],column:b[4]?+b[4]:null};else{if(!(b=i.exec(l[p])))continue;f={url:b[3],func:b[1]||k,args:b[2]?b[2].split(","):[],line:b[4]?+b[4]:null,column:b[5]?+b[5]:null}}!f.func&&f.line&&(f.func=c(f.url,f.line)),f.line&&(f.context=e(f.url,f.line)),m.push(f)}return m.length?(m[0].line&&!m[0].column&&o?m[0].column=n(o[1],m[0].url,m[0].line):m[0].column||h(a.columnNumber)||(m[0].column=a.columnNumber+1),{name:a.name,message:a.message,url:d(),stack:m}):null}}function q(a){var b=a.stacktrace;if(!h(a.stacktrace)&&a.stacktrace){for(var f,g=/ line (\d+).*script (?:in )?(\S+)(?:: in function (\S+))?$/i,i=/ line (\d+), column (\d+)\s*(?:in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\))? in (.*):\s*$/i,j=b.split("\n"),k=[],l=0;l<j.length;l+=2){var m=null;if((f=g.exec(j[l]))?m={url:f[2],line:+f[1],column:null,func:f[3],args:[]}:(f=i.exec(j[l]))&&(m={url:f[6],line:+f[1],column:+f[2],func:f[3]||f[4],args:f[5]?f[5].split(","):[]}),m){if(!m.func&&m.line&&(m.func=c(m.url,m.line)),m.line)try{m.context=e(m.url,m.line)}catch(n){}m.context||(m.context=[j[l+1]]),k.push(m)}}return k.length?{name:a.name,message:a.message,url:d(),stack:k}:null}}function r(a){var g=a.message.split("\n");if(g.length<4)return null;var h,i=/^\s*Line (\d+) of linked script ((?:file|https?|blob)\S+)(?:: in function (\S+))?\s*$/i,j=/^\s*Line (\d+) of inline#(\d+) script in ((?:file|https?|blob)\S+)(?:: in function (\S+))?\s*$/i,k=/^\s*Line (\d+) of function script\s*$/i,n=[],o=document.getElementsByTagName("script"),p=[];for(var q in o)f(o,q)&&!o[q].src&&p.push(o[q]);for(var r=2;r<g.length;r+=2){var s=null;if(h=i.exec(g[r]))s={url:h[2],func:h[3],args:[],line:+h[1],column:null};else if(h=j.exec(g[r])){s={url:h[3],func:h[4],args:[],line:+h[1],column:null};var t=+h[1],u=p[h[2]-1];if(u){var v=b(s.url);if(v){v=v.join("\n");var w=v.indexOf(u.innerText);w>=0&&(s.line=t+v.substring(0,w).split("\n").length)}}}else if(h=k.exec(g[r])){var x=window.location.href.replace(/#.*$/,""),y=new RegExp(l(g[r+1])),z=m(y,[x]);s={url:x,func:"",args:[],line:z?z.line:h[1],column:null}}if(s){s.func||(s.func=c(s.url,s.line));var A=e(s.url,s.line),B=A?A[Math.floor(A.length/2)]:null;A&&B.replace(/^\s*/,"")===g[r+1].replace(/^\s*/,"")?s.context=A:s.context=[g[r+1]],n.push(s)}}return n.length?{name:a.name,message:g[0],url:d(),stack:n}:null}function s(a,b,d,f){var g={url:b,line:d};if(g.url&&g.line){a.incomplete=!1,g.func||(g.func=c(g.url,g.line)),g.context||(g.context=e(g.url,g.line));var h=/ '([^']+)' /.exec(f);if(h&&(g.column=n(h[1],g.url,g.line)),a.stack.length>0&&a.stack[0].url===g.url){if(a.stack[0].line===g.line)return!1;if(!a.stack[0].line&&a.stack[0].func===g.func)return a.stack[0].line=g.line,a.stack[0].context=g.context,!1}return a.stack.unshift(g),a.partial=!0,!0}return a.incomplete=!0,!1}function t(a,b){for(var e,f,g,h=/function\s+([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\s*\(/i,j=[],l={},m=!1,p=t.caller;p&&!m;p=p.caller)if(p!==u&&p!==i.report){if(f={url:null,func:k,line:null,column:null},p.name?f.func=p.name:(e=h.exec(p.toString()))&&(f.func=e[1]),"undefined"==typeof f.func)try{f.func=e.input.substring(0,e.input.indexOf("{"))}catch(q){}if(g=o(p)){f.url=g.url,f.line=g.line,f.func===k&&(f.func=c(f.url,f.line));var r=/ '([^']+)' /.exec(a.message||a.description);r&&(f.column=n(r[1],g.url,g.line))}l[""+p]?m=!0:l[""+p]=!0,j.push(f)}b&&j.splice(0,b);var v={name:a.name,message:a.message,url:d(),stack:j};return s(v,a.sourceURL||a.fileName,a.line||a.lineNumber,a.message||a.description),v}function u(a,b){var c=null;b=null==b?0:+b;try{if(c=q(a))return c}catch(e){if(i.debug)throw e}try{if(c=p(a))return c}catch(e){if(i.debug)throw e}try{if(c=r(a))return c}catch(e){if(i.debug)throw e}try{if(c=t(a,b+1))return c}catch(e){if(i.debug)throw e}return{name:a.name,message:a.message,url:d()}}var v={};return u.augmentStackTraceWithInitialElement=s,u.computeStackTraceFromStackProp=p,u.guessFunctionName=c,u.gatherContext=e,u}(),b.exports=i},{"../../src/utils":4}]},{},[3])(3)});
 //# sourceMappingURL=raven.min.js.map
