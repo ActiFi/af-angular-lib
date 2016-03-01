@@ -50,7 +50,7 @@ angular.module('af.jwtManager', ['moment'])
           var expiresAt = afJwtManager.getExpiresOn(exp);
           var diffInMill = expiresAt.diff(moment());
           return diffInMill;
-        },
+        }
 
       };
     });
