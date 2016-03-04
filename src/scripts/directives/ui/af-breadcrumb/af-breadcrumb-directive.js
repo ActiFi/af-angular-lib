@@ -9,6 +9,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       var config = {
         templateUrl :'/tenant/assets/templates/af-breadcrumb-directive-view.html'
       };
+      this.setShowAppDropDown = function (value) { config.showAppDropDown = value; };
       this.setTemplateUrl = function (templateUrl) {
         config.templateUrl = templateUrl;
       };
@@ -25,19 +26,16 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         templateUrl:afBreadcrumbConfig.templateUrl,
         link:function(scope, elm, attrs){
 
-          scope.modules = afModuleManager.getEnabledModules();
-          // don't show assessment in this list
-          scope.modules = _.reject(scope.modules, function(m){ return m.key == 'assmt'; });
+          scope.showAppDropDown = afBreadcrumbConfig.showAppDropDown;
+          scope.modules = afModuleManager.getModulesForDropDown();
 
-          // enable currentModule:
-          var activeModule = _.find(scope.modules, {key:attrs.afBreadcrumb});
-          scope.enableModuleDD = activeModule ? true:false;
+
           _.each(scope.modules, function(module){
             module.active = (module.key == attrs.afBreadcrumb);
           });
 
-
           scope.currentModule = _.find(scope.modules, 'active');
+          if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
 
           scope.clickModule = function(module){
             $window.location.href = '/'+module.key+'/';

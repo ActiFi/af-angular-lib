@@ -303,6 +303,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       var config = {
         templateUrl :'/tenant/assets/templates/af-breadcrumb-directive-view.html'
       };
+      this.setShowAppDropDown = function (value) { config.showAppDropDown = value; };
       this.setTemplateUrl = function (templateUrl) {
         config.templateUrl = templateUrl;
       };
@@ -319,19 +320,16 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         templateUrl:afBreadcrumbConfig.templateUrl,
         link:function(scope, elm, attrs){
 
-          scope.modules = afModuleManager.getEnabledModules();
-          // don't show assessment in this list
-          scope.modules = _.reject(scope.modules, function(m){ return m.key == 'assmt'; });
+          scope.showAppDropDown = afBreadcrumbConfig.showAppDropDown;
+          scope.modules = afModuleManager.getModulesForDropDown();
 
-          // enable currentModule:
-          var activeModule = _.find(scope.modules, {key:attrs.afBreadcrumb});
-          scope.enableModuleDD = activeModule ? true:false;
+
           _.each(scope.modules, function(module){
             module.active = (module.key == attrs.afBreadcrumb);
           });
 
-
           scope.currentModule = _.find(scope.modules, 'active');
+          if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
 
           scope.clickModule = function(module){
             $window.location.href = '/'+module.key+'/';
@@ -355,8 +353,12 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
   .provider('afHeaderBarConfig', function(){
     var config = {
-      templateUrl :'/tenant/assets/templates/af-header-directive-view.html'
+      templateUrl :'/tenant/assets/templates/af-header-directive-view.html',
+      showAppDropDown:true,
+      showHelpDropDown:true
     };
+    this.setShowAppDropDown = function (value) { config.showAppDropDown = value; };
+    this.setShowHelpDropDown = function (value) { config.showHelpDropDown = value; };
     this.setTemplateUrl = function (templateUrl) {
       config.templateUrl = templateUrl;
     };
@@ -373,14 +375,20 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
       templateUrl:afHeaderBarConfig.templateUrl,
       link:function(scope, elm, attrs){
 
-        scope.modules = afModuleManager.getEnabledModules();
         scope.loggedInUser = afAuthManager.user();
+	
+        scope.showAppDropDown = afHeaderBarConfig.showAppDropDown;
+        scope.showHelpDropDown = afHeaderBarConfig.showHelpDropDown;
+
+        scope.modules = afModuleManager.getModulesForDropDown();
 
         // enable currentModule:
         _.each(scope.modules, function(module){
           module.active = (module.key == attrs.afHeaderBar);
         });
         scope.currentModule = _.find(scope.modules, 'active');
+        if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
+
 
 
         scope.clickModule = function(module){
@@ -772,27 +780,33 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
         {
           key:'roadmap',
           enabled:appTenant.config('app.showRoadmap'),
-          label:appTenant.config('label.moduleRoadmap')
+          label:appTenant.config('label.moduleRoadmap'),
+          showInDropDown:true
         },
         {
           key:'assmt',
+          inDropDown:false,
           enabled:appTenant.config('app.showAssmt'),
-          label:appTenant.config('label.moduleAssmt')
+          label:appTenant.config('label.moduleAssmt'),
+          showInDropDown:false
         },
         {
           key:'metrics',
           enabled:appTenant.config('app.showSPAT'),
-          label:appTenant.config('label.moduleSpat')
+          label:appTenant.config('label.moduleSpat'),
+          showInDropDown:true
         },
         {
           key:'processpro',
           enabled:appTenant.config('app.showProcessPro'),
-          label:appTenant.config('label.moduleProcessPro')
+          label:appTenant.config('label.moduleProcessPro'),
+          showInDropDown:true
         },
         {
           key:'admin',
           enabled:true,
-          label:'Admin'
+          label:'Admin',
+          showInDropDown:true
         }
       ];
 
@@ -809,6 +823,12 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
         getEnabledModules:function(){
           return _.filter(system_modules, function(module){
             return module.enabled && isAuthorized(module);
+          })
+        },
+
+        getModulesForDropDown:function(){
+          return _.filter(afModuleManager.getEnabledModules(), function(module){
+            return module.showInDropDown;
           })
         },
 

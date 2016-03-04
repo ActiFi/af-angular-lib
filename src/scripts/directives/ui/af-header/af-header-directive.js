@@ -3,8 +3,12 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
   .provider('afHeaderBarConfig', function(){
     var config = {
-      templateUrl :'/tenant/assets/templates/af-header-directive-view.html'
+      templateUrl :'/tenant/assets/templates/af-header-directive-view.html',
+      showAppDropDown:true,
+      showHelpDropDown:true
     };
+    this.setShowAppDropDown = function (value) { config.showAppDropDown = value; };
+    this.setShowHelpDropDown = function (value) { config.showHelpDropDown = value; };
     this.setTemplateUrl = function (templateUrl) {
       config.templateUrl = templateUrl;
     };
@@ -21,14 +25,20 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
       templateUrl:afHeaderBarConfig.templateUrl,
       link:function(scope, elm, attrs){
 
-        scope.modules = afModuleManager.getEnabledModules();
         scope.loggedInUser = afAuthManager.user();
+	
+        scope.showAppDropDown = afHeaderBarConfig.showAppDropDown;
+        scope.showHelpDropDown = afHeaderBarConfig.showHelpDropDown;
+
+        scope.modules = afModuleManager.getModulesForDropDown();
 
         // enable currentModule:
         _.each(scope.modules, function(module){
           module.active = (module.key == attrs.afHeaderBar);
         });
         scope.currentModule = _.find(scope.modules, 'active');
+        if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
+
 
 
         scope.clickModule = function(module){
