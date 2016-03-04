@@ -1,6 +1,6 @@
 
 angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
-    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, $location, afMsg, jQuery) {
+    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, $location, afMsg, $) {
 
       var afApiUtil = null;
       return afApiUtil = {
@@ -53,11 +53,10 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             _.extend(request.headers, { 'Content-Type':'application/x-www-form-urlencoded' });
             // data needs to be in string format
             if(!_.isString(request.data))
-              request.data = jQuery.param(request.data);
+              request.data = $.param(request.data);
             return request;
           }
         },
-
 
         error:{
 

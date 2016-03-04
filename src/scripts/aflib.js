@@ -32,7 +32,7 @@ angular.module('af.lib',
     'af.appTrack',
     'af.appCatch',
   // lib wrappers
-    'jQuery',
+    '$',
     'amplify',
     '_',
     'moment'
