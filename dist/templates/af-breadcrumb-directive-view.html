@@ -2,7 +2,7 @@
   <ol class="breadcrumb">
 
     <!-- app drop-down -->
-    <li ng-if="modules.length > 1">
+    <li ng-if="enableModuleDD && modules.length > 1">
       <div class="btn-group" dropdown>
         <button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>
           <strong class="tenant-primary-font" ng-bind="::currentModule.label"></strong>

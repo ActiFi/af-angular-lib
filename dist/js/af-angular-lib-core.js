@@ -324,9 +324,12 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
           scope.modules = _.reject(scope.modules, function(m){ return m.key == 'assmt'; });
 
           // enable currentModule:
+          var activeModule = _.find(scope.modules, {key:attrs.afBreadcrumb});
+          scope.enableModuleDD = activeModule ? true:false;
           _.each(scope.modules, function(module){
             module.active = (module.key == attrs.afBreadcrumb);
           });
+
 
           scope.currentModule = _.find(scope.modules, 'active');
 
