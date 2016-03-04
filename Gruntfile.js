@@ -5,11 +5,11 @@ module.exports = function(grunt) {
   var utils = require('./grunt/grunt_utils.js')(grunt);
 
 
-  grunt.registerTask('default', ['concat:af-lib', 'less']);
+  grunt.registerTask('default', ['concat:af-lib', 'copy', 'less']);
   grunt.registerTask('dev', ['default', 'watch']);
 
   // bower updaters
-  grunt.registerTask('bower-update', 'updating dependencies', utils.bower.update());
+  grunt.registerTask('bower-update',  'updating dependencies', utils.bower.update());
   grunt.registerTask('bower-install', 'updating dependencies', utils.bower.install());
 
 
@@ -25,6 +25,23 @@ module.exports = function(grunt) {
       }
     },
 
+    // copy .html files (templates) into templates dir...
+    copy:{
+      templates:{
+        files:[
+          {
+            expand: true,
+            flatten: true,
+            src: [
+              'src/templates/**/*.html',
+              'src/scripts/**/*.html'
+            ],
+            dest: 'dist/templates/',
+            filter: 'isFile'
+          }
+        ]
+      }
+    },
 
     //
     // LESS
@@ -134,8 +151,12 @@ module.exports = function(grunt) {
         tasks: ['less:themes']
       },
       booty: {
-        files: ['src/styles/af-lib/**/*.less'],
+        files: ['src/styles/af-lib/**/*.less', 'src/scripts/directives/**/*.less'],
         tasks: ['less:af-lib']
+      },
+      templates: {
+        files: ['src/templates/**/*.html', 'src/scripts/**/*.html'],
+        tasks: ['copy:templates']
       }
     }
 
@@ -143,6 +164,7 @@ module.exports = function(grunt) {
 
 
 
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');

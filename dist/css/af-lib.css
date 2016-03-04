@@ -543,3 +543,111 @@ ng\:form {
 #af-bar .af-bar-poweredBy a {
   color: #336699;
 }
+#af-breadcrumb {
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+  background-color: #666;
+  height: 33px;
+}
+#af-breadcrumb ol.breadcrumb {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+}
+#af-breadcrumb ol.breadcrumb > li,
+#af-breadcrumb ol.breadcrumb > li > a {
+  color: white;
+}
+#af-breadcrumb ol.breadcrumb > li > a {
+  text-decoration: underline;
+}
+#af-breadcrumb ol.breadcrumb > li.active {
+  color: #BBB;
+}
+#af-header {
+  height: 80px;
+  padding: 0;
+  margin: 0;
+}
+#af-header #af-header-brand {
+  float: left;
+  height: 80px;
+  max-height: 80px;
+  overflow: hidden;
+  padding: 10px;
+}
+#af-pane {
+  background-color: #e7e7e7;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 113px;
+  bottom: 25px;
+  overflow: hidden;
+}
+#af-pane.managerBarEnabled #af-pane-left {
+  display: block;
+}
+#af-pane.managerBarEnabled #af-pane-right {
+  display: block;
+  left: 230px;
+}
+#af-pane #af-pane-left,
+#af-pane #af-pane-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+#af-pane #af-pane-left.managerBarClosed-add,
+#af-pane #af-pane-right.managerBarClosed-add,
+#af-pane #af-pane-left.managerBarClosed-remove,
+#af-pane #af-pane-right.managerBarClosed-remove {
+  -webkit-transition: 0.3s;
+  -o-transition: 0.3s;
+  transition: 0.3s;
+}
+#af-pane #af-pane-left.managerBarClosed-add .hideMenuButton,
+#af-pane #af-pane-right.managerBarClosed-add .hideMenuButton,
+#af-pane #af-pane-left.managerBarClosed-remove .hideMenuButton,
+#af-pane #af-pane-right.managerBarClosed-remove .hideMenuButton {
+  -webkit-transition: 0.3s;
+  -o-transition: 0.3s;
+  transition: 0.3s;
+}
+#af-pane #collapsedMenu {
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  padding: 10px 0 0;
+  font-size: 16pt;
+}
+#af-pane #af-pane-left {
+  overflow: hidden;
+  background-color: #EEE;
+  border-right: 1px solid #e7e7e7;
+  width: 230px;
+  left: 0;
+}
+#af-pane #af-pane-left.managerBarDisabled {
+  width: 0;
+  display: none;
+}
+#af-pane #af-pane-left.managerBarClosed {
+  left: -188px;
+}
+#af-pane #af-pane-right {
+  left: 230px;
+  right: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  min-width: 260px !important;
+}
+#af-pane #af-pane-right.managerBarDisabled {
+  left: 0;
+}
+#af-pane #af-pane-right.managerBarClosed {
+  left: 42px;
+}

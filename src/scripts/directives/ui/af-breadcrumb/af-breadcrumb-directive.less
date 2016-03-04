@@ -1,0 +1,23 @@
+@af-breadcrumb-height : 33px;
+
+#af-breadcrumb{
+  border-top:1px solid #666;
+  border-bottom:1px solid #666;
+  background-color:#666;
+  height:@af-breadcrumb-height; // border top
+
+  ol.breadcrumb{
+    padding:0;
+    margin:0;
+    background-color:transparent;
+    > li, > li > a{
+      color:white;
+    }
+    > li > a{
+      text-decoration: underline;
+    }
+    > li.active{
+      color:#BBB;
+    }
+  }
+}

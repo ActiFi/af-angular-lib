@@ -1,0 +1,23 @@
+<div class="modal-content" ng-controller="GenericModalCtrl">
+
+  <div class="modal-header clearfix" ng-if="title">
+    <button class="close" ng-if="confirmBtnLabel || closeBtnLabel" ng-click="clickClose()">×</button>
+    <h4 class="pull-left">{{title}}</h4>
+    <div class="clear"></div>
+  </div>
+
+  <div class="bg-primary" style="height:4px"></div>
+
+  <div class="modal-body" ng-bind-html="body"></div>
+
+  <div class="modal-footer" ng-if="confirmBtnLabel || closeBtnLabel">
+    <a href="javascript:;" class="btn btn-primary"
+       ng-if="confirmBtnLabel"
+       ng-click="clickConfirm()">{{confirmBtnLabel}}
+    </a>
+    <a href="javascript:;" class="btn btn-default"
+       ng-if="closeBtnLabel"
+       ng-click="clickClose()">{{closeBtnLabel}}</a>
+  </div>
+
+</div>

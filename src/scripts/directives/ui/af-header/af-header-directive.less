@@ -1,0 +1,21 @@
+// allow 60px for logo
+@af-header-padding: 10px;
+@af-header-logo-height: 60px;
+@af-header-height : @af-header-logo-height + (@af-header-padding * 2);
+
+
+#af-header{
+
+  height:@af-header-height;
+  padding:0; //@af-header-padding;
+  margin:0;
+
+  #af-header-brand{
+    float:left;
+    height:@af-header-height;
+    max-height:@af-header-height;
+    overflow: hidden;
+    padding:@af-header-padding;
+  }
+
+}
