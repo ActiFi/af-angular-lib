@@ -299,16 +299,16 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         crumbs:[]
       }
     })
-    //.provider('afBreadcrumbConfig', function(){
-    //  var config = {
-    //    templateUrl : '/tenant/assets/templates/af-breadcrumb-directive-view.html'
-    //  };
-    //  this.setTemplateUrl = function (templateUrl) {
-    //    config.templateUrl = templateUrl;
-    //  };
-    //  this.$get = function () { return config; };
-    //})
-    .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager) {
+    .provider('afBreadcrumbConfig', function(){
+      var config = {
+        templateUrl :'/tenant/assets/templates/af-breadcrumb-directive-view.html'
+      };
+      this.setTemplateUrl = function (templateUrl) {
+        config.templateUrl = templateUrl;
+      };
+      this.$get = function () { return config; };
+    })
+    .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",
@@ -316,7 +316,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         scope:{
           afBreadcrumb:'@'
         },
-        templateUrl:'/tenant/assets/templates/af-breadcrumb-directive-view.html',
+        templateUrl:afBreadcrumbConfig.templateUrl,
         link:function(scope, elm, attrs){
 
           scope.modules = afModuleManager.getEnabledModules();
@@ -349,14 +349,25 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
 ;
 angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager) {
+
+  .provider('afHeaderBarConfig', function(){
+    var config = {
+      templateUrl :'/tenant/assets/templates/af-header-directive-view.html'
+    };
+    this.setTemplateUrl = function (templateUrl) {
+      config.templateUrl = templateUrl;
+    };
+    this.$get = function () { return config; };
+  })
+
+  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
       scope:{
         afHeaderBar:'@'
       },
-      templateUrl:'views/AF/af-header-directive-view.html',
+      templateUrl:afHeaderBarConfig.templateUrl,
       link:function(scope, elm, attrs){
 
         scope.modules = afModuleManager.getEnabledModules();
@@ -395,12 +406,22 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 ;
 angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
-  .directive('afSideBar',  function(appTenant, $window, amplify, afAuthManager, afModuleManager) {
+  .provider('afSideBarConfig', function(){
+    var config = {
+      templateUrl :'/tenant/assets/templates/af-sidebar-directive-view.html'
+    };
+    this.setTemplateUrl = function (templateUrl) {
+      config.templateUrl = templateUrl;
+    };
+    this.$get = function () { return config; };
+  })
+
+  .directive('afSideBar',  function(appTenant, $window, amplify, afSideBarConfig) {
     return {
       restrict: "A",
       replace:true,
       transclude:true,
-      templateUrl:'views/AF/af-sidebar-directive-view.html',
+      templateUrl:afSideBarConfig.templateUrl,
       link:function(scope, elm, attrs){
 
         var stateRestored = false;
