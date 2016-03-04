@@ -1,11 +1,21 @@
 angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
-  .directive('afSideBar',  function(appTenant, $window, amplify, afAuthManager, afModuleManager) {
+  .provider('afSideBarConfig', function(){
+    var config = {
+      templateUrl :'/tenant/assets/templates/af-sidebar-directive-view.html'
+    };
+    this.setTemplateUrl = function (templateUrl) {
+      config.templateUrl = templateUrl;
+    };
+    this.$get = function () { return config; };
+  })
+
+  .directive('afSideBar',  function(appTenant, $window, amplify, afSideBarConfig) {
     return {
       restrict: "A",
       replace:true,
       transclude:true,
-      templateUrl:'views/AF/af-sidebar-directive-view.html',
+      templateUrl:afSideBarConfig.templateUrl,
       link:function(scope, elm, attrs){
 
         var stateRestored = false;

@@ -5,16 +5,16 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         crumbs:[]
       }
     })
-    //.provider('afBreadcrumbConfig', function(){
-    //  var config = {
-    //    templateUrl : '/tenant/assets/templates/af-breadcrumb-directive-view.html'
-    //  };
-    //  this.setTemplateUrl = function (templateUrl) {
-    //    config.templateUrl = templateUrl;
-    //  };
-    //  this.$get = function () { return config; };
-    //})
-    .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager) {
+    .provider('afBreadcrumbConfig', function(){
+      var config = {
+        templateUrl :'/tenant/assets/templates/af-breadcrumb-directive-view.html'
+      };
+      this.setTemplateUrl = function (templateUrl) {
+        config.templateUrl = templateUrl;
+      };
+      this.$get = function () { return config; };
+    })
+    .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",
@@ -22,7 +22,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         scope:{
           afBreadcrumb:'@'
         },
-        templateUrl:'/tenant/assets/templates/af-breadcrumb-directive-view.html',
+        templateUrl:afBreadcrumbConfig.templateUrl,
         link:function(scope, elm, attrs){
 
           scope.modules = afModuleManager.getEnabledModules();

@@ -1,13 +1,24 @@
 angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager) {
+
+  .provider('afHeaderBarConfig', function(){
+    var config = {
+      templateUrl :'/tenant/assets/templates/af-header-directive-view.html'
+    };
+    this.setTemplateUrl = function (templateUrl) {
+      config.templateUrl = templateUrl;
+    };
+    this.$get = function () { return config; };
+  })
+
+  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
       scope:{
         afHeaderBar:'@'
       },
-      templateUrl:'views/AF/af-header-directive-view.html',
+      templateUrl:afHeaderBarConfig.templateUrl,
       link:function(scope, elm, attrs){
 
         scope.modules = afModuleManager.getEnabledModules();
