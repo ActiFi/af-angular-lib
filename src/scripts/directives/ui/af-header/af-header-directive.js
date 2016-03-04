@@ -2,17 +2,12 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
 
   .provider('afHeaderBarConfig', function(){
-    var config = {
-      templateUrl :'/tenant/assets/templates/af-header-directive-view.html',
-      showAppDropDown:true,
-      showHelpDropDown:true
-    };
-    this.setShowAppDropDown = function (value) { config.showAppDropDown = value; };
-    this.setShowHelpDropDown = function (value) { config.showHelpDropDown = value; };
-    this.setTemplateUrl = function (templateUrl) {
-      config.templateUrl = templateUrl;
-    };
-    this.$get = function () { return config; };
+
+    this.templateUrl = '/tenant/assets/templates/af-header-directive-view.html';
+    this.showAppDropDown = true;
+    this.showHelpDropDown = true;
+
+    this.$get = function () { return this; };
   })
 
   .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager, afHeaderBarConfig) {
