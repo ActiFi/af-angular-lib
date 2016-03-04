@@ -84,16 +84,16 @@ module.exports = function(grunt) {
         nonull: true,
         files: {
           '<%= dirs.js.out %>/af-angular-lib-core.js':[
-            'src/scripts/**/*'
+            'src/scripts/**/*.js'
           ],
           '<%= dirs.js.out %>/af-angular-lib-setup.js':[
             'src/setup/console-fix.js',
-            'src/setup/**/*'
+            'src/setup/**/*.js'
           ],
           '<%= dirs.js.out %>/af-angular-lib.js':[
             'src/setup/console-fix.js',
-            'src/setup/**/*',
-            'src/scripts/**/*'
+            'src/setup/**/*.js',
+            'src/scripts/**/*.js'
           ]
         }
       },

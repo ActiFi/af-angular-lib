@@ -371,8 +371,6 @@ angular.module('af.lib',
 );
 ;
 
-;
-
 angular.module('ui.bootstrap.dropdown', [])
 
   .constant('dropdownConfig', {
@@ -570,8 +568,6 @@ angular.module('ui.bootstrap.dropdown', [])
 
 }).call(this);
 ;
-
-;
 angular.module('af.directive.formGroup', [])
 
   .directive("formGroup", function() {
@@ -601,10 +597,6 @@ angular.module('af.directive.formGroup', [])
     };
   });
 ;
-
-;
-
-;
 angular.module('af.bar', [])
   .directive("afBar", function() {
     return {
@@ -623,101 +615,6 @@ angular.module('af.bar', [])
         '</div>'
     };
   });
-;
-
-@afBarHeight:25px;
-
-#af-bar{
-
-  @actifiBlue : #336699;
-
-  height:@afBarHeight;
-
-  background-color:#EEE;
-  border-top:1px solid #BBB;
-  padding:0;
-  margin:0;
-
-  position: fixed;
-  bottom:0;
-  left:0;
-  right:0;
-
-  .af-bar-title{
-    line-height: @afBarHeight;
-    vertical-align: middle;
-    text-shadow: 0px 1px 1px rgba(0,0,0,0.4);
-    font-size:10pt;
-    letter-spacing:6pt;
-    span:first-child{ color:@actifiBlue; }
-    span{ color:#003366; }
-    /* mediaMobile */
-    @media (@media-mobile) {
-      font-size:8pt;
-      letter-spacing:5pt;
-    }
-    /* iPad and loader */
-    @media (max-width: 1024px) {
-      text-shadow: none;
-    }
-  }
-
-  .af-bar-logo-link:hover{
-    text-decoration: none;
-  }
-
-  .af-bar-logo{
-    background:url('');
-    margin-right:8px;
-    float:left;
-
-    height: @afBarHeight;
-    width:  @afBarHeight;
-
-    @afLogo :   'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAABLAAD/4QMvaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzExMSA3OS4xNTgzMjUsIDIwMTUvMDkvMTAtMDE6MTA6MjAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjI1MjFDRjdBQkM3MDExRTVCQjA0QUQ4MjNDMDdFQkNGIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjI1MjFDRjc5QkM3MDExRTVCQjA0QUQ4MjNDMDdFQkNGIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE0IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjgyNUMwNjg0NDM0NDExRTQ5NjY1RDhFNTUxRUVFODk5IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjgyNUMwNjg1NDM0NDExRTQ5NjY1RDhFNTUxRUVFODk5Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+/+4ADkFkb2JlAGTAAAAAAf/bAIQAAwICAgICAwICAwUDAwMFBQQDAwQFBgUFBQUFBggGBwcHBwYICAkKCgoJCAwMDAwMDA4ODg4OEBAQEBAQEBAQEAEDBAQGBgYMCAgMEg4MDhIUEBAQEBQREBAQEBARERAQEBAQEBEQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAGQAZAwERAAIRAQMRAf/EAHkAAAEEAwAAAAAAAAAAAAAAAAUAAwYIAQIHAQACAwEBAAAAAAAAAAAAAAAAAgMEBgcBEAABAwQCAQQDAQAAAAAAAAABAgMEABEFBiESB1EiEzNBcbEUEQABBAAFBAMAAAAAAAAAAAACAAERAyExQXESkSITBLHBMv/aAAwDAQACEQMRAD8A43MIDCieAK60uXoSrUs3J2OLgJuLlNy5IbdZgLjuokPodF2vjbKQtQcv7bDn8UvMYmWhPwKYh5Uxy2k7XqkVp7Pa9Pw0dxXxMOTYL8RtawCeqS6hIJsL2FIFoHgJM+zymKox/TO27IXUqhUt8S6QnyN5M1zT3+Ic2W2vKOEhKW4Me78paieAA0hXJqr7V3ipItWbDfRWvWq8lojpOO2qtVjcPkN137XfPm3vY5tWlSdkRlZGKmxMo1FxDDT+Rwy3f8LiwC33U2EkhSuo9azLk1dZUjPcwxLO0vgxZrRMLmY2lHbymHnDMclVbyHMiPSozGM3mbu0ZaVSH35seXESw+pRFktSnXSSRz2FvStNQzxiDDtD/CztztOBuXX7URq0qyM63u+a0dGYfwIZS/mcdKwz8h1srcZjTAEvFkhQ6LUkde3PBNQ20jZHLR56Kau0gmNWjqsePt92fRdX2nWsE421A3KOiFmGloKiWWlEpLZBHVVlKFzf2mltoCwhIsxeWXtd5AJC2RNDoPVhQJUITMv6TQhON/Wn9D+UIW1CEqEL/9k=';
-    @afLogo2x : 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAABaAAD/4QMfaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjUtYzAyMSA3OS4xNTU3NzIsIDIwMTQvMDEvMTMtMTk6NDQ6MDAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjgyNUMwNjg1NDM0NDExRTQ5NjY1RDhFNTUxRUVFODk5IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjgyNUMwNjg0NDM0NDExRTQ5NjY1RDhFNTUxRUVFODk5IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE0IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJGOUVGNzZBNjQzNEYwRkVBOEE1OTFBNTY2NjE0MEUzMSIgc3RSZWY6ZG9jdW1lbnRJRD0iRjlFRjc2QTY0MzRGMEZFQThBNTkxQTU2NjYxNDBFMzEiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAOQWRvYmUAZMAAAAAB/9sAhAABAQEBAQEBAQEBAgEBAQICAgEBAgICAgICAgICAwID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';
-    .img-retina(@afLogo, @afLogo2x, @afBarHeight, @afBarHeight);
-  }
-  .af-bar-poweredBy{
-    line-height: @afBarHeight;
-    float:right;
-    font-size:8pt;
-    padding:0 10px 0 0;
-    a{ color:@actifiBlue; }
-  }
-}
-;
-
-;
-<div id="af-breadcrumb" class="clearfix">
-  <ol class="breadcrumb">
-
-    <!-- app drop-down -->
-    <li ng-if="modules.length > 1">
-      <div class="btn-group" dropdown>
-        <button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>
-          <strong class="tenant-primary-font" ng-bind="::currentModule.label"></strong>
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-          <li ng-repeat="module in ::modules">
-            <a href="javascript:;" ng-click="clickModule(module)">
-              <span ng-bind="::module.label"></span>
-              <i class="tenant-primary-font" bs-icon="ok" ng-if="::module.key == currentModule.key"></i>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </li>
-
-    <!-- breadcrumbs -->
-    <li ng-repeat="crumb in crumbs" ng-class="{active:!crumb.state}">
-      <a ui-sref="{{crumb.state}}" ng-if="crumb.state" ng-bind="crumb.label"></a>
-      <span ng-if="!crumb.state" ng-bind="crumb.label"></span>
-    </li>
-
-  </ol>
-</div>
 ;
 angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
@@ -774,96 +671,6 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       return afBreadcrumb;
     });
 ;
-@af-breadcrumb-height : 33px;
-
-#af-breadcrumb{
-  border-top:1px solid #666;
-  border-bottom:1px solid #666;
-  background-color:#666;
-  height:@af-breadcrumb-height; // border top
-
-  ol.breadcrumb{
-    padding:0;
-    margin:0;
-    background-color:transparent;
-    > li, > li > a{
-      color:white;
-    }
-    > li > a{
-      text-decoration: underline;
-    }
-    > li.active{
-      color:#BBB;
-    }
-  }
-}
-;
-
-;
-<div id="af-header">
-  <div id="af-header-brand">
-    <div class="tenant-logo"></div>
-  </div>
-  <ul class="nav nav-pills pull-right">
-
-    <!-- HELP -->
-    <li>
-      <div class="btn-group pull-right" dropdown>
-        <button type="button" style="border:none;" dropdown-toggle
-          class="btn btn-default dropdown-toggle">
-        <span class="tenant-primary-font">Help</span>
-        <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-          <li><a href="javascript:;"><span fa-icon="comment-o" class="text-gray"></span> Contact Support</a></li>
-          <li class="divider"></li>
-          <li><a href="javascript:;">Online Documentation</a></li>
-        </ul>
-      </div>
-    </li>
-
-    <!-- APP -->
-    <li ng-if="modules.length > 1">
-      <div class="btn-group pull-right" dropdown>
-        <button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>
-          <span class="tenant-primary-font" ng-bind="::currentModule.label"></span>
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-          <li ng-repeat="module in ::modules">
-            <a href="javascript:;" ng-click="clickModule(module)">
-              <span ng-bind="::module.label"></span>
-              <i class="tenant-primary-font" bs-icon="ok" ng-if="module.key == currentModule.key"></i>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </li>
-
-    <!-- USER -->
-    <li>
-      <div class="btn-group pull-right" dropdown>
-        <button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>
-          <span fa-icon="user" class="tenant-primary-font visible-xs-inline-block"></span>
-          <span class="hidden-xs tenant-primary-font">{{loggedInUser.displayName}}</span>
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-          <!--<li><a ui-sref="user.summary({userId:loggedInUser.userId})"><span fa-icon="home" class="text-gray"></span> My Home</a></li>-->
-          <li><a href="javascript:;"><span fa-icon="user" class="text-gray"></span> My Profile</a></li>
-          <li class="divider"></li>
-          <li><a href="javascript:;">
-            <span fa-icon="cogs" class="text-gray"></span> Settings</a>
-          </li>
-          <li class="divider"></li>
-          <li><a href="javascript:;" ng-click="logout()"> Logout</a></li>
-        </ul>
-      </div>
-    </li>
-
-  </ul>
-</div>
-;
 angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
   .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager) {
@@ -909,66 +716,6 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
       }
     };
   });
-;
-// allow 60px for logo
-@af-header-padding: 10px;
-@af-header-logo-height: 60px;
-@af-header-height : @af-header-logo-height + (@af-header-padding * 2);
-
-
-#af-header{
-
-  height:@af-header-height;
-  padding:0; //@af-header-padding;
-  margin:0;
-
-  #af-header-brand{
-    float:left;
-    height:@af-header-height;
-    max-height:@af-header-height;
-    overflow: hidden;
-    padding:@af-header-padding;
-  }
-
-}
-;
-
-;
-<div>
-
-  <!-- TOGGLES -->
-  <div id="hideMenuBar" class="pointer" ng-click="toggle()">
-    <h5 class="mar text-right" ng-show="managerBarOpen">Hide Menu <span fa-icon="chevron-left"></span></h5>
-    <h5 class="mar text-right" ng-hide="managerBarOpen" style="padding-right:5px"><span fa-icon="bars"></span></h5>
-  </div>
-  <div id="collapsedMenu" class="text-center pointer"
-       ng-hide="managerBarOpen"
-       ng-click="toggle($event)"></div>
-
-
-  <!-- MENU -->
-  <div ng-show="managerBarOpen">
-    <h4 class="padH">Search <span ng-bind="::'roleUser' | tenantLabel:true"></span></h4>
-    <form ng-sumbit="doSearch()" style="margin-bottom:20px;">
-      <div class="input-group">
-        <input type="text" class="form-control" ng-model="searchOn"
-             placeholder="Search {{::'user' | tenantLabel | plural}}" style="border-left:none;">
-        <span class="input-group-btn">
-          <button type="submit"
-                  ng-click="doSearch()"
-                  class="btn btn-default"
-                  ng-disabled="!searchOn"
-                  style="border-right:none;">
-            <span fa-icon="search"></span>
-          </button>
-        </span>
-      </div>
-    </form>
-    <!--<h4 class="padH"><span ng-bind="::'roleCoach' | tenantLabel"></span> Menu</h4>-->
-    <h4 class="padH">[[APP NAME]] Menu</h4>
-    <div ng-transclude></div>
-  </div>
-</div>
 ;
 angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
@@ -1118,8 +865,6 @@ angular.module('af.validators', [])
   })
 ;
 
-;
-
 angular.module('af.filters', ['af.appTenant', 'af.util'])
 
   .filter('formatNumber', function(afUtil) {
@@ -1137,8 +882,6 @@ angular.module('af.filters', ['af.appTenant', 'af.util'])
   .filter('formatTargetValue', function(afUtil) {
     return afUtil.format.targetValue;
   })
-;
-
 ;
 
 angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jwtManager'])
@@ -1504,10 +1247,6 @@ angular.module('af.screenManager', ['$'])
       };
     });
 ;
-
-;
-
-;
 angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
 
   .constant('AF_API_CONFIG', {
@@ -1597,8 +1336,6 @@ angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
     };
   });
 
-
-;
 
 ;
 /*! angular-shims-placeholder - v0.4.5 - 2015-07-01
@@ -1796,8 +1533,6 @@ angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
     };
   }
 })(this);
-;
-
 ;
 angular.module('af.appCatch', [])
   .service('appCatch', function($window) {
@@ -2272,8 +2007,6 @@ angular.module('moment', [])
   .factory('moment', [ '$window',
     function ($window) { return $window.moment; }
   ]);
-;
-
 ;
 
 angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
