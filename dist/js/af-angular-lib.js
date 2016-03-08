@@ -623,13 +623,14 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         crumbs:[]
       }
     })
+
     // config
     .provider('afBreadcrumbConfig', function(){
       this.templateUrl = '/tenant/assets/templates/af-breadcrumb-directive-view.html';
       this.showAppDropDown = true;
-
       this.$get = function () { return this; };
     })
+
     .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
@@ -673,11 +674,9 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
 
   .provider('afHeaderBarConfig', function(){
-
     this.templateUrl = '/tenant/assets/templates/af-header-directive-view.html';
     this.showAppDropDown = true;
     this.showHelpDropDown = true;
-
     this.$get = function () { return this; };
   })
 
@@ -734,13 +733,8 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
   .provider('afSideBarConfig', function(){
-    var config = {
-      templateUrl :'/tenant/assets/templates/af-sidebar-directive-view.html'
-    };
-    this.setTemplateUrl = function (templateUrl) {
-      config.templateUrl = templateUrl;
-    };
-    this.$get = function () { return config; };
+    this.templateUrl = '/tenant/assets/templates/af-sidebar-directive-view.html';
+    this.$get = function () { return this; };
   })
 
   .directive('afSideBar',  function(appTenant, $window, amplify, afSideBarConfig) {
@@ -910,31 +904,29 @@ angular.module('af.filters', ['af.appTenant', 'af.util'])
 
 angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jwtManager'])
 
-  .constant('AF_AUTH_MANAGER_CONFIG', {
 
-    tokenPriority:['url', 'cache', 'window'],
-    cacheFor:86400000, // 1 day
-
-    cacheSessionTokenAs:'sessionToken',
-    cacheWebTokenAs:'webToken',
-    cacheUserAs:'loggedInUser'
-
+  // config
+  .provider('afAuthManagerConfig', function(){
+    this.tokenPriority = ['url', 'cache', 'window'];
+    this.cacheFor = 86400000; // 1 day
+    this.cacheSessionTokenAs = 'sessionToken';
+    this.cacheJwtAs = 'jwt';
+    this.cacheUserAs = 'loggedInUser';
+    this.$get = function () { return this; };
   })
 
-  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, afJwtManager, $window) {
+  .service('afAuthManager', function(afAuthManagerConfig, _, $log, afUtil, amplify, afJwtManager, $window) {
 
     var store = function(key, value, expires){
-      expires = expires || AF_AUTH_MANAGER_CONFIG.cacheFor;
+      expires = expires || afAuthManagerConfig.cacheFor;
       if(_.isNumber(expires))
         expires = {expires:expires};
-
-      if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
       amplify.store(key, value, expires);
     };
 
 
     var getViaPriority  = function(key, priorities){
-      priorities = priorities || AF_AUTH_MANAGER_CONFIG.tokenPriority;
+      priorities = priorities || afAuthManagerConfig.tokenPriority;
       // cycle through possible locations..
       var value = null;
       _.each(priorities, function(priority) {
@@ -949,17 +941,30 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
     };
 
 
+    var getSessionTokenFromJWT = function(priorities){
+      var jwt = afAuthManager.jwt(priorities);
+      if(!afAuthManager.jwt())
+        return null;
+      var decodedToken = afJwtManager.decode(jwt);
+      if(decodedToken && decodedToken.sessionToken)
+        return decodedToken.sessionToken;
+      return null;
+    };
+
     var afAuthManager = {
 
       //
       // JSON WEB TOKEN
       //
-      setWebToken:function(jwt){
+      setJWT:function(jwt){
         var decodedToken = afJwtManager.decode(jwt);
+        if(!decodedToken)
+          return $log.error('Could not setJWT. Invalid JWT');
+
         var timeTillExpires = afJwtManager.millisecondsTillExpires(decodedToken.exp);
 
         // cache both coded and decoded version till it expires
-        store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt, timeTillExpires);
+        store(afAuthManagerConfig.cacheJwtAs, jwt, timeTillExpires);
         // cache decoded as user...
         afAuthManager.setUser(decodedToken, timeTillExpires);
 
@@ -967,18 +972,20 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
           $log.info('afAuthManager - User Set:', afAuthManager.user());
         $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
-      webToken:function(priorities){
-        return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
+      jwt:function(priorities){
+        return getViaPriority(afAuthManagerConfig.cacheJwtAs, priorities);
       },
 
       //
       // SESSION TOKEN (DEPRECATED)
       //
       setSessionToken:function(sessionToken){
-        store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, sessionToken);
+        store(afAuthManagerConfig.cacheSessionTokenAs, sessionToken);
       },
       sessionToken: function(priorities){
-        return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, priorities);
+        var token = getViaPriority(afAuthManagerConfig.cacheSessionTokenAs, priorities);
+        if(!token) token = getSessionTokenFromJWT(priorities);
+        return token;
       },
 
 
@@ -989,7 +996,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         // put a "displayName" on the user
         user.displayName = afUtil.createDisplayName(user, appTenant.config('app.preferredDisplayName'));
         // cache user
-        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user, expires);
+        store(afAuthManagerConfig.cacheUserAs, user, expires);
 
         // support old apps
         store('userName',     user.displayName, expires); // this is not username.. its the persons name.. ffs.
@@ -999,7 +1006,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         store('tenantId',     user.tenant, expires);
       },
       user:function(){
-        return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
+        return amplify.store(afAuthManagerConfig.cacheUserAs);
       },
       userId:function(){
         var user = afAuthManager.user();
@@ -1013,13 +1020,14 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
       // MISC
       //
       isLoggedIn:function(){
-        return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.webToken())
+        return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.jwt())
       },
       // CLEAR / LOGOUT
       clear: function() {
-        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, null);
-        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, null);
-        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, null);
+        // just kill all cached data if logout
+        _.keys(amplify.store(), function(key){
+          amplify.store(key, null);
+        });
       }
     };
     // alias
@@ -1063,6 +1071,10 @@ angular.module('af.jwtManager', ['moment'])
           if(!token) return false;
           var encoded = token.split('.')[1];
           var decoded = JSON.parse(urlBase64Decode(encoded));
+          if(afJwtManager.hasExpired(decoded)){
+            $log.info('Token has expired');
+            return false;
+          }
           return decoded;
         },
 
@@ -1285,33 +1297,38 @@ angular.module('af.screenManager', ['$'])
 ;
 angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
 
-  .constant('AF_API_CONFIG', {
-    autoErrorDisplay:true,    // call msg.error on error
-    autoErrorLog:true,        // send errors to sentry
-    attachWebToken:true,      // attach webToken to header
-    attachSessionToken:false, // attach sessionToken to request params
-    attachTenantIndex:true,   // attach sessionToken to request params
-    urlEncode:false           // send as urlEncoded instead of json
+  // config
+  .provider('afApiConfig', function(){
+    this.autoErrorDisplay = true;     // call msg.error on error
+    this.autoErrorLog = true;         // send errors to sentry
+    this.attachJWT = true;            // attach webToken to header
+    this.attachSessionToken = false;  // attach sessionToken to request params
+    this.attachTenantIndex = true;    // attach db index to request params
+    this.urlEncode = false;           // send as urlEncoded instead of json
+    this.$get = function () { return this; };
   })
 
-  .service('afApi', function($http, $log, _, $q, afApiUtil, afMsg, AF_API_CONFIG) {
+  .service('afApi', function($http, $log, _, $q, afApiUtil, afMsg, afApiConfig) {
 
       var afApi = null;
       return afApi = {
 
         call: function(url, params, options) {
+
           options = options || {};
+
           var defaults = {
             url:url,
             method: options.method || 'post',
             data: params
           };
-          var request = _.extend(defaults, AF_API_CONFIG, options);
+
+          var request = _.extend(defaults, afApiConfig, options);
 
           // AUTO ATTACH SOME DATA
           // (unless requested off)
-          if(request.attachWebToken === true)
-            request = afApiUtil.request.attachWebToken(request);
+          if(request.attachJWT === true)
+            request = afApiUtil.request.attachJWT(request);
           if(request.attachSessionToken === true)
             request = afApiUtil.request.attachSessionToken(request);
           if(request.attachTenantIndex === true)
@@ -1325,7 +1342,7 @@ angular.module('af.api', ['_', 'af.apiUtil', 'af.msg'])
             })
             .catch(function(response){
               afApi.errorHandler(response);
-              return $q.reject(response);
+              return $q.reject(response); // continue with rejection... (must be handled by client)
             })
         },
 
@@ -1570,53 +1587,24 @@ angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
   }
 })(this);
 ;
-angular.module('af.appCatch', [])
-  .service('appCatch', function($window) {
-    return $window.appCatch;
-  });
-;
-angular.module('af.appEnv', [])
-  .service('appEnv', function($window) {
-    return $window.appEnv;
-  });
-;
-angular.module('af.appTenant', ['af.appEnv'])
-
-  .service('appTenant', function($window) {
-    return $window.appTenant;
-  })
-
-  // include some filters
-  .filter('appTenant',    function(appTenant) {  return appTenant.config;     })
-  .filter('tenantConfig', function(appTenant) {  return appTenant.config;     }) // alias
-  .filter('tenantLabel',  function(appTenant) {  return appTenant.label;      })
-  .filter('plural',       function(appTenant) {  return appTenant.makePlural; })
-
-  .filter('tenantImage', function(appEnv) {
-    return function(file) {
-      return '/tenant/' + appEnv.TENANT_HASH() + '/images/' + appEnv.TENANT_HASH() + '_' + file;
-    };
-  });
-;
-angular.module('af.appTrack', [])
-  .service('appTrack', function($window) {
-    return $window.appTrack;
-  });
-;
 
 angular.module('af.event', [])
 
-  .constant('$EVENT_CONFIG', {suppress:['Loader.start', 'Loader.stop', 'Msg.clear']} )
+  // config
+  .provider('afEventConfig', function(){
+    this.suppress = ['Loader.start', 'Loader.stop', 'Msg.clear'];
+    this.$get = function () { return this; };
+  })
 
-  .service('afEvent', function($rootScope, $log, $EVENT_CONFIG) {
+  .service('afEvent', function($rootScope, $log, afEventConfig) {
 
     var logEvent = function(type, eventName, data) {
-      if(!_.includes($EVENT_CONFIG.suppress, eventName))
+      if(!_.includes(afEventConfig.suppress, eventName))
         $log.debug('afEvent.' + type + ': ' + eventName, data);
     };
 
-    var service = null;
-    return service = {
+    var afEvent = null;
+    return afEvent = {
 
       EVENT_loaderStart: 'Loader.start',
       EVENT_loaderStop: 'Loader.stop',
@@ -1735,11 +1723,13 @@ angular.module('af.loader', ['af.event'])
 
 angular.module('af.modal', ['af.event'])
 
-  .constant('AF_MODAL_CONFIG', {
-    genericModalPath:'src/views/templates/generic.modal.view.html'
+  // config
+  .provider('afEventConfig', function(){
+    this.genericModalPath = 'client/views/partials/generic.modal.view.html';
+    this.$get = function () { return this; };
   })
 
-  .service("afModal", function(afEvent, AF_MODAL_CONFIG) {
+  .service("afModal", function(afEvent, afEventConfig) {
     var service;
     service = {
       isOpen:false,
@@ -1750,7 +1740,7 @@ angular.module('af.modal', ['af.event'])
         service.url = url;
         service.controller = ctrl;
         service.size = size; // lg, md, sm
-        if (!service.url) service.url = AF_MODAL_CONFIG.genericModalPath;
+        if (!service.url) service.url = afEventConfig.genericModalPath;
         afEvent.shout("Modal.open", {
           url: service.url,
           controller: service.controller,
@@ -1774,7 +1764,7 @@ angular.module('af.modal', ['af.event'])
           ctrl.title = title;
           ctrl.body = body;
         }
-        service.open(AF_MODAL_CONFIG.genericModalPath, ctrl);
+        service.open(afEventConfig.genericModalPath, ctrl);
       }
     };
     return service;
@@ -1827,7 +1817,6 @@ angular.module('af.modal', ['af.event'])
   })
 
   .controller('GenericModalCtrl', function($scope, afModal) {
-
     /*
     Example usage
     afModal.open('client/views/analyzers/client.profitability.settings.php', {
@@ -1964,84 +1953,99 @@ angular.module('af.msg', ['af.event', '_'])
 
 ;
 //
-// SIMPLE WRAPPER AROUND AMPLIFY.STORE TO ALLOW NAME SPACING...
+// SIMPLE WRAPPER AROUND AMPLIFY.STORE
 //
-angular.module('af.storage', [])
-
-  .constant('AF_STORAGE_CONFIG', {persistent_prefix:'myApp'} )
-
-  .service('afStorage', function(AF_STORAGE_CONFIG, $log) {
-
-    var prefix = AF_STORAGE_CONFIG.persistent_prefix;
-
-    // determine if data belons to this app
-    var isAppData = function(key){
-      return key.indexOf(prefix+'_') === 0;
-    };
-
-    var storage = null;
-    return storage = {
-
-      // amplify wrapper
-      amplify:function(key, value, options){
-        if(_.isNumber(options)) options = { expires:options };
-        return amplify.store(prefix+'_'+key, value, options);
-      },
-
+angular.module('af.storage', [ '_', 'amplify' ])
+  .service('afStorage', function(amplify, _) {
+    var afStorage = null;
+    return afStorage = {
       // STORE
       store:function(key, value, options){
-        return storage.amplify(key, value, options);
+        if(_.isNumber(options)) options = { expires:options };
+        return amplify.store(key, value, options);
       },
-
       // CLEAR
       clear: function(key) {
-        if(key) {
-          // clear one thing
-          storage.amplify(key, null);
-        } else {
-          // clear all app data
-          _.keys(amplify.store(), function(key){
-            if(isAppData(key))
-              amplify.store(key, null);
-          });
-        }
-      },
-
-      // NUKE
-      // clear everything (all amplify data
-      nuke:function(){
         _.keys(amplify.store(), function(key){
           amplify.store(key, null);
         });
       }
-
     };
+    return afStorage;
   });
 
 
 ;
-//these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
-angular.module('_', [])
-  .factory('_', [ '$window',
-    function ($window) { return $window._; }
-  ]);
+angular.module('af.appCatch', [])
+  .service('appCatch', function($window) {
+    return $window.appCatch;
+  });
+;
+angular.module('af.appEnv', [])
+  .service('appEnv', function($window) {
+    return $window.appEnv;
+  });
+;
+angular.module('af.appTenant', ['af.appEnv'])
+
+  .service('appTenant', function($window) {
+    return $window.appTenant;
+  })
+
+  // include some filters
+  .filter('appTenant',    function(appTenant) {  return appTenant.config;     })
+  .filter('tenantConfig', function(appTenant) {  return appTenant.config;     }) // alias
+  .filter('tenantLabel',  function(appTenant) {  return appTenant.label;      })
+  .filter('plural',       function(appTenant) {  return appTenant.makePlural; })
+
+  .filter('tenantImage', function(appEnv) {
+    return function(file) {
+      return '/tenant/' + appEnv.TENANT_HASH() + '/images/' + appEnv.TENANT_HASH() + '_' + file;
+    };
+  });
+;
+angular.module('af.appTrack', [])
+  .service('appTrack', function($window) {
+    return $window.appTrack;
+  });
 ;
 //these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
 angular.module('amplify', [])
   .factory('amplify', [ '$window',
-    function ($window) { return $window.amplify; }
+    function ($window, $log) {
+      if(typeof $window.amplify === void 0)
+        $log.error('Failed to initialize amplify. Amplify undefined.');
+      return $window.amplify;
+    }
   ]);
 ;
 //these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
 angular.module('$', [])
   .factory('$', [ '$window',
-    function ($window) { return $window.jQuery; }
+    function ($window, $log) {
+      if(typeof $window.jQuery === void 0)
+        $log.error('Failed to initialize $. jQuery undefined.');
+      return $window.jQuery; }
+  ]);
+;
+//these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
+angular.module('_', [])
+  .factory('_', [ '$window',
+    function ($window, $log) {
+      if(typeof $window._ === void 0)
+        $log.error('Failed to initialize lodash. lodash undefined.');
+      return $window._;
+    }
   ]);
 ;
 //these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
 angular.module('moment', [])
   .factory('moment', [ '$window',
-    function ($window) { return $window.moment; }
+    function ($window, $log) {
+      if(typeof $window.moment === void 0)
+        $log.error('Failed to initialize moment. Moment undefined.');
+      return $window.moment;
+    }
   ]);
 ;
 
@@ -2070,8 +2074,8 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
 
 
         request:{
-          attachWebToken:function(request){
-            var token = afAuthManager.webToken();
+          attachJWT:function(request){
+            var token = afAuthManager.jwt();
             if(token && token !== '') {
               request.headers = request.headers || {};
               request.headers.authorization = 'Bearer ' + token;

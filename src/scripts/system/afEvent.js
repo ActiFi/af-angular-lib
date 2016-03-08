@@ -1,17 +1,21 @@
 
 angular.module('af.event', [])
 
-  .constant('$EVENT_CONFIG', {suppress:['Loader.start', 'Loader.stop', 'Msg.clear']} )
+  // config
+  .provider('afEventConfig', function(){
+    this.suppress = ['Loader.start', 'Loader.stop', 'Msg.clear'];
+    this.$get = function () { return this; };
+  })
 
-  .service('afEvent', function($rootScope, $log, $EVENT_CONFIG) {
+  .service('afEvent', function($rootScope, $log, afEventConfig) {
 
     var logEvent = function(type, eventName, data) {
-      if(!_.includes($EVENT_CONFIG.suppress, eventName))
+      if(!_.includes(afEventConfig.suppress, eventName))
         $log.debug('afEvent.' + type + ': ' + eventName, data);
     };
 
-    var service = null;
-    return service = {
+    var afEvent = null;
+    return afEvent = {
 
       EVENT_loaderStart: 'Loader.start',
       EVENT_loaderStop: 'Loader.stop',

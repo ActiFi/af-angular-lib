@@ -1,31 +1,29 @@
 
 angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jwtManager'])
 
-  .constant('AF_AUTH_MANAGER_CONFIG', {
 
-    tokenPriority:['url', 'cache', 'window'],
-    cacheFor:86400000, // 1 day
-
-    cacheSessionTokenAs:'sessionToken',
-    cacheWebTokenAs:'webToken',
-    cacheUserAs:'loggedInUser'
-
+  // config
+  .provider('afAuthManagerConfig', function(){
+    this.tokenPriority = ['url', 'cache', 'window'];
+    this.cacheFor = 86400000; // 1 day
+    this.cacheSessionTokenAs = 'sessionToken';
+    this.cacheJwtAs = 'jwt';
+    this.cacheUserAs = 'loggedInUser';
+    this.$get = function () { return this; };
   })
 
-  .service('afAuthManager', function(AF_AUTH_MANAGER_CONFIG, $log, afUtil, amplify, afJwtManager, $window) {
+  .service('afAuthManager', function(afAuthManagerConfig, _, $log, afUtil, amplify, afJwtManager, $window) {
 
     var store = function(key, value, expires){
-      expires = expires || AF_AUTH_MANAGER_CONFIG.cacheFor;
+      expires = expires || afAuthManagerConfig.cacheFor;
       if(_.isNumber(expires))
         expires = {expires:expires};
-
-      if(typeof amplify === void 0) $log.error('Failed to '+key+'. Amplify undefined.');
       amplify.store(key, value, expires);
     };
 
 
     var getViaPriority  = function(key, priorities){
-      priorities = priorities || AF_AUTH_MANAGER_CONFIG.tokenPriority;
+      priorities = priorities || afAuthManagerConfig.tokenPriority;
       // cycle through possible locations..
       var value = null;
       _.each(priorities, function(priority) {
@@ -40,17 +38,30 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
     };
 
 
+    var getSessionTokenFromJWT = function(priorities){
+      var jwt = afAuthManager.jwt(priorities);
+      if(!afAuthManager.jwt())
+        return null;
+      var decodedToken = afJwtManager.decode(jwt);
+      if(decodedToken && decodedToken.sessionToken)
+        return decodedToken.sessionToken;
+      return null;
+    };
+
     var afAuthManager = {
 
       //
       // JSON WEB TOKEN
       //
-      setWebToken:function(jwt){
+      setJWT:function(jwt){
         var decodedToken = afJwtManager.decode(jwt);
+        if(!decodedToken)
+          return $log.error('Could not setJWT. Invalid JWT');
+
         var timeTillExpires = afJwtManager.millisecondsTillExpires(decodedToken.exp);
 
         // cache both coded and decoded version till it expires
-        store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, jwt, timeTillExpires);
+        store(afAuthManagerConfig.cacheJwtAs, jwt, timeTillExpires);
         // cache decoded as user...
         afAuthManager.setUser(decodedToken, timeTillExpires);
 
@@ -58,18 +69,20 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
           $log.info('afAuthManager - User Set:', afAuthManager.user());
         $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
-      webToken:function(priorities){
-        return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, priorities);
+      jwt:function(priorities){
+        return getViaPriority(afAuthManagerConfig.cacheJwtAs, priorities);
       },
 
       //
       // SESSION TOKEN (DEPRECATED)
       //
       setSessionToken:function(sessionToken){
-        store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, sessionToken);
+        store(afAuthManagerConfig.cacheSessionTokenAs, sessionToken);
       },
       sessionToken: function(priorities){
-        return getViaPriority(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, priorities);
+        var token = getViaPriority(afAuthManagerConfig.cacheSessionTokenAs, priorities);
+        if(!token) token = getSessionTokenFromJWT(priorities);
+        return token;
       },
 
 
@@ -80,7 +93,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         // put a "displayName" on the user
         user.displayName = afUtil.createDisplayName(user, appTenant.config('app.preferredDisplayName'));
         // cache user
-        store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, user, expires);
+        store(afAuthManagerConfig.cacheUserAs, user, expires);
 
         // support old apps
         store('userName',     user.displayName, expires); // this is not username.. its the persons name.. ffs.
@@ -90,7 +103,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         store('tenantId',     user.tenant, expires);
       },
       user:function(){
-        return amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs);
+        return amplify.store(afAuthManagerConfig.cacheUserAs);
       },
       userId:function(){
         var user = afAuthManager.user();
@@ -104,13 +117,14 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
       // MISC
       //
       isLoggedIn:function(){
-        return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.webToken())
+        return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.jwt())
       },
       // CLEAR / LOGOUT
       clear: function() {
-        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheSessionTokenAs, null);
-        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheWebTokenAs, null);
-        amplify.store(AF_AUTH_MANAGER_CONFIG.cacheUserAs, null);
+        // just kill all cached data if logout
+        _.keys(amplify.store(), function(key){
+          amplify.store(key, null);
+        });
       }
     };
     // alias

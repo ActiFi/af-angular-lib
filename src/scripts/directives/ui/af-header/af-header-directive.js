@@ -2,11 +2,9 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
 
   .provider('afHeaderBarConfig', function(){
-
     this.templateUrl = '/tenant/assets/templates/af-header-directive-view.html';
     this.showAppDropDown = true;
     this.showHelpDropDown = true;
-
     this.$get = function () { return this; };
   })
 

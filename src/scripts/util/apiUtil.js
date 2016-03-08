@@ -24,8 +24,8 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
 
 
         request:{
-          attachWebToken:function(request){
-            var token = afAuthManager.webToken();
+          attachJWT:function(request){
+            var token = afAuthManager.jwt();
             if(token && token !== '') {
               request.headers = request.headers || {};
               request.headers.authorization = 'Bearer ' + token;

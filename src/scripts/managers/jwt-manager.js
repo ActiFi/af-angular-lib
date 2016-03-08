@@ -33,6 +33,10 @@ angular.module('af.jwtManager', ['moment'])
           if(!token) return false;
           var encoded = token.split('.')[1];
           var decoded = JSON.parse(urlBase64Decode(encoded));
+          if(afJwtManager.hasExpired(decoded)){
+            $log.info('Token has expired');
+            return false;
+          }
           return decoded;
         },
 

@@ -1,11 +1,13 @@
 
 angular.module('af.modal', ['af.event'])
 
-  .constant('AF_MODAL_CONFIG', {
-    genericModalPath:'src/views/templates/generic.modal.view.html'
+  // config
+  .provider('afEventConfig', function(){
+    this.genericModalPath = 'client/views/partials/generic.modal.view.html';
+    this.$get = function () { return this; };
   })
 
-  .service("afModal", function(afEvent, AF_MODAL_CONFIG) {
+  .service("afModal", function(afEvent, afEventConfig) {
     var service;
     service = {
       isOpen:false,
@@ -16,7 +18,7 @@ angular.module('af.modal', ['af.event'])
         service.url = url;
         service.controller = ctrl;
         service.size = size; // lg, md, sm
-        if (!service.url) service.url = AF_MODAL_CONFIG.genericModalPath;
+        if (!service.url) service.url = afEventConfig.genericModalPath;
         afEvent.shout("Modal.open", {
           url: service.url,
           controller: service.controller,
@@ -40,7 +42,7 @@ angular.module('af.modal', ['af.event'])
           ctrl.title = title;
           ctrl.body = body;
         }
-        service.open(AF_MODAL_CONFIG.genericModalPath, ctrl);
+        service.open(afEventConfig.genericModalPath, ctrl);
       }
     };
     return service;
@@ -93,7 +95,6 @@ angular.module('af.modal', ['af.event'])
   })
 
   .controller('GenericModalCtrl', function($scope, afModal) {
-
     /*
     Example usage
     afModal.open('client/views/analyzers/client.profitability.settings.php', {
