@@ -4,7 +4,7 @@
 
 angular.module('af.screenManager', ['$'])
 
-    .service("screenManager", function($) {
+    .service("afScreenManager", function($) {
 
       // add div to dom that hide/show with different screen sizes via css.
       var media = '<div id="mq-xs-visible" class="visible-xs" style="width:1px; height: 1px;"></div>'+

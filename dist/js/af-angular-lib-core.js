@@ -2,7 +2,8 @@
 angular.module('af.lib',
   [
   // DIRECTIVES
-    'af.directive.formGroup',
+    //'af.formMessenger',         // not part of default build
+    //'af.directive.formGroup',   // not part of default build
     //'af.validators'           // not part of default build
     'af.bar',
     //'af.headerBar',           // not part of default build
@@ -241,6 +242,35 @@ angular.module('ui.bootstrap.dropdown', [])
   })
 
 }).call(this);
+;
+// Makes hiding showing of form messages easier
+// EXAMPLE :
+
+// ctrl.showIfInvalid = formMessenger.showIfInvalid;
+
+//<form name="ctrl.form">
+//  <div class="alert alert-danger alert-sm"
+//       ng-if="ctrl.showIfInvalid(ctrl.form, 'vPassword')"   // <-- hide/show message
+//       ng-messages="ctrl.form.vPassword.$error">            // <-- defines the message
+//    <!-- af default messages -->
+//    <div ng-messages-include="form-messages"></div>
+//    <!-- custom messages for this field-->
+//    <div ng-message="match">Fields do not match. You must type in your new password twice.</div>
+//  </div>
+//</form>
+angular.module('af.formMessenger', [])
+  .service('formMessenger', function() {
+    var formMessenger = null;
+    return formMessenger = {
+      showIfInvalid:function(form, field) {
+        if(!form) return false;
+        return (form[field].$dirty && form[field].$invalid) ||
+               (form.$submitted && form[field].$invalid);
+      }
+    };
+  });
+
+
 ;
 angular.module('af.directive.formGroup', [])
 
@@ -557,7 +587,7 @@ angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.m
   });
 ;
 
-angular.module('af.filters', ['af.appTenant', 'af.util'])
+angular.module('af.formatterFilters', ['af.appTenant', 'af.util'])
 
   .filter('formatNumber', function(afUtil) {
     return afUtil.format.number;
@@ -1077,7 +1107,7 @@ angular.module('af.roleManager', ['_', 'af.authManager'])
 
 angular.module('af.screenManager', ['$'])
 
-    .service("screenManager", function($) {
+    .service("afScreenManager", function($) {
 
       // add div to dom that hide/show with different screen sizes via css.
       var media = '<div id="mq-xs-visible" class="visible-xs" style="width:1px; height: 1px;"></div>'+

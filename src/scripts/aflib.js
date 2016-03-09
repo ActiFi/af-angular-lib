@@ -2,7 +2,8 @@
 angular.module('af.lib',
   [
   // DIRECTIVES
-    'af.directive.formGroup',
+    //'af.formMessenger',         // not part of default build
+    //'af.directive.formGroup',   // not part of default build
     //'af.validators'           // not part of default build
     'af.bar',
     //'af.headerBar',           // not part of default build
