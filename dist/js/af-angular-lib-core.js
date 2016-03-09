@@ -936,8 +936,8 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
           switch(redirectKey){
 
             //
-            // PORTAL
-            case 'portal':
+            // PORTAL/ROADMAP
+            case 'roadmap':
               if(!sessionCheck(redirectKey)) return;   // ensure logged in
               go('/portal/login-window.php', replace); // page that has code to mimic portals login page.
               return $q.when('success');
