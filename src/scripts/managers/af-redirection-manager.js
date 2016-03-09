@@ -36,17 +36,6 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         return _.keys(params).length ? '?'+$httpParamSerializer(params):'';
       };
 
-      var loggedIn = function(redirectKey, defer){
-        if(!afAuthManager.isLoggedIn()){
-          redirectError(redirectKey, 'redirect attempted, but user was not logged in.', defer);
-          afRedirectionManager.redirect('auth', {redirect:redirectKey || ''});
-          return false;
-        }
-        return true;
-      };
-
-
-
 
 
       var afRedirectionManager;
@@ -55,15 +44,17 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         //
         // MAIN REDIRECT FUNCTIONS
         //
-        redirect:function(redirectKey, params, replace){
+        redirect:function(redirectKey, params, replace) {
           var defer = $q.defer();
-          redirectKey = (''+redirectKey).toLowerCase();
+          redirectKey = ('' + redirectKey).toLowerCase();
 
-          // PUBLIC REDIRECT
+
+          // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
 
             var queryString = convertToHttpParams(params);
             go('/auth/#/login'+queryString, true);
+
 
           // MUST BE LOGGED IN....
           } else if(!afAuthManager.isLoggedIn()) {
@@ -72,7 +63,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             var error = 'afRedirectManager.redirect to '+redirectKey+' attempted, but user was not logged in.';
             appCatch.send(error);
             // send them to auth....
-            afRedirectionManager.redirect('auth', {redirect:redirectKey || ''});
+            afRedirectionManager.invalidSession({redirect:redirectKey || ''});
 
           } else {
 
@@ -157,7 +148,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
 
         // redirect to auth because of session issues...
-        loggedOut:function(options){
+        logout:function(options){
           options = options || {};
           options.action = 'logout';
           afRedirectionManager.redirect('auth', options);

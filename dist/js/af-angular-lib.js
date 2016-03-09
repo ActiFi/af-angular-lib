@@ -789,7 +789,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       return afBreadcrumb;
     });
 ;
-angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appEnv', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -799,7 +799,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, appEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -825,24 +825,12 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
 
 
-        scope.clickModule = function(module){
-          console.log('TODO...');
-          //afModuleManager.redirectToModule(module)
-            //.catch(function());
+        scope.clickModule = function(desiredModule){
+          afRedirectionManager.changeApp(desiredModule);
         };
-
-        var getRedirect = function(){
-         return attrs.afHeaderBar ?  '&redirect='+attrs.afHeaderBar:'';
-        };
-        scope.logout = function(){
+        scope.logout = function(options){
           afAuthManager.logout();
-          $window.location = '/auth/#/login?action=logout'+getRedirect();
-        };
-
-        // auto log them out if not valid session
-        if(!afAuthManager.isLoggedIn()){
-          afAuthManager.logout();
-          $window.location = '/auth/#/login?action=invalidsession'+getRedirect();
+          afRedirectionManager.logout(options);
         };
 
       }
@@ -1238,17 +1226,6 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         return _.keys(params).length ? '?'+$httpParamSerializer(params):'';
       };
 
-      var loggedIn = function(redirectKey, defer){
-        if(!afAuthManager.isLoggedIn()){
-          redirectError(redirectKey, 'redirect attempted, but user was not logged in.', defer);
-          afRedirectionManager.redirect('auth', {redirect:redirectKey || ''});
-          return false;
-        }
-        return true;
-      };
-
-
-
 
 
       var afRedirectionManager;
@@ -1257,15 +1234,17 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         //
         // MAIN REDIRECT FUNCTIONS
         //
-        redirect:function(redirectKey, params, replace){
+        redirect:function(redirectKey, params, replace) {
           var defer = $q.defer();
-          redirectKey = (''+redirectKey).toLowerCase();
+          redirectKey = ('' + redirectKey).toLowerCase();
 
-          // PUBLIC REDIRECT
+
+          // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
 
             var queryString = convertToHttpParams(params);
             go('/auth/#/login'+queryString, true);
+
 
           // MUST BE LOGGED IN....
           } else if(!afAuthManager.isLoggedIn()) {
@@ -1274,7 +1253,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             var error = 'afRedirectManager.redirect to '+redirectKey+' attempted, but user was not logged in.';
             appCatch.send(error);
             // send them to auth....
-            afRedirectionManager.redirect('auth', {redirect:redirectKey || ''});
+            afRedirectionManager.invalidSession({redirect:redirectKey || ''});
 
           } else {
 
@@ -1359,7 +1338,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
 
         // redirect to auth because of session issues...
-        loggedOut:function(options){
+        logout:function(options){
           options = options || {};
           options.action = 'logout';
           afRedirectionManager.redirect('auth', options);

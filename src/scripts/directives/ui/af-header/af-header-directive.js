@@ -1,4 +1,4 @@
-angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appEnv', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -8,7 +8,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, appEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -34,24 +34,12 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
 
 
 
-        scope.clickModule = function(module){
-          console.log('TODO...');
-          //afModuleManager.redirectToModule(module)
-            //.catch(function());
+        scope.clickModule = function(desiredModule){
+          afRedirectionManager.changeApp(desiredModule);
         };
-
-        var getRedirect = function(){
-         return attrs.afHeaderBar ?  '&redirect='+attrs.afHeaderBar:'';
-        };
-        scope.logout = function(){
+        scope.logout = function(options){
           afAuthManager.logout();
-          $window.location = '/auth/#/login?action=logout'+getRedirect();
-        };
-
-        // auto log them out if not valid session
-        if(!afAuthManager.isLoggedIn()){
-          afAuthManager.logout();
-          $window.location = '/auth/#/login?action=invalidsession'+getRedirect();
+          afRedirectionManager.logout(options);
         };
 
       }
