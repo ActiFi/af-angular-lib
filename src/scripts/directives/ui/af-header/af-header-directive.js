@@ -23,7 +23,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
         scope.showAppDropDown = afHeaderBarConfig.showAppDropDown;
         scope.showHelpDropDown = afHeaderBarConfig.showHelpDropDown;
 
-        scope.modules = afModuleManager.getModulesForDropDown();
+        scope.modules = afModuleManager.getUserAccessibleModules();
 
         // enable currentModule:
         _.each(scope.modules, function(module){

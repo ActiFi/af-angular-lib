@@ -319,7 +319,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         link:function(scope, elm, attrs){
 
           scope.showAppDropDown = afBreadcrumbConfig.showAppDropDown;
-          scope.modules = afModuleManager.getModulesForDropDown();
+          scope.modules = afModuleManager.getUserAccessibleModules();
 
 
           _.each(scope.modules, function(module){
@@ -371,7 +371,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.moduleMana
         scope.showAppDropDown = afHeaderBarConfig.showAppDropDown;
         scope.showHelpDropDown = afHeaderBarConfig.showHelpDropDown;
 
-        scope.modules = afModuleManager.getModulesForDropDown();
+        scope.modules = afModuleManager.getUserAccessibleModules();
 
         // enable currentModule:
         _.each(scope.modules, function(module){
@@ -830,7 +830,7 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           })
         },
 
-        getModulesForDropDown:function(){
+        getUserAccessibleModules:function(){
           return _.filter(afModuleManager.getEnabledModules(), function(module){
             return module.showInDropDown;
           })

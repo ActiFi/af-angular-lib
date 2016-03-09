@@ -25,7 +25,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
         link:function(scope, elm, attrs){
 
           scope.showAppDropDown = afBreadcrumbConfig.showAppDropDown;
-          scope.modules = afModuleManager.getModulesForDropDown();
+          scope.modules = afModuleManager.getUserAccessibleModules();
 
 
           _.each(scope.modules, function(module){

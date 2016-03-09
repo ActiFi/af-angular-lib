@@ -10,32 +10,31 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           key:'roadmap',
           enabled:appTenant.config('app.showRoadmap'),
           label:appTenant.config('label.moduleRoadmap'),
-          showInDropDown:true
+          canLogInto:true
         },
         {
           key:'assmt',
-          inDropDown:false,
           enabled:appTenant.config('app.showAssmt'),
           label:appTenant.config('label.moduleAssmt'),
-          showInDropDown:false
+          canLogInto:false // requires transfer from another app
         },
         {
           key:'metrics',
           enabled:appTenant.config('app.showSPAT'),
           label:appTenant.config('label.moduleSpat'),
-          showInDropDown:true
+          canLogInto:true
         },
         {
           key:'processpro',
           enabled:appTenant.config('app.showProcessPro'),
           label:appTenant.config('label.moduleProcessPro'),
-          showInDropDown:true
+          canLogInto:true
         },
         {
           key:'admin',
           enabled:true,
           label:'Admin',
-          showInDropDown:true
+          canLogInto:true
         }
       ];
 
@@ -55,10 +54,19 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           })
         },
 
-        getModulesForDropDown:function(){
+        // list of modules that a user can directly login to
+        getUserAccessibleModules:function(){
           return _.filter(afModuleManager.getEnabledModules(), function(module){
-            return module.showInDropDown;
+            return module.canLogInto;
           })
+        },
+
+        // if a user logs in... where do/can they login to?
+        getDefaultModule:function(){
+          var apps = afAuthManager.getUserAccessibleModules();
+          if(!apps || !apps.length)
+            return null;
+          return apps[0]; // todo - make part of tenant config instead of just first app
         },
 
         // checks if module is enabled.
