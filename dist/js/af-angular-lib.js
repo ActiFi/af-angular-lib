@@ -1216,6 +1216,10 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
           $window.location.href = to;
       };
 
+      var redirectError = function(redirectKey, msg){
+        msg = 'afRedirectManager.redirect Error: ' + redirectKey + ': ' + msg;
+
+      };
 
       var missingParams = function(params, requiredParams){
         var missingParams = [];
@@ -1228,16 +1232,16 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         return false
       };
 
-      var getQueryString = function(params, paramsToAdd){
+      var convertToHttpParams = function(params, paramsToAdd){
         var params = _.extend({ from:appEnv.APP() }, paramsToAdd, params);
         // return nothing if params is empty...
         return _.keys(params).length ? '?'+$httpParamSerializer(params):'';
       };
 
-      var loggedIn = function(redirect){
+      var loggedIn = function(redirectKey, defer){
         if(!afAuthManager.isLoggedIn()){
-          appCatch.send('afRedirectManager: ' + redirect + ' redirect attempted, but user was not logged in.');
-          afRedirectionManager.redirect('auth', {redirect:redirect || ''});
+          redirectError(redirectKey, 'redirect attempted, but user was not logged in.', defer);
+          afRedirectionManager.redirect('auth', {redirect:redirectKey || ''});
           return false;
         }
         return true;
@@ -1254,64 +1258,72 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         // MAIN REDIRECT FUNCTIONS
         //
         redirect:function(redirectKey, params, replace){
-
+          var defer = $q.defer();
           redirectKey = (''+redirectKey).toLowerCase();
 
-          switch(redirectKey) {
-            //
-            // AUTH
-            case 'auth':
-              // eg.  /auth/#/login?redirect=portal&action=invalidsesssion
-              var queryString = getQueryString(params);
-              go('/auth/#/login'+queryString, true);
-              return;
+          // PUBLIC REDIRECT
+          if(redirectKey == 'auth'){
 
-            //
-            // PORTAL -> standard login
-            case 'roadmap':
-              // page that has code to mimic portals login page.
-              if(!loggedIn(redirectKey)) return; // ensure logged in
-              go('/portal/login-window.php', replace);
-              return;
+            var queryString = convertToHttpParams(params);
+            go('/auth/#/login'+queryString, true);
 
+          // MUST BE LOGGED IN....
+          } else if(!afAuthManager.isLoggedIn()) {
 
-            // METRICS
-            // eg. /metrics/#/login?from=auth&sessionToken=abc123
-            case 'metrics':
-              if(!loggedIn(redirectKey)) return; // ensure logged in
-              var queryString = getQueryString(params, { sessionToken: afAuthManager.sessionToken() });
-              go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
-              return;
+            // whoops.. need to be logged in...
+            var error = 'afRedirectManager.redirect to '+redirectKey+' attempted, but user was not logged in.';
+            appCatch.send(error);
+            // send them to auth....
+            afRedirectionManager.redirect('auth', {redirect:redirectKey || ''});
 
-            //
-            // PROCESSPRO
-            case 'processpro':
-              if(!loggedIn(redirectKey)) return; // ensure logged in
-              go('/processpro/', replace); // page that has code that mimics portals login page.
-              return;
+          } else {
 
-            //
-            // ADMIN
-            case 'admin':
-              if(!loggedIn(redirectKey)) return; // ensure logged in
-              go('/admin/', replace); // page that has code that mimics portals login page.
-              return;
+            switch(redirectKey) {
 
-            //
-            // ROADMAP EMAIL ROADMAP UPDATER
-            case 'rmupdater':
-              var missing = missingParams(params, 'dateFrom');
-              if(missing) {
-                appCatch('Redirection to ' + redirectKey + ' failed. Missing Params. [' + missing + '] not found.');
-                return false;
-              }
-              go('/act/updater/#/rm/updater?dateFrom='+params.dateFrom, replace);
-              return;
+              //
+              // PORTAL -> standard login
+              case 'roadmap':
+                // page that has code to mimic portals login page.
+                go('/portal/login-window.php', replace);
+                break;
 
-            default:
-              appCatch('Redirection ['+redirectKey+'] not found.');
+              // METRICS
+              // eg. /metrics/#/login?from=auth&sessionToken=abc123
+              case 'metrics':
+                var queryString = convertToHttpParams(params, { sessionToken: afAuthManager.sessionToken() });
+                go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
+                break;
+
+              //
+              // PROCESSPRO
+              case 'processpro':
+                go('/processpro/', replace); // page that has code that mimics portals login page.
+                break;
+
+              //
+              // ADMIN
+              case 'admin':
+                go('/admin/', replace); // page that has code that mimics portals login page.
+                break;
+
+              //
+              // ROADMAP EMAIL ROADMAP UPDATER
+              case 'rmupdater':
+                var missing = missingParams(params, 'dateFrom');
+                if(missing) {
+                  defer.reject('Redirection ['+redirectKey+'] not found.');
+                } else {
+                  go('/act/updater/#/rm/updater?dateFrom='+params.dateFrom, replace);
+                }
+                return;
+
+              default:
+                appCatch('Redirection ['+redirectKey+'] not found.');
+                defer.reject('Redirection ['+redirectKey+'] not found.');
+            }
+
           }
-          return false;
+          return defer.promise;
         },
 
         // attempts to redirect user to another actifi app(module)
@@ -1339,10 +1351,10 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             return $q.reject(availableModules);
 
           // actually do the redirect...
-          if(afRedirectionManager.redirect(desiredModule) === false){
-            $log.error(reason);
-            return $q.reject(availableModules);
-          }
+          afRedirectionManager.redirect(desiredModule)
+            .catch(function(reason){
+              return $q.reject(availableModules);
+            });
         },
 
 
