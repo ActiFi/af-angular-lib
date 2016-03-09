@@ -119,7 +119,7 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
           desiredModule = ('' + desiredModule).toLowerCase();
 
           // Make sure they can actually log into the desired module
-          var isAvailable = _.find(availableModules, {key:defaultModule});
+          var isAvailable = _.find(availableModules, {key:desiredModule});
           if(!isAvailable)
             return $q.reject(availableModules);
 
