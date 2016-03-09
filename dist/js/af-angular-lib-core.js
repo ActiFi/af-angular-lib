@@ -963,14 +963,14 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             // PROCESSPRO
             case 'processpro':
               if(!loggedIn(redirectKey)) return; // ensure logged in
-              go('/processpro', replace); // page that has code that mimics portals login page.
+              go('/processpro/', replace); // page that has code that mimics portals login page.
               break;
 
             //
             // ADMIN
             case 'admin':
               if(!loggedIn(redirectKey)) return; // ensure logged in
-              go('/admin', replace); // page that has code that mimics portals login page.
+              go('/admin/', replace); // page that has code that mimics portals login page.
               break;
 
             //
