@@ -900,7 +900,7 @@ angular.module('af.filters', ['af.appTenant', 'af.util'])
   })
 ;
 
-angular.module('af.authManager', ['_', 'afStorage', 'af.util', 'af.appEnv', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af.jwtManager'])
 
 
   // config
@@ -981,6 +981,7 @@ angular.module('af.authManager', ['_', 'afStorage', 'af.util', 'af.appEnv', 'af.
       // SESSION TOKEN (DEPRECATED)
       //
       setSessionToken:function(sessionToken, expires){
+        expires = !expires ? afAuthManagerConfig.cacheFor : expires;
         afStorage.store(afAuthManagerConfig.cacheSessionTokenAs, sessionToken, expires);
       },
       sessionToken: function(priorities){
