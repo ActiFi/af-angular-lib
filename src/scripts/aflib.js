@@ -3,7 +3,7 @@ angular.module('af.lib',
   [
   // DIRECTIVES
     //'af.formMessenger',         // not part of default build
-    //'af.directive.formGroup',   // not part of default build
+    //'af.formGroup',   // not part of default build
     //'af.validators'           // not part of default build
     'af.bar',
     //'af.headerBar',           // not part of default build
@@ -12,7 +12,7 @@ angular.module('af.lib',
     //'ui.bootstrap.dropdown'   // not part of default build
     'af.bsIcons',
   // FILTERS
-    'af.filters',
+    'af.formatterFilters',
   // MANAGERS
     'af.authManager',
     'af.jwtManager',

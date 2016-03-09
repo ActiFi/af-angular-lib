@@ -1,6 +1,6 @@
-angular.module('af.directive.formGroup', [])
+angular.module('af.formGroup', [])
 
-  .directive("formGroup", function() {
+  .directive("afFormGroup", function() {
     return {
       restrict: "A",
       transclude: true,

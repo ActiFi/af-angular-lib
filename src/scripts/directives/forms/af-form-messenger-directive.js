@@ -1,7 +1,7 @@
 // Makes hiding showing of form messages easier
 // EXAMPLE :
 
-// ctrl.showIfInvalid = formMessenger.showIfInvalid;
+// ctrl.showIfInvalid = afFormMessenger.showIfInvalid;
 
 //<form name="ctrl.form">
 //  <div class="alert alert-danger alert-sm"
@@ -14,9 +14,9 @@
 //  </div>
 //</form>
 angular.module('af.formMessenger', [])
-  .service('formMessenger', function() {
-    var formMessenger = null;
-    return formMessenger = {
+  .service('afFormMessenger', function() {
+    var afFormMessenger = null;
+    return afFormMessenger = {
       showIfInvalid:function(form, field) {
         if(!form) return false;
         return (form[field].$dirty && form[field].$invalid) ||

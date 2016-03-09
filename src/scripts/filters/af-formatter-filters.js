@@ -1,5 +1,5 @@
 
-angular.module('af.formatterFilters', ['af.appTenant', 'af.util'])
+angular.module('af.formatterFilters', ['af.util'])
 
   .filter('formatNumber', function(afUtil) {
     return afUtil.format.number;

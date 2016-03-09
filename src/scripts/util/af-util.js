@@ -10,8 +10,8 @@ Number.prototype.formatNumber = function(precision, decimal, seperator) {
   return s + (j ? i.substr(0, j) + seperator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + seperator) + (precision ? decimal + Math.abs(n - i).toFixed(precision).slice(2) : "");
 };
 
-angular.module('af.util', [])
-  .service('afUtil', function($window, $location) {
+angular.module('af.util', ['_', 'moment', 'af.appTenant'])
+  .service('afUtil', function($window, $location, _, moment, appTenant) {
 
     var afUtil = null;
     return afUtil = {

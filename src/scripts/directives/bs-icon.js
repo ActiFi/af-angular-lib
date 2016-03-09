@@ -1,7 +1,4 @@
-(function() {
-
-
-  angular.module('af.bsIcons', [])
+angular.module('af.bsIcons', [])
 
   .directive('bsIcon', function() {
     return {
@@ -10,12 +7,11 @@
       }
     };
   })
-
   .directive("faIcon", function() {
     return {
       compile: function(elm, attrs) {
         switch((''+attrs.faIcon).toLowerCase()){
-          case 'roadmap': attrs.faIcon = 'road'; break; //'map-marker';
+          case 'roadmap': attrs.faIcon = 'road'; break;
           case 'assessment': attrs.faIcon = 'check-circle-o'; break;
           case 'quickcontent':
           case 'quick content':
@@ -28,6 +24,4 @@
         angular.element(elm).addClass('ng-show-inline fa fa-' + attrs.faIcon);
       }
     };
-  })
-
-}).call(this);
+  });

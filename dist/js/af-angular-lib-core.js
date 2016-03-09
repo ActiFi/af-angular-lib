@@ -3,7 +3,7 @@ angular.module('af.lib',
   [
   // DIRECTIVES
     //'af.formMessenger',         // not part of default build
-    //'af.directive.formGroup',   // not part of default build
+    //'af.formGroup',   // not part of default build
     //'af.validators'           // not part of default build
     'af.bar',
     //'af.headerBar',           // not part of default build
@@ -12,7 +12,7 @@ angular.module('af.lib',
     //'ui.bootstrap.dropdown'   // not part of default build
     'af.bsIcons',
   // FILTERS
-    'af.filters',
+    'af.formatterFilters',
   // MANAGERS
     'af.authManager',
     'af.jwtManager',
@@ -209,10 +209,7 @@ angular.module('ui.bootstrap.dropdown', [])
   })
 
 ;
-(function() {
-
-
-  angular.module('af.bsIcons', [])
+angular.module('af.bsIcons', [])
 
   .directive('bsIcon', function() {
     return {
@@ -221,12 +218,11 @@ angular.module('ui.bootstrap.dropdown', [])
       }
     };
   })
-
   .directive("faIcon", function() {
     return {
       compile: function(elm, attrs) {
         switch((''+attrs.faIcon).toLowerCase()){
-          case 'roadmap': attrs.faIcon = 'road'; break; //'map-marker';
+          case 'roadmap': attrs.faIcon = 'road'; break;
           case 'assessment': attrs.faIcon = 'check-circle-o'; break;
           case 'quickcontent':
           case 'quick content':
@@ -239,14 +235,13 @@ angular.module('ui.bootstrap.dropdown', [])
         angular.element(elm).addClass('ng-show-inline fa fa-' + attrs.faIcon);
       }
     };
-  })
+  });
 
-}).call(this);
 ;
 // Makes hiding showing of form messages easier
 // EXAMPLE :
 
-// ctrl.showIfInvalid = formMessenger.showIfInvalid;
+// ctrl.showIfInvalid = afFormMessenger.showIfInvalid;
 
 //<form name="ctrl.form">
 //  <div class="alert alert-danger alert-sm"
@@ -259,9 +254,9 @@ angular.module('ui.bootstrap.dropdown', [])
 //  </div>
 //</form>
 angular.module('af.formMessenger', [])
-  .service('formMessenger', function() {
-    var formMessenger = null;
-    return formMessenger = {
+  .service('afFormMessenger', function() {
+    var afFormMessenger = null;
+    return afFormMessenger = {
       showIfInvalid:function(form, field) {
         if(!form) return false;
         return (form[field].$dirty && form[field].$invalid) ||
@@ -272,9 +267,9 @@ angular.module('af.formMessenger', [])
 
 
 ;
-angular.module('af.directive.formGroup', [])
+angular.module('af.formGroup', [])
 
-  .directive("formGroup", function() {
+  .directive("afFormGroup", function() {
     return {
       restrict: "A",
       transclude: true,
@@ -587,7 +582,7 @@ angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.m
   });
 ;
 
-angular.module('af.formatterFilters', ['af.appTenant', 'af.util'])
+angular.module('af.formatterFilters', ['af.util'])
 
   .filter('formatNumber', function(afUtil) {
     return afUtil.format.number;
@@ -2140,8 +2135,8 @@ Number.prototype.formatNumber = function(precision, decimal, seperator) {
   return s + (j ? i.substr(0, j) + seperator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + seperator) + (precision ? decimal + Math.abs(n - i).toFixed(precision).slice(2) : "");
 };
 
-angular.module('af.util', [])
-  .service('afUtil', function($window, $location) {
+angular.module('af.util', ['_', 'moment', 'af.appTenant'])
+  .service('afUtil', function($window, $location, _, moment, appTenant) {
 
     var afUtil = null;
     return afUtil = {
