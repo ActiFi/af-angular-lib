@@ -1027,7 +1027,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             return $q.reject(availableModules);
 
           // actually do the redirect...
-          afRedirectionManager.redirect(desiredModule)
+          return afRedirectionManager.redirect(desiredModule)
             .catch(function(reason){
               return $q.reject(availableModules);
             });
