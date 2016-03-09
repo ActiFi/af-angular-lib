@@ -334,6 +334,7 @@ angular.module('af.lib',
     'af.authManager',
     'af.roleManager',
     'af.moduleManager',
+    'af.redirectionManager',
   // system
     'af.bsIcons',
     'af.event',
