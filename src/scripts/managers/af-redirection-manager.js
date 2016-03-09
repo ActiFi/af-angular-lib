@@ -3,7 +3,7 @@
 //
 angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager', 'af.appTenant', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $window, $location, $httpParamSerializer, appCatch, _, afModuleManager, appTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, appCatch, _, afModuleManager, appTenant, afAuthManager) {
 
       var go = function(to, replace){
         // get replace value

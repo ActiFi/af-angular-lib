@@ -63,7 +63,7 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
 
         // if a user logs in... where do/can they login to?
         getDefaultModule:function(){
-          var apps = afAuthManager.getUserAccessibleModules();
+          var apps = afModuleManager.getUserAccessibleModules();
           if(!apps || !apps.length)
             return null;
           return apps[0]; // todo - make part of tenant config instead of just first app
