@@ -940,51 +940,54 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               // eg.  /auth/#/login?redirect=portal&action=invalidsesssion
               var queryString = getQueryString(params);
               go('/auth/#/login'+queryString, true);
-              break;
+              return;
 
             //
             // PORTAL -> standard login
             case 'roadmap':
               // page that has code to mimic portals login page.
-              if(!loggedIn(redirectKey)) return;
+              if(!loggedIn(redirectKey)) return; // ensure logged in
               go('/portal/login-window.php', replace);
-              break;
+              return;
 
 
             // METRICS
             // eg. /metrics/#/login?from=auth&sessionToken=abc123
             case 'metrics':
-              if(!loggedIn(redirectKey)) return;
+              if(!loggedIn(redirectKey)) return; // ensure logged in
               var queryString = getQueryString(params, { sessionToken: afAuthManager.sessionToken() });
               go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
-              break;
+              return;
 
             //
             // PROCESSPRO
             case 'processpro':
               if(!loggedIn(redirectKey)) return; // ensure logged in
               go('/processpro/', replace); // page that has code that mimics portals login page.
-              break;
+              return;
 
             //
             // ADMIN
             case 'admin':
               if(!loggedIn(redirectKey)) return; // ensure logged in
               go('/admin/', replace); // page that has code that mimics portals login page.
-              break;
+              return;
 
             //
             // ROADMAP EMAIL ROADMAP UPDATER
             case 'rmupdater':
               var missing = missingParams(params, 'dateFrom');
-              if(missing)
-                return appCatch('Redirection to '+redirectKey+' failed. Missing Params. ['+missing+'] not found.');
+              if(missing) {
+                appCatch('Redirection to ' + redirectKey + ' failed. Missing Params. [' + missing + '] not found.');
+                return false;
+              }
               go('/act/updater/#/rm/updater?dateFrom='+params.dateFrom, replace);
-              break;
+              return;
 
             default:
               appCatch('Redirection ['+redirectKey+'] not found.');
           }
+          return false;
         },
 
         // attempts to redirect user to another actifi app(module)
@@ -1012,12 +1015,10 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             return $q.reject(availableModules);
 
           // actually do the redirect...
-          return afRedirectionManager.redirect(desiredModule)
-            .catch(function(reason){
-              // if it fails:
-              $log.error(reason);
-              return $q.reject(availableModules);
-            })
+          if(afRedirectionManager.redirect(desiredModule) === false){
+            $log.error(reason);
+            return $q.reject(availableModules);
+          }
         },
 
 
