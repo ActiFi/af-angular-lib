@@ -1,7 +1,7 @@
 
 angular.module('af.validators', [])
     
-  .directive('validateMatch',
+  .directive('afValidateMatch',
     function match ($parse) {
       return {
         require: '?ngModel',
@@ -48,7 +48,7 @@ angular.module('af.validators', [])
   )
 
 
-  .directive('validatePasswordCharacters', function() {
+  .directive('afValidatePasswordCharacters', function() {
 
     var PASSWORD_FORMATS = [
       /[A-Z]+/,     //uppercase letters
@@ -71,7 +71,7 @@ angular.module('af.validators', [])
     }
   })
 
-  .directive('validateEmail', function() {
+  .directive('afValidateEmail', function() {
     return {
       restrict: 'A',
       require: 'ngModel',

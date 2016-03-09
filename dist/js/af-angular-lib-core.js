@@ -275,13 +275,13 @@ angular.module('af.formGroup', [])
       transclude: true,
       replace: true,
       scope: {
-        formGroup: '@',
+        afFormGroup: '@',
         formHelp: '@',
         formRequired: '@'
       },
       template: '<div class="form-group"> ' +
                   '<label class="text-capitalize" style="color:#333333;">' +
-                    '{{::formGroup}}' +
+                    '{{::afFormGroup}}' +
                     ' <span ng-show="formRequired" class="text-danger required">*</span> ' +
                   '</label> ' +
                   '<div ng-transclude></div> ' +
@@ -299,7 +299,7 @@ angular.module('af.formGroup', [])
 
 angular.module('af.validators', [])
     
-  .directive('validateMatch',
+  .directive('afValidateMatch',
     function match ($parse) {
       return {
         require: '?ngModel',
@@ -346,7 +346,7 @@ angular.module('af.validators', [])
   )
 
 
-  .directive('validatePasswordCharacters', function() {
+  .directive('afValidatePasswordCharacters', function() {
 
     var PASSWORD_FORMATS = [
       /[A-Z]+/,     //uppercase letters
@@ -369,7 +369,7 @@ angular.module('af.validators', [])
     }
   })
 
-  .directive('validateEmail', function() {
+  .directive('afValidateEmail', function() {
     return {
       restrict: 'A',
       require: 'ngModel',
