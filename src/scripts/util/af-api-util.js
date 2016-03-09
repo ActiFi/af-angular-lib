@@ -1,6 +1,6 @@
 
 angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
-    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, $location, afMsg, $) {
+    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, afRedirectionManager, $location, afMsg, $) {
 
       var afApiUtil = null;
       return afApiUtil = {
@@ -77,6 +77,12 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             // display message on UI with afMsg?
             if(!request || request.autoErrorDisplay === true)
               afApiUtil.error.displayError(response);
+
+            switch(error.name){
+              case 'InvalidSession':
+              case 'InvalidSessionToken':
+                afRedirectionManager.invalidSession();
+            }
           },
 
 
