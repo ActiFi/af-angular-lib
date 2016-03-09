@@ -101,23 +101,26 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
 
         // attempts to redirect user to another actifi app(module)
         changeApp:function(desiredModule, options){
+
           // whats available to user
-          var availableModules = afModuleManager.getEnabledModules();
+          var availableModules = afModuleManager.getUserAccessibleModules();
           if(availableModules.length == 0)
-            return $q.reject(availableModules);
+            return $q.reject([]);
 
           // if no specific app defined, log them into first userAccessible app
           if (!desiredModule) {
             var defaultModule = afModuleManager.getDefaultModule();
             if(!defaultModule)
-              return $q.reject('Unable to redirect. No available redirects.');
+              return $q.reject([]);
             desiredModule = defaultModule.key;
           }
 
           // ensure lowercase
           desiredModule = ('' + desiredModule).toLowerCase();
 
-          if(!afModuleManager.isEnabled(desiredModule))
+          // Make sure they can actually log into the desired module
+          var isAvailable = _.find(availableModules, {key:defaultModule});
+          if(!isAvailable)
             return $q.reject(availableModules);
 
           // actually do the redirect...
