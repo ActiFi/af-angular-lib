@@ -578,7 +578,7 @@ angular.module('af.filters', ['af.appTenant', 'af.util'])
   })
 ;
 
-angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'afStorage', 'af.util', 'af.appEnv', 'af.jwtManager'])
 
 
   // config
@@ -591,15 +591,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
     this.$get = function () { return this; };
   })
 
-  .service('afAuthManager', function(afAuthManagerConfig, _, $log, afUtil, amplify, afJwtManager, $window) {
-
-    var store = function(key, value, expires){
-      expires = expires || afAuthManagerConfig.cacheFor;
-      if(_.isNumber(expires))
-        expires = {expires:expires};
-      amplify.store(key, value, expires);
-    };
-
+  .service('afAuthManager', function(afAuthManagerConfig, _, $log, afUtil, afStorage, afJwtManager, $window) {
 
     var getViaPriority  = function(key, priorities){
       priorities = priorities || afAuthManagerConfig.tokenPriority;
@@ -609,7 +601,7 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         if(value) return;
         switch (priority) {
           case 'url':     value = afUtil.GET(key); break;
-          case 'cache':   value = amplify.store(key); break;
+          case 'cache':   value = afStorage.store(key); break;
           case 'window':  value = $window[key]; break;
         }
       });
@@ -627,7 +619,8 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
       return null;
     };
 
-    var afAuthManager = {
+    var afAuthManager = null;
+    return afAuthManager = {
 
       //
       // JSON WEB TOKEN
@@ -639,10 +632,17 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
 
         var timeTillExpires = afJwtManager.millisecondsTillExpires(decodedToken.exp);
 
+        //
+        // CACHE TOKEN, USER & SESSIONTOKEN
+        //
         // cache both coded and decoded version till it expires
-        store(afAuthManagerConfig.cacheJwtAs, jwt, timeTillExpires);
+        afStorage.store(afAuthManagerConfig.cacheJwtAs, jwt, timeTillExpires);
+        afStorage.store(afAuthManagerConfig.cacheJwtAs+'_decoded', decodedToken, timeTillExpires);
+
         // cache decoded as user...
         afAuthManager.setUser(decodedToken, timeTillExpires);
+        // cache sessionToken as well if user contains one (like from a decoded jwt)
+        afAuthManager.setSessionToken(decodedToken.sessionToken, timeTillExpires);
 
         if(appEnv.ENV() !== 'production')
           $log.info('afAuthManager - User Set:', afAuthManager.user());
@@ -651,16 +651,19 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
       jwt:function(priorities){
         return getViaPriority(afAuthManagerConfig.cacheJwtAs, priorities);
       },
+      jwtDecoded:function(){
+        return getViaPriority(afAuthManagerConfig.cacheJwtAs+'_decoded');
+      },
 
       //
       // SESSION TOKEN (DEPRECATED)
       //
-      setSessionToken:function(sessionToken){
-        store(afAuthManagerConfig.cacheSessionTokenAs, sessionToken);
+      setSessionToken:function(sessionToken, expires){
+        afStorage.store(afAuthManagerConfig.cacheSessionTokenAs, sessionToken, expires);
       },
       sessionToken: function(priorities){
         var token = getViaPriority(afAuthManagerConfig.cacheSessionTokenAs, priorities);
-        if(!token) token = getSessionTokenFromJWT(priorities);
+        if(!token) token = getSessionTokenFromJWT(priorities); // check in JWT if not found...
         return token;
       },
 
@@ -672,17 +675,17 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
         // put a "displayName" on the user
         user.displayName = afUtil.createDisplayName(user, appTenant.config('app.preferredDisplayName'));
         // cache user
-        store(afAuthManagerConfig.cacheUserAs, user, expires);
+        afStorage.store(afAuthManagerConfig.cacheUserAs, user, expires);
 
         // support old apps
-        store('userName',     user.displayName, expires); // this is not username.. its the persons name.. ffs.
-        store('userId',       user.userId, expires);
-        store('userEmail',    user.email, expires);
-        store('authorities',  user.roles, expires);
-        store('tenantId',     user.tenant, expires);
+        afStorage.store('userName',     user.displayName, expires); // this is not username.. its the persons name.. ffs.
+        afStorage.store('userId',       user.userId,      expires);
+        afStorage.store('userEmail',    user.email,       expires);
+        afStorage.store('authorities',  user.roles,       expires);
+        afStorage.store('tenantId',     user.tenant,      expires);
       },
       user:function(){
-        return amplify.store(afAuthManagerConfig.cacheUserAs);
+        return afStorage.store(afAuthManagerConfig.cacheUserAs);
       },
       userId:function(){
         var user = afAuthManager.user();
@@ -698,18 +701,11 @@ angular.module('af.authManager', ['_', 'amplify', 'af.util', 'af.appEnv', 'af.jw
       isLoggedIn:function(){
         return afAuthManager.user() && (afAuthManager.sessionToken() || afAuthManager.jwt())
       },
-      // CLEAR / LOGOUT
-      clear: function() {
-        // just kill all cached data if logout
-        _.keys(amplify.store(), function(key){
-          amplify.store(key, null);
-        });
-      }
-    };
-    // alias
-    afAuthManager.logout = afAuthManager.clear;
 
-    return afAuthManager;
+      // CLEAR / LOGOUT (clear all cached data)
+      clear:afStorage.clear,
+      logout:afStorage.clear // alias
+    };
 });
 ;
 
@@ -785,32 +781,31 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           key:'roadmap',
           enabled:appTenant.config('app.showRoadmap'),
           label:appTenant.config('label.moduleRoadmap'),
-          showInDropDown:true
+          canLogInto:true
         },
         {
           key:'assmt',
-          inDropDown:false,
           enabled:appTenant.config('app.showAssmt'),
           label:appTenant.config('label.moduleAssmt'),
-          showInDropDown:false
+          canLogInto:false // requires transfer from another app
         },
         {
           key:'metrics',
           enabled:appTenant.config('app.showSPAT'),
           label:appTenant.config('label.moduleSpat'),
-          showInDropDown:true
+          canLogInto:true
         },
         {
           key:'processpro',
           enabled:appTenant.config('app.showProcessPro'),
           label:appTenant.config('label.moduleProcessPro'),
-          showInDropDown:true
+          canLogInto:true
         },
         {
           key:'admin',
           enabled:true,
           label:'Admin',
-          showInDropDown:true
+          canLogInto:true
         }
       ];
 
@@ -830,10 +825,19 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           })
         },
 
+        // list of modules that a user can directly login to
         getUserAccessibleModules:function(){
           return _.filter(afModuleManager.getEnabledModules(), function(module){
-            return module.showInDropDown;
+            return module.canLogInto;
           })
+        },
+
+        // if a user logs in... where do/can they login to?
+        getDefaultModule:function(){
+          var apps = afAuthManager.getUserAccessibleModules();
+          if(!apps || !apps.length)
+            return null;
+          return apps[0]; // todo - make part of tenant config instead of just first app
         },
 
         // checks if module is enabled.
@@ -842,6 +846,142 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
           var enabledModules = afModuleManager.getEnabledModules();
           var enabledKeys = _.map(enabledModules, 'key');
           return _.includes(enabledKeys, module);
+        }
+
+      }
+
+    });
+;
+//
+// RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
+//
+angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager', 'af.appTenant', 'af.authManager'])
+
+    .service('afRedirectionManager', function($q, $window, $location, $httpParamSerializer, appCatch, _, afModuleManager, appTenant, afAuthManager) {
+
+      var go = function(to, replace){
+        // get replace value
+        replace = _.isBoolean(replace) ? replace:true;
+        if(replace)
+          $window.location.replace(to); // no history state...
+        else
+          $window.location.href = to;
+      };
+
+      var validateParams = function(params, requiredParams){
+        var missingParams = [];
+        _.each(requiredParams, function(requiredParam){
+          if(!_.has(params, requiredParam))
+            missingParams.push(requiredParam);
+        });
+        if(missingParams.length)
+          return $q.reject(missingParams.join(','));
+        return $q.success('success');
+      };
+
+      var getQueryString = function(params, paramsToAdd){
+        var params = _.extend({}, params, paramsToAdd);
+        // return nothing if params is empty...
+        return _.keys(params).length ? '?'+$httpParamSerializer(params):'';
+      };
+
+      var sessionCheck = function(redirect){
+        if(!afAuthManager.isLoggedIn()){
+          appCatch.send('afRedirectManager: ' + redirect + ' redirect attempted, but user was not logged in.');
+          go('/auth/#/login', { action:'invalidsession', redirect:redirect || '' });
+          return false;
+        }
+        return true;
+      };
+
+
+
+
+
+      var afRedirectionManager;
+      return afRedirectionManager = {
+
+
+        //
+        // MAIN REDIRECT FUNCTIONS
+        //
+        redirect:function(redirectKey, params, replace){
+
+          redirectKey = (''+redirectKey).toLowerCase();
+
+          switch(redirectKey){
+
+            //
+            // PORTAL
+            case 'portal':
+              if(!sessionCheck(redirectKey)) return;   // ensure logged in
+              go('/portal/login-window.php', replace); // page that has code to mimic portals login page.
+              return $q.when('success');
+
+            // METRICS
+            // eg. /metrics/#/login?from=auth&sessionToken=abc123
+            case 'metrics':
+              if(!sessionCheck(redirectKey)) return $q.reject('Invalid Session'); // ensure logged in
+              var queryString = getQueryString(params, { sessionToken:afAuthManager.sessionToken() });
+              go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
+              return $q.when('success');
+
+            //
+            // PROCESSPRO
+            case 'processpro':
+              if(!sessionCheck(redirectKey)) return $q.reject('Invalid Session'); // ensure logged in
+              go('/processpro', replace); // page that has code that mimics portals login page.
+              return $q.when('success');
+
+            //
+            // ADMIN
+            case 'admin':
+              if(!sessionCheck(redirectKey)) return $q.reject('Invalid Session'); // ensure logged in
+              go('/admin', replace); // page that has code that mimics portals login page.
+              return $q.when('success');
+
+            // EMAIL roadmap rec updater
+            case 'rmupdater':
+              return validateParams(params, 'dateFrom')
+                .then(function(response){
+                  go('/act/updater/#/rm/updater?dateFrom='+params.dateFrom, replace);
+                });
+
+            default:
+              return $q.reject('Redirection ['+redirectKey+'] not found.')
+          }
+        },
+
+
+        // attempts to redirect user to another actifi app(module)
+        changeApp:function(desiredModule, options){
+          // whats available to user
+          var availableModules = afModuleManager.getEnabledModules();
+          if(availableModules.length == 0)
+            return $q.reject(availableModules);
+
+          // if no specific app defined, log them into first userAccessible app
+          if (!desiredModule) {
+            var defaultModule = afModuleManager.getDefaultModule();
+            if(!defaultModule)
+              return $q.reject('Unable to redirect. No available redirects.');
+            desiredModule = defaultModule.key;
+          }
+
+          // ensure lowercase
+          desiredModule = ('' + desiredModule).toLowerCase();
+
+          if(!afModuleManager.isEnabled(desiredModule))
+            return $q.reject(availableModules);
+
+          // actually do the redirect...
+          return afRedirectionManager.redirect(desiredModule, options)
+            .catch(function(reason){
+              // if it fails:
+              $log.error(reason);
+              return $q.reject(availableModules);
+            })
+
         }
 
       }
