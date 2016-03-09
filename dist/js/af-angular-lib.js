@@ -325,49 +325,46 @@ navigator.sayswho= (function(){
 // master module which includes all other modules
 angular.module('af.lib',
   [
-  // api
-    'af.httpInterceptor',
-    'af.api',
-    'af.apiUtil',
-    'af.jwtManager',
-  // managers
+  // DIRECTIVES
+    'af.directive.formGroup',
+    //'af.validators'           // not part of default build
+    'af.bar',
+    //'af.headerBar',           // not part of default build
+    //'af.breadcrumb',          // not part of default build
+    //'af.sideBar',             // not part of default build
+    //'ui.bootstrap.dropdown'   // not part of default build
+    'af.bsIcons',
+  // FILTERS
+    'af.filters',
+  // MANAGERS
     'af.authManager',
-    'af.roleManager',
+    'af.jwtManager',
     'af.moduleManager',
     'af.redirectionManager',
-  // system
-    'af.bsIcons',
+    'af.roleManager',
+    'af.screenManager',
+  // SERVICES
+    'af.api',
+    'af.httpInterceptor',
+  // SHIMS
+    //'ng.shims.placeholder'    // not part of default build
+  // SYSTEM
     'af.event',
-    'af.filters',
     'af.loader',
     'af.modal',
     'af.msg',
     'af.storage',
-    'af.util',
-
-  // ui
-    'af.bar',
-
-  // forms
-    'af.directive.formGroup',
-
-  // wrappers
     'af.appEnv',
     'af.appTenant',
     'af.appTrack',
     'af.appCatch',
-  // lib wrappers
     '$',
     'amplify',
     '_',
-    'moment'
-
-  // these are not included by default
-    //'ui.bootstrap.dropdown'
-    //'af.validators'
-
-  // shims
-    //'ng.shims.placeholder''
+    'moment',
+  // UTIL
+    'af.apiUtil',
+    'af.util'
   ]
 );
 ;
@@ -598,6 +595,102 @@ angular.module('af.directive.formGroup', [])
     };
   });
 ;
+
+angular.module('af.validators', [])
+    
+  .directive('validateMatch',
+    function match ($parse) {
+      return {
+        require: '?ngModel',
+        restrict: 'A',
+        link: function(scope, elem, attrs, ctrl) {
+          if(!ctrl) {
+            return;
+          }
+
+          var matchGetter = $parse(attrs.validateMatch);
+          var caselessGetter = $parse(attrs.matchCaseless);
+          var noMatchGetter = $parse(attrs.notMatch);
+
+          scope.$watch(getMatchValue, function(){
+            ctrl.$$parseAndValidate();
+          });
+
+          ctrl.$validators.match = function(){
+            var match = getMatchValue();
+            var notMatch = noMatchGetter(scope);
+            var value;
+
+            if(caselessGetter(scope)){
+              value = angular.lowercase(ctrl.$viewValue) === angular.lowercase(match);
+            }else{
+              value = ctrl.$viewValue === match;
+            }
+            /*jslint bitwise: true */
+            value ^= notMatch;
+            /*jslint bitwise: false */
+            return !!value;
+          };
+
+          function getMatchValue(){
+            var match = matchGetter(scope);
+            if(angular.isObject(match) && match.hasOwnProperty('$viewValue')){
+              match = match.$viewValue;
+            }
+            return match;
+          }
+        }
+      };
+    }
+  )
+
+
+  .directive('validatePasswordCharacters', function() {
+
+    var PASSWORD_FORMATS = [
+      /[A-Z]+/,     //uppercase letters
+      /\d+/         //numbers
+      ///[^\w\s]+/, //special characters
+      ///\w+/,      //other letters
+    ];
+    return {
+      require: 'ngModel',
+      link : function(scope, element, attrs, ngModel) {
+        ngModel.$parsers.push(function(value) {
+          var status = true;
+          angular.forEach(PASSWORD_FORMATS, function(regex) {
+            status = status && regex.test(value);
+          });
+          ngModel.$setValidity('password-characters', status);
+          return value;
+        });
+      }
+    }
+  })
+
+  .directive('validateEmail', function() {
+    return {
+      restrict: 'A',
+      require: 'ngModel',
+      link : function(scope, element, attrs, ngModel) {
+
+        // please note you can name your function & argument anything you like
+        function customValidator(ngModelValue) {
+          // check if its an email
+          if (/^[_a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/.test(ngModelValue)) {
+            ngModel.$setValidity('invalid-email', true);
+          } else {
+            ngModel.$setValidity('invalid-email', false);
+          }
+          return ngModelValue;
+        }
+        ngModel.$parsers.push(customValidator);
+
+      }
+
+    }
+  })
+;
 angular.module('af.bar', [])
   .directive("afBar", function() {
     return {
@@ -786,102 +879,6 @@ angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.m
       }
     };
   });
-;
-
-angular.module('af.validators', [])
-    
-  .directive('validateMatch',
-    function match ($parse) {
-      return {
-        require: '?ngModel',
-        restrict: 'A',
-        link: function(scope, elem, attrs, ctrl) {
-          if(!ctrl) {
-            return;
-          }
-
-          var matchGetter = $parse(attrs.validateMatch);
-          var caselessGetter = $parse(attrs.matchCaseless);
-          var noMatchGetter = $parse(attrs.notMatch);
-
-          scope.$watch(getMatchValue, function(){
-            ctrl.$$parseAndValidate();
-          });
-
-          ctrl.$validators.match = function(){
-            var match = getMatchValue();
-            var notMatch = noMatchGetter(scope);
-            var value;
-
-            if(caselessGetter(scope)){
-              value = angular.lowercase(ctrl.$viewValue) === angular.lowercase(match);
-            }else{
-              value = ctrl.$viewValue === match;
-            }
-            /*jslint bitwise: true */
-            value ^= notMatch;
-            /*jslint bitwise: false */
-            return !!value;
-          };
-
-          function getMatchValue(){
-            var match = matchGetter(scope);
-            if(angular.isObject(match) && match.hasOwnProperty('$viewValue')){
-              match = match.$viewValue;
-            }
-            return match;
-          }
-        }
-      };
-    }
-  )
-
-
-  .directive('validatePasswordCharacters', function() {
-
-    var PASSWORD_FORMATS = [
-      /[A-Z]+/,     //uppercase letters
-      /\d+/         //numbers
-      ///[^\w\s]+/, //special characters
-      ///\w+/,      //other letters
-    ];
-    return {
-      require: 'ngModel',
-      link : function(scope, element, attrs, ngModel) {
-        ngModel.$parsers.push(function(value) {
-          var status = true;
-          angular.forEach(PASSWORD_FORMATS, function(regex) {
-            status = status && regex.test(value);
-          });
-          ngModel.$setValidity('password-characters', status);
-          return value;
-        });
-      }
-    }
-  })
-
-  .directive('validateEmail', function() {
-    return {
-      restrict: 'A',
-      require: 'ngModel',
-      link : function(scope, element, attrs, ngModel) {
-
-        // please note you can name your function & argument anything you like
-        function customValidator(ngModelValue) {
-          // check if its an email
-          if (/^[_a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/.test(ngModelValue)) {
-            ngModel.$setValidity('invalid-email', true);
-          } else {
-            ngModel.$setValidity('invalid-email', false);
-          }
-          return ngModelValue;
-        }
-        ngModel.$parsers.push(customValidator);
-
-      }
-
-    }
-  })
 ;
 
 angular.module('af.filters', ['af.appTenant', 'af.util'])
