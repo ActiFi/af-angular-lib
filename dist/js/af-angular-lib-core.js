@@ -879,9 +879,9 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager', 'af.appTenant', 'af.authManager'])
+angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCatch', 'af.moduleManager', 'af.appTenant', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, appCatch, _, afModuleManager, appTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, afStorage, appCatch, _, afModuleManager, appTenant, afAuthManager) {
 
       var go = function(to, replace){
         // get replace value
@@ -909,7 +909,7 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
         return _.keys(params).length ? '?'+$httpParamSerializer(params):'';
       };
 
-      var sessionCheck = function(redirect){
+      var loggedIn = function(redirect){
         if(!afAuthManager.isLoggedIn()){
           appCatch.send('afRedirectManager: ' + redirect + ' redirect attempted, but user was not logged in.');
           go('/auth/#/login', { action:'invalidsession', redirect:redirect || '' });
@@ -930,17 +930,32 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
         // MAIN REDIRECT FUNCTIONS
         //
         redirect:function(redirectKey, params, replace){
+          var defer = $q.defer();
 
           redirectKey = (''+redirectKey).toLowerCase();
+
+          var validSession = sessionCheck(redirectKey);
 
           switch(redirectKey){
 
             //
-            // PORTAL/ROADMAP
+            // PORTAL -> standard login
             case 'roadmap':
-              if(!sessionCheck(redirectKey)) return;   // ensure logged in
+              if(!loggedIn(redirectKey)) return;       // send to login if not logged in...
               go('/portal/login-window.php', replace); // page that has code to mimic portals login page.
-              return $q.when('success');
+
+            // PORTAL -> though widget door.
+            case 'widgetDoor':
+              // grab sessionToken...
+              var sessionToken = $window.sessionToken;
+              sessionToken = !sessionToken ? afUtil.GET('sessionToken'):sessionToken;
+              sessionToken = !sessionToken ? afStorage.store('sessionToken'):sessionToken;
+
+              return validateParams(params, 'page', 'hash')
+                .then(function(response){
+                  go('/portal/login-window.php', replace); // page that has code to mimic portals login page.
+                  return $q.when('success');
+                });
 
             // METRICS
             // eg. /metrics/#/login?from=auth&sessionToken=abc123
@@ -974,11 +989,13 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
             default:
               return $q.reject('Redirection ['+redirectKey+'] not found.')
           }
+
+          return defer.promise;
         },
 
 
         // attempts to redirect user to another actifi app(module)
-        changeApp:function(desiredModule, options){
+        changeApp:function(desiredModule){
 
           // whats available to user
           var availableModules = afModuleManager.getUserAccessibleModules();
@@ -1002,13 +1019,12 @@ angular.module('af.redirectionManager', ['_', 'af.appCatch', 'af.moduleManager',
             return $q.reject(availableModules);
 
           // actually do the redirect...
-          return afRedirectionManager.redirect(desiredModule, options)
+          return afRedirectionManager.redirect(desiredModule)
             .catch(function(reason){
               // if it fails:
               $log.error(reason);
               return $q.reject(availableModules);
             })
-
         }
 
       }
