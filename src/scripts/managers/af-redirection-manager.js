@@ -79,12 +79,13 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
+                // TODO: need to allow metrics to accept jwt
                 var queryString = convertToHttpParams(params, { sessionToken: afAuthManager.sessionToken() });
                 go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
                 break;
 
               //
-              // PROCESSPRO
+              // PROCESS PRO
               case 'processpro':
                 go('/processpro/', replace); // page that has code that mimics portals login page.
                 break;

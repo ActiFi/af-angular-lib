@@ -1,4 +1,4 @@
-angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.redirectionManager', 'af.appCatch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
     .service('afBreadcrumbService', function(){
       return {
@@ -13,7 +13,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       this.$get = function () { return this; };
     })
 
-    .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager, afBreadcrumbConfig) {
+    .directive('afBreadcrumb',  function(afBreadcrumbService, appCatch, afMsg, appTenant, $window, afAuthManager, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",
@@ -35,10 +35,13 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
           scope.currentModule = _.find(scope.modules, 'active');
           if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
 
-          scope.clickModule = function(module){
-            $window.location.href = '/'+module.key+'/';
+          scope.clickModule = function(desiredModule){
+            afRedirectionManager.changeApp(desiredModule)
+              .catch(function(response){
+                appCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+                afMsg.error('Failed to redirect');
+              });
           };
-
 
           scope.$watch(function(){
             return afBreadcrumbService.crumbs

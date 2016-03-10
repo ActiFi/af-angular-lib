@@ -411,7 +411,7 @@ angular.module('af.bar', [])
     };
   });
 ;
-angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.redirectionManager', 'af.appCatch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
     .service('afBreadcrumbService', function(){
       return {
@@ -426,7 +426,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       this.$get = function () { return this; };
     })
 
-    .directive('afBreadcrumb',  function(afBreadcrumbService, appTenant, $window, afAuthManager, afModuleManager, afBreadcrumbConfig) {
+    .directive('afBreadcrumb',  function(afBreadcrumbService, appCatch, afMsg, appTenant, $window, afAuthManager, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",
@@ -448,10 +448,13 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
           scope.currentModule = _.find(scope.modules, 'active');
           if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
 
-          scope.clickModule = function(module){
-            $window.location.href = '/'+module.key+'/';
+          scope.clickModule = function(desiredModule){
+            afRedirectionManager.changeApp(desiredModule)
+              .catch(function(response){
+                appCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+                afMsg.error('Failed to redirect');
+              });
           };
-
 
           scope.$watch(function(){
             return afBreadcrumbService.crumbs
@@ -465,7 +468,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.moduleMan
       return afBreadcrumb;
     });
 ;
-angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appEnv', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch', 'af.msg', 'af.appEnv', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -475,7 +478,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appEnv', '
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, appEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, appCatch, afMsg, appEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -500,9 +503,12 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appEnv', '
         if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
 
 
-
         scope.clickModule = function(desiredModule){
-          afRedirectionManager.changeApp(desiredModule);
+          afRedirectionManager.changeApp(desiredModule)
+              .catch(function(response){
+                appCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+                afMsg.error('Failed to redirect');
+              });
         };
         scope.logout = function(options){
           afAuthManager.logout();
@@ -945,12 +951,13 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
+                // TODO: need to allow metrics to accept jwt
                 var queryString = convertToHttpParams(params, { sessionToken: afAuthManager.sessionToken() });
                 go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
                 break;
 
               //
-              // PROCESSPRO
+              // PROCESS PRO
               case 'processpro':
                 go('/processpro/', replace); // page that has code that mimics portals login page.
                 break;
