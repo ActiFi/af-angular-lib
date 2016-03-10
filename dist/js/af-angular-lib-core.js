@@ -877,11 +877,12 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
     .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, appEnv, afStorage, appCatch, _, afModuleManager, appTenant, afAuthManager) {
 
-      var go = function(to, replace){
-        // get replace value
-        replace = _.isBoolean(replace) ? replace:true;
-        if(replace)
+      var go = function(url, options){
+        options = options || {}; // { body, replace, newWindow }
+        if(options.replace)
           $window.location.replace(to); // no history state...
+        if(options.newWindow)
+          afUtil.postToUrl(url, options.body, true); // new window...
         else
           $window.location.href = to;
       };
@@ -911,16 +912,15 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         //
         // MAIN REDIRECT FUNCTIONS
         //
-        redirect:function(redirectKey, params, replace) {
+        redirect:function(redirectKey, params, options) {
           var defer = $q.defer();
           redirectKey = ('' + redirectKey).toLowerCase();
 
 
           // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
-
             var queryString = convertToHttpParams(params);
-            go('/auth/#/login'+queryString, true);
+            go('/auth/#/login'+queryString, options);
 
 
           // MUST BE LOGGED IN....
@@ -929,8 +929,8 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             // whoops.. need to be logged in...
             var error = 'Invalid Session. Redirect to '+redirectKey+' failed.';
             appCatch.send(error);
-            // send them to auth....
-            afRedirectionManager.invalidSession({redirect:redirectKey || ''});
+            // send them to login page....
+            afRedirectionManager.invalidSession({ redirect:redirectKey || '' });
 
           } else {
 
@@ -939,28 +939,29 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               //
               // PORTAL -> standard login
               case 'roadmap':
-                // page that has code to mimic portals login page.
-                go('/portal/login-window.php', replace);
+                var queryString = convertToHttpParams(params);
+                go('/portal/login-window.php/#/'+queryString, options);
                 break;
 
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
-                // TODO: need to allow metrics to accept jwt
                 var queryString = convertToHttpParams(params, { sessionToken: afAuthManager.sessionToken() });
-                go('/metrics/#/login'+queryString, replace); // page that has code that mimics portals login page.
+                go('/metrics/#/login'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // PROCESS PRO
               case 'processpro':
-                go('/processpro/', replace); // page that has code that mimics portals login page.
+                var queryString = convertToHttpParams(params);
+                go('/processpro/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // ADMIN
               case 'admin':
-                go('/admin/', replace); // page that has code that mimics portals login page.
+                var queryString = convertToHttpParams(params);
+                go('/admin/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
@@ -971,7 +972,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
                   var queryString = convertToHttpParams({ dateFrom: params.dateFrom });
-                  go('/act/rmupdater/#/rm/updater'+queryString, replace);
+                  go('/act/rmupdater/#/rm/updater'+queryString, options);
                 }
                 break;
 
@@ -1016,16 +1017,24 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         },
 
 
-        // redirect to auth because of session issues...
-        logout:function(options){
-          options = options || {};
-          options.action = 'logout';
-          afRedirectionManager.redirect('auth', options);
+        goToPortal:function(page, hash, hui, params, options){
+          params = params || {};
+          params.hui = hui === false ? false:true;
+          params.page = page;
+          if(hash) params.hash = hash;
+          afRedirectionManager.redirect('portal', params, options)
         },
-        invalidSession:function(options){
-          options = options || {};
-          options.action = 'invalidsession';
-          afRedirectionManager.redirect('auth', options);
+
+        // redirect to auth because of session issues...
+        logout:function(params, options){
+          params = params || {};
+          params.action = 'logout';
+          afRedirectionManager.redirect('auth', params, options);
+        },
+        invalidSession:function(params, options){
+          params = params || {};
+          params.action = 'invalidsession';
+          afRedirectionManager.redirect('auth', params, options);
         }
 
       }
