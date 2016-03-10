@@ -14,11 +14,6 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
           $window.location.href = to;
       };
 
-      var redirectError = function(redirectKey, msg){
-        msg = 'afRedirectManager.redirect Error: ' + redirectKey + ': ' + msg;
-
-      };
-
       var missingParams = function(params, requiredParams){
         var missingParams = [];
         _.each(requiredParams, function(requiredParam){
@@ -60,7 +55,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
           } else if(!afAuthManager.isLoggedIn()) {
 
             // whoops.. need to be logged in...
-            var error = 'afRedirectManager.redirect to '+redirectKey+' attempted, but user was not logged in.';
+            var error = 'Invalid Session. Redirect to '+redirectKey+' failed.';
             appCatch.send(error);
             // send them to auth....
             afRedirectionManager.invalidSession({redirect:redirectKey || ''});
@@ -103,7 +98,8 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                 if(missing) {
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
-                  go('/act/rmupdater/#/rm/updater?dateFrom='+params.dateFrom, replace);
+                  var queryString = convertToHttpParams({ dateFrom: params.dateFrom });
+                  go('/act/rmupdater/#/rm/updater'+queryString, replace);
                 }
                 break;
 
