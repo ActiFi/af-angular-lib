@@ -1359,14 +1359,14 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             params.hui = _.isBoolean(params.hui) ? params.hui:false;
             params.page = page;
             if(hash) params.hash = hash;
-            afRedirectionManager.redirect('portal', params, options)
+            return afRedirectionManager.redirect('portal', params, options);
           },
           editRoadmap:function(roadmapId, userId, hui, options){
             var params = {
               userId:userId,
               hui:_.isBoolean(hui) ? hui:false
             };
-            afRedirectionManager.roadmap.goToRoadmap('user-roadmaps', 'roadmapsEdit/'+roadmapId, params, options)
+            return afRedirectionManager.roadmap.goToRoadmap('user-roadmaps', 'roadmapsEdit/'+roadmapId, params, options);
           }
         }
 
