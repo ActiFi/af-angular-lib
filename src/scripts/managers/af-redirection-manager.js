@@ -8,11 +8,11 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
       var go = function(url, options){
         options = options || {}; // { body, replace, newWindow }
         if(options.replace)
-          $window.location.replace(to); // no history state...
+          $window.location.replace(url); // no history state...
         if(options.newWindow)
           afUtil.postToUrl(url, options.body, true); // new window...
         else
-          $window.location.href = to;
+          $window.location.href = url;
       };
 
       var missingParams = function(params, requiredParams){
