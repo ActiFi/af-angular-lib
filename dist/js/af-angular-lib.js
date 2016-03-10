@@ -1295,7 +1295,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               //
               // ROADMAP EMAIL ROADMAP UPDATER
               case 'rmupdater':
-                var missing = missingParams(params, 'dateFrom');
+                var missing = missingParams(params, ['dateFrom']);
                 if(missing) {
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
