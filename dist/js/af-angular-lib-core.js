@@ -977,7 +977,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                 } else {
                   go('/act/rmupdater/#/rm/updater?dateFrom='+params.dateFrom, replace);
                 }
-                return;
+                break;
 
               default:
                 appCatch('Redirection ['+redirectKey+'] not found.');
