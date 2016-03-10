@@ -103,7 +103,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                 if(missing) {
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
-                  go('/act/updater/#/rm/updater?dateFrom='+params.dateFrom, replace);
+                  go('/act/rmupdater/#/rm/updater?dateFrom='+params.dateFrom, replace);
                 }
                 return;
 
