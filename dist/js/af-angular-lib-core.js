@@ -1016,15 +1016,6 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
             });
         },
 
-
-        goToPortal:function(page, hash, hui, params, options){
-          params = params || {};
-          params.hui = hui === false ? false:true;
-          params.page = page;
-          if(hash) params.hash = hash;
-          afRedirectionManager.redirect('portal', params, options)
-        },
-
         // redirect to auth because of session issues...
         logout:function(params, options){
           params = params || {};
@@ -1035,6 +1026,24 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
           params = params || {};
           params.action = 'invalidsession';
           afRedirectionManager.redirect('auth', params, options);
+        },
+
+
+        roadmap:{
+          goToRoadmap:function(page, hash, params, options){
+            params = params || {};
+            params.hui = _.isBoolean(params.hui) ? params.hui:false;
+            params.page = page;
+            if(hash) params.hash = hash;
+            afRedirectionManager.redirect('portal', params, options)
+          },
+          editRoadmap:function(roadmapId, userId, hui, options){
+            var params = {
+              userId:userId,
+              hui:_.isBoolean(hui) ? hui:false
+            };
+            afRedirectionManager.roadmap.goToRoadmap('user-roadmaps', 'roadmapsEdit/'+roadmapId, params, options)
+          }
         }
 
       }
