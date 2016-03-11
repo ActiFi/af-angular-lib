@@ -888,10 +888,10 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
           $window.location.href = url;
       };
 
-      var missingParams = function(params, requiredParams){
+      var missingParams = function(searchParams, requiredParams){
         var missingParams = [];
         _.each(requiredParams, function(requiredParam){
-          if(!_.has(params, requiredParam))
+          if(!_.has(searchParams, requiredParam))
             missingParams.push(requiredParam);
         });
         if(missingParams.length)
@@ -899,10 +899,10 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         return false
       };
 
-      var convertToHttpParams = function(params, paramsToAdd){
-        var params = _.extend({ from:appEnv.APP() }, paramsToAdd, params);
-        // return nothing if params is empty...
-        return _.keys(params).length ? '?'+$httpParamSerializer(params):'';
+      var convertToHttpParams = function(searchParams, searchParamsToAdd){
+        var searchParams = _.extend({ from:appEnv.APP() }, searchParamsToAdd, searchParams);
+        // return nothing if searchParams is empty...
+        return _.keys(searchParams).length ? '?'+$httpParamSerializer(searchParams):'';
       };
 
 
@@ -913,14 +913,14 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         //
         // MAIN REDIRECT FUNCTIONS
         //
-        redirect:function(redirectKey, params, options) {
+        redirect:function(redirectKey, searchParams, options) {
           var defer = $q.defer();
           redirectKey = ('' + redirectKey).toLowerCase();
 
 
           // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
-            var queryString = convertToHttpParams(params);
+            var queryString = convertToHttpParams(searchParams);
             go('/auth/#/login'+queryString, options);
 
 
@@ -940,39 +940,39 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               //
               // PORTAL -> standard login
               case 'roadmap':
-                var queryString = convertToHttpParams(params);
+                var queryString = convertToHttpParams(searchParams);
                 go('/portal/login-window.php/#/'+queryString, options);
                 break;
 
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
-                var queryString = convertToHttpParams(params, { sessionToken: afAuthManager.sessionToken() });
+                var queryString = convertToHttpParams(searchParams, { sessionToken: afAuthManager.sessionToken() });
                 go('/metrics/#/login'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // PROCESS PRO
               case 'processpro':
-                var queryString = convertToHttpParams(params);
+                var queryString = convertToHttpParams(searchParams);
                 go('/processpro/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // ADMIN
               case 'admin':
-                var queryString = convertToHttpParams(params);
+                var queryString = convertToHttpParams(searchParams);
                 go('/admin/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // ROADMAP EMAIL ROADMAP UPDATER
               case 'rmupdater':
-                var missing = missingParams(params, ['dateFrom']);
+                var missing = missingParams(searchParams, ['dateFrom']);
                 if(missing) {
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
-                  var queryString = convertToHttpParams({ dateFrom: params.dateFrom });
+                  var queryString = convertToHttpParams({ dateFrom: searchParams.dateFrom });
                   go('/act/rmupdater/#/rm/updater'+queryString, options);
                 }
                 break;
@@ -1018,30 +1018,32 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
         },
 
         // redirect to auth because of session issues...
-        logout:function(params, options){
-          params = params || {};
-          params.action = 'logout';
-          afRedirectionManager.redirect('auth', params, options);
+        logout:function(searchParams, options){
+          searchParams = searchParams || {};
+          searchParams.action = 'logout';
+          afRedirectionManager.redirect('auth', searchParams, options);
         },
-        invalidSession:function(params, options){
-          params = params || {};
-          params.action = 'invalidsession';
-          afRedirectionManager.redirect('auth', params, options);
+        invalidSession:function(searchParams, options){
+          searchParams = searchParams || {};
+          searchParams.action = 'invalidsession';
+          afRedirectionManager.redirect('auth', searchParams, options);
         },
 
 
         roadmap:{
-          openRoadmapPage:function(page, hash, hui, params, options){
+          openRoadmapPage:function(page, hash, hui, searchParams, options){
             var defaultParams = {
               page:page
             };
             if(_.isString(hash)) defaultParams.hash = hash;
             if(_.isBoolean(hui)) defaultParams.hui = hui;
-            params = _.extend({}, defaultParams, params);
-            return afRedirectionManager.redirect('roadmap', params, options);
+            searchParams = _.extend({}, defaultParams, searchParams);
+            return afRedirectionManager.redirect('roadmap', searchParams, options);
           },
-          editRoadmap:function(roadmapId, userId, hui, params, options){
-            return afRedirectionManager.roadmap.openRoadmapPage('user-roadmaps', 'roadmapsEdit/'+roadmapId, hui, params, options);
+          editRoadmap:function(roadmapId, userId, hui, searchParams, options){
+            searchParams = searchParams || {};
+            searchParams.userId = userId;
+            return afRedirectionManager.roadmap.openRoadmapPage('user-roadmaps', 'roadmapsEdit/'+roadmapId, hui, searchParams, options);
           }
         }
 
