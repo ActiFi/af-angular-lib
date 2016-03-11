@@ -159,12 +159,10 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
         roadmap:{
           openRoadmapPage:function(page, hash, hui, searchParams, options){
-            var defaultParams = {
-              page:page
-            };
-            if(_.isString(hash)) defaultParams.hash = hash;
-            if(_.isBoolean(hui)) defaultParams.hui = hui;
-            searchParams = _.extend({}, defaultParams, searchParams);
+            var defaults = { page:page };
+            if(_.isString(hash)) defaults.hash = hash;
+            if(_.isBoolean(hui)) defaults.hui = hui;
+            searchParams = _.extend({}, defaults, searchParams);
             return afRedirectionManager.redirect('roadmap', searchParams, options);
           },
           editRoadmap:function(roadmapId, userId, hui, searchParams, options){
