@@ -1302,7 +1302,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                 break;
 
               default:
-                appCatch('Redirection ['+redirectKey+'] not found.');
+                appCatch.send('Redirection ['+redirectKey+'] not found.');
                 defer.reject('Redirection ['+redirectKey+'] not found.');
             }
 
@@ -1355,19 +1355,17 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
 
         roadmap:{
-          goToRoadmap:function(page, hash, params, options){
-            params = params || {};
-            params.hui = _.isBoolean(params.hui) ? params.hui:false;
-            params.page = page;
-            if(hash) params.hash = hash;
-            return afRedirectionManager.redirect('portal', params, options);
-          },
-          editRoadmap:function(roadmapId, userId, hui, options){
-            var params = {
-              userId:userId,
-              hui:_.isBoolean(hui) ? hui:false
+          openRoadmapPage:function(page, hash, hui, params, options){
+            var defaultParams = {
+              page:page
             };
-            return afRedirectionManager.roadmap.goToRoadmap('user-roadmaps', 'roadmapsEdit/'+roadmapId, params, options);
+            if(_.isString(hash)) defaultParams.hash = hash;
+            if(_.isBoolean(hui)) defaultParams.hui = hui;
+            params = _.extend({}, defaultParams, params);
+            return afRedirectionManager.redirect('roadmap', params, options);
+          },
+          editRoadmap:function(roadmapId, userId, hui, params, options){
+            return afRedirectionManager.roadmap.openRoadmapPage('user-roadmaps', 'roadmapsEdit/'+roadmapId, hui, params, options);
           }
         }
 
