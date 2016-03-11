@@ -41,6 +41,7 @@ angular.module('af.lib',
     'moment',
   // UTIL
     'af.apiUtil',
-    'af.util'
+    'af.util',
+    'af.timeout'
   ]
 );
