@@ -1265,28 +1265,28 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
               // PORTAL -> standard login
               case 'roadmap':
                 var queryString = convertToHttpParams(searchParams);
-                go('/portal/login-window.php/#/'+queryString, options);
+                go('/portal/login-window.php#/'+queryString, options);
                 break;
 
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
                 var queryString = convertToHttpParams(searchParams, { sessionToken: afAuthManager.sessionToken() });
-                go('/metrics/#/login'+queryString, options); // page that has code that mimics portals login page.
+                go('/metrics#/login'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // PROCESS PRO
               case 'processpro':
                 var queryString = convertToHttpParams(searchParams);
-                go('/processpro/#/'+queryString, options); // page that has code that mimics portals login page.
+                go('/processpro#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // ADMIN
               case 'admin':
                 var queryString = convertToHttpParams(searchParams);
-                go('/admin/#/'+queryString, options); // page that has code that mimics portals login page.
+                go('/admin#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
@@ -1297,7 +1297,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
                   var queryString = convertToHttpParams({ dateFrom: searchParams.dateFrom });
-                  go('/act/rmupdater/#/rm/updater'+queryString, options);
+                  go('/act/rmupdater#/rm/updater'+queryString, options);
                 }
                 break;
 
