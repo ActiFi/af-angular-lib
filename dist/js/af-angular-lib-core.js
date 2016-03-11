@@ -2176,27 +2176,22 @@ angular.module('af.timeout', ['_'])
     var afTimeout = null;
     return afTimeout = {
 
-      timeout:function(scope, cb, time){
+      timeout:function(scope, cb, timer){
 
         // create an array based on this scopes id
         timers[$scope.$id] = timers[$scope.$id] || [];
 
         // put the timer into our timers list
-        timers[$scope.$id].push($timeout(cb, time));
+        timers[$scope.$id].push($timeout(cb, timer));
 
         scope.$on('$destroy', function(){
-          console.log($scope.$id);
-          // loop over any timers tied to scope and destroy them
           if(timers[$scope.$id]){
-            _.each(timers[$scope.$id], function(timer){
-              $timeout.cancel(timer);
-            });
-            delete timers[$scope.$id]; // remove array
+            _.each(timers[$scope.$id], $timeout.cancel); // cancel each timer
+            delete timers[$scope.$id];                   // destroy the scopes timer array
           }
         })
 
       }
-
     };
   });
 
