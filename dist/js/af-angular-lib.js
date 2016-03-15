@@ -2193,9 +2193,7 @@ angular.module('af.storage', [ '_', 'amplify' ])
         if(key)
           return amplify.store(key, null);
         // clear all
-        var all = amplify.store();
-        var keys = _.keys(all);
-        _.keys(amplify.store(), function(key){
+        _.each(amplify.store(), function(value, key){
           amplify.store(key, null);
         });
       }
