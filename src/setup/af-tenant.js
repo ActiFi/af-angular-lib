@@ -1,31 +1,31 @@
 //
 // TENANTS CONFIGURATION (labels, theme, etc)
 //
-var appTenant = {
+var afTenant = {
 
   _config:{}, // holds config (loaded from db or php, or whatever)
 
   init:function(config){
-    appTenant._config = config;
-    console.log('appTenant:', appTenant.get('app.tenant'));
+    afTenant._config = config;
+    console.log('afTenant:', afTenant.get('app.tenant'));
   },
 
   // quickie makers
-  label:function(value, plural){ return appTenant.config('label.'+value, plural)},
+  label:function(value, plural){ return afTenant.config('label.'+value, plural)},
   exists:function(path){
-    return _.get(appTenant._config, path) !== void 0;
+    return _.get(afTenant._config, path) !== void 0;
   },
   config:function(path, makePlural){
-    if(!path) return appTenant._config; // return entire config if no path
-    var value = _.get(appTenant._config, path);
+    if(!path) return afTenant._config; // return entire config if no path
+    var value = _.get(afTenant._config, path);
     if(value === void 0) {
-      console.log('appTenant.config(' + path + ') MISSING!');
+      console.log('afTenant.config(' + path + ') MISSING!');
       return '';
     }
     if(makePlural) {
-      var customPluralValue = _.get(appTenant._config, path + '_plural');
+      var customPluralValue = _.get(afTenant._config, path + '_plural');
       if(customPluralValue !== void 0) return customPluralValue;
-      return appTenant.makePlural(value);
+      return afTenant.makePlural(value);
     }
     return value;
   },
@@ -44,4 +44,4 @@ var appTenant = {
   }
 
 };
-appTenant.get = appTenant.config; // alias
+afTenant.get = afTenant.config; // alias

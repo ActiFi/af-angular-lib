@@ -1,7 +1,7 @@
 //
 // THIS IS GLOBALLY scoped on window because we need it before angular even loads..
 //
-var appTrack = {
+var afTrack = {
 
   loaded: false,
 
@@ -21,38 +21,38 @@ var appTrack = {
   // INITIALIZE
   //
   init:function(uid){
-    if(appTrack.loaded) return;
+    if(afTrack.loaded) return;
 
     // set uid
-    appTrack.config.uid = uid;
+    afTrack.config.uid = uid;
 
     // sanity checks
-    if(appEnv == void 0)              return console.log('AppTrack - Cannot initialize. appEnv must be defined.');
-    if(appEnv.ENV() !== 'production') return console.log('AppTrack - Disabled in ' + appEnv.ENV() + ' environment');
-    if(appCatch == void 0)            return console.log('AppTrack - Cannot initialize. appCatch must be defined.');
-    if(!appTrack.config.enabled)      return console.log('appTrack - Disabled via config.');
+    if(afEnv == void 0)              return console.log('AfTrack - Cannot initialize. afEnv must be defined.');
+    if(afEnv.ENV() !== 'production') return console.log('AfTrack - Disabled in ' + afEnv.ENV() + ' environment');
+    if(afCatch == void 0)            return console.log('AfTrack - Cannot initialize. afCatch must be defined.');
+    if(!afTrack.config.enabled)      return console.log('afTrack - Disabled via config.');
 
-    if(amplify == void 0)             return appCatch.send('AppTrack - Cannot initialize. amplify must be loaded first.');
-    if(_ == void 0)                   return appCatch.send('AppTrack - Cannot initialize. lodash must be loaded first.');
-    if(!appTrack.config.uid)          return appCatch.send('AppTrack - Cannot initialize. uid not defined.');
-    if(typeof mixpanel === void 0)    return appCatch.send('AppTrack - Cannot initialize. mixpanel must be defiend.');
+    if(amplify == void 0)             return afCatch.send('AfTrack - Cannot initialize. amplify must be loaded first.');
+    if(_ == void 0)                   return afCatch.send('AfTrack - Cannot initialize. lodash must be loaded first.');
+    if(!afTrack.config.uid)          return afCatch.send('AfTrack - Cannot initialize. uid not defined.');
+    if(typeof mixpanel === void 0)    return afCatch.send('AfTrack - Cannot initialize. mixpanel must be defiend.');
 
     // init
-    mixpanel.init(appTrack.config.uid, appTrack.config.options);
+    mixpanel.init(afTrack.config.uid, afTrack.config.options);
     // always pass these with events:
-    appTrack.config.globals = {
-      'Domain': appEnv.HOST(),
-      'Tenant': appEnv.TENANT_HASH(),
+    afTrack.config.globals = {
+      'Domain': afEnv.HOST(),
+      'Tenant': afEnv.TENANT_HASH(),
       'Browser Version':navigator.sayswho,
-      'App': appEnv.APP()
+      'App': afEnv.APP()
     };
-    mixpanel.register(appTrack.config.globals);
+    mixpanel.register(afTrack.config.globals);
     console.log('MIXPANEL - Enabled');
-    appTrack.loaded = true;
+    afTrack.loaded = true;
   },
 
   isEnabled:function(){
-    return (appTrack.loaded && appTrack.config.enabled && amplify.store('mixpanel_trackUserStats')) ? true:false;
+    return (afTrack.loaded && afTrack.config.enabled && amplify.store('mixpanel_trackUserStats')) ? true:false;
   },
 
 
@@ -64,16 +64,16 @@ var appTrack = {
     amplify.store('mixpanel_trackUserStats', value);
   },
   setUserId: function (userId) {
-    if(!appTrack.loaded) return;
+    if(!afTrack.loaded) return;
     amplify.store('mixpanel_trackUserId', userId);
     mixpanel.identify(userId);
   },
   getUserId:function(){
-    if(!appTrack.loaded) return;
+    if(!afTrack.loaded) return;
     return amplify.store('mixpanel_trackUserId');
   },
   setProfile: function (object) {
-    if(!appTrack.loaded) return;
+    if(!afTrack.loaded) return;
     mixpanel.people.set(object);
   },
 
@@ -82,36 +82,36 @@ var appTrack = {
   // METHODS
   //
   // mixpanel.track("Register", {"Gender": "Male", "Age": 21}, 'Auth');
-  send: function (name, tags, globalModule) { appTrack.track(name, tags, globalModule); }, // alias
+  send: function (name, tags, globalModule) { afTrack.track(name, tags, globalModule); }, // alias
   track: function (name, tags, globalModule) {
-    if(!appTrack.isEnabled()) return;
+    if(!afTrack.isEnabled()) return;
     mixpanel.track(name, tags);
-    if(globalModule) appTrack.trackGlobalUsage(globalModule);
+    if(globalModule) afTrack.trackGlobalUsage(globalModule);
   },
   trackGlobalUsage:function(module){
     module = module || 'Other';
-    if(!appTrack.isEnabled() || !appTrack.getUserId()) return;
-    var key = 'mixpanel_globalUsage_'+module+'-'+appTrack.getUserId();
+    if(!afTrack.isEnabled() || !afTrack.getUserId()) return;
+    var key = 'mixpanel_globalUsage_'+module+'-'+afTrack.getUserId();
     if(amplify.store(key)) return; // tracked recently?
-    appTrack.send('Global Usage', { Module:module });
-    appTrack.increment('Global Usage');
+    afTrack.send('Global Usage', { Module:module });
+    afTrack.increment('Global Usage');
     // cache so we don't send again right away...
-    amplify.store(key, true, { expires:appTrack.config.globalUsageDelay });
+    amplify.store(key, true, { expires:afTrack.config.globalUsageDelay });
   },
   increment:function(name){
-    if(!appTrack.isEnabled() || !appTrack.getUserId()) return;
+    if(!afTrack.isEnabled() || !afTrack.getUserId()) return;
     mixpanel.people.increment(name);
   },
 
   // Register a set of super properties, which are automatically included with all events.
   // { key:value }
   register: function (options) {
-    if(!appTrack.isEnabled()) return;
+    if(!afTrack.isEnabled()) return;
     mixpanel.register(options);
   },
   // removes a registered key
   unregister: function (key) {
-    if(!appTrack.isEnabled()) return;
+    if(!afTrack.isEnabled()) return;
     mixpanel.unregister(key);
   },
 
@@ -121,10 +121,10 @@ var appTrack = {
   // METHODS
   //
   TRACK_LOGIN:function(type, from, to){
-    appTrack.send('Login', {'Login Type':type, 'Login Via':_.capitalize(from), 'Login To':_.capitalize(to) });
+    afTrack.send('Login', {'Login Type':type, 'Login Via':_.capitalize(from), 'Login To':_.capitalize(to) });
   },
   PageView:function(name){
-    appTrack.send('Page View');
+    afTrack.send('Page View');
   }
 };
 

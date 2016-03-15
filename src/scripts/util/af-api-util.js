@@ -1,6 +1,6 @@
 
-angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
-    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, afRedirectionManager, $location, afMsg, $) {
+angular.module('af.apiUtil', ['_', 'af.catch', 'af.authManager', 'af.msg'])
+    .service('afApiUtil', function(_, afCatch, $log, afAuthManager, afRedirectionManager, $location, afMsg, $) {
 
       var afApiUtil = null;
       return afApiUtil = {
@@ -33,7 +33,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             return request;
           },
           attachTenantIndex:function(request){
-            var tenant = appEnv.TENANT_INDEX();
+            var tenant = afEnv.TENANT_INDEX();
             request.data = request.data || {};
             request.data.tenant = tenant;
             return request;
@@ -167,7 +167,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             // log it
             $log.error(error);
             // send to sentry
-            appCatch.send(error.message, error.debug);
+            afCatch.send(error.message, error.debug);
           },
 
           getErrCodeLabel:function(code){

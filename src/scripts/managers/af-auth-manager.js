@@ -1,5 +1,5 @@
 
-angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jwtManager'])
 
 
   // config
@@ -65,7 +65,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af
         // cache sessionToken as well if user contains one (like from a decoded jwt)
         afAuthManager.setSessionToken(decodedToken.sessionToken, timeTillExpires);
 
-        if(appEnv.ENV() !== 'production')
+        if(afEnv.ENV() !== 'production')
           $log.info('afAuthManager - User Set:', afAuthManager.user());
         $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
@@ -95,7 +95,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af
       //
       setUser:function(user, expires){
         // put a "displayName" on the user
-        user.displayName = afUtil.createDisplayName(user, appTenant.config('app.preferredDisplayName'));
+        user.displayName = afUtil.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
         // cache user
         afStorage.store(afAuthManagerConfig.cacheUserAs, user, expires);
 
