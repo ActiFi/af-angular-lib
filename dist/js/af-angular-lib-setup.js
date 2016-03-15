@@ -201,10 +201,10 @@ var afTrack = {
     if(afCatch == void 0)            return console.log('AfTrack - Cannot initialize. afCatch must be defined.');
     if(!afTrack.config.enabled)      return console.log('afTrack - Disabled via config.');
 
-    if(amplify == void 0)             return afCatch.send('AfTrack - Cannot initialize. amplify must be loaded first.');
-    if(_ == void 0)                   return afCatch.send('AfTrack - Cannot initialize. lodash must be loaded first.');
+    if(amplify == void 0)            return afCatch.send('AfTrack - Cannot initialize. amplify must be loaded first.');
+    if(_ == void 0)                  return afCatch.send('AfTrack - Cannot initialize. lodash must be loaded first.');
     if(!afTrack.config.uid)          return afCatch.send('AfTrack - Cannot initialize. uid not defined.');
-    if(typeof mixpanel === void 0)    return afCatch.send('AfTrack - Cannot initialize. mixpanel must be defiend.');
+    if(typeof mixpanel === void 0)   return afCatch.send('AfTrack - Cannot initialize. mixpanel must be defiend.');
 
     // init
     mixpanel.init(afTrack.config.uid, afTrack.config.options);
