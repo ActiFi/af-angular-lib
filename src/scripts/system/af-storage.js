@@ -12,6 +12,12 @@ angular.module('af.storage', [ '_', 'amplify' ])
       },
       // CLEAR
       clear: function(key) {
+        // clear one key
+        if(key)
+          return amplify.store(key, null);
+        // clear all
+        var all = amplify.store();
+        var keys = _.keys(all);
         _.keys(amplify.store(), function(key){
           amplify.store(key, null);
         });
