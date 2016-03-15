@@ -1619,12 +1619,12 @@ angular.module('af.loader', ['af.event'])
 angular.module('af.modal', ['af.event'])
 
   // config
-  .provider('afEventConfig', function(){
+  .provider('afModelConfig', function(){
     this.genericModalPath = 'client/views/partials/generic.modal.view.html';
     this.$get = function () { return this; };
   })
 
-  .service("afModal", function(afEvent, afEventConfig) {
+  .service("afModal", function(afEvent, afModelConfig) {
     var service;
     service = {
       isOpen:false,
@@ -1635,7 +1635,7 @@ angular.module('af.modal', ['af.event'])
         service.url = url;
         service.controller = ctrl;
         service.size = size; // lg, md, sm
-        if (!service.url) service.url = afEventConfig.genericModalPath;
+        if (!service.url) service.url = afModelConfig.genericModalPath;
         afEvent.shout("Modal.open", {
           url: service.url,
           controller: service.controller,
@@ -1659,7 +1659,7 @@ angular.module('af.modal', ['af.event'])
           ctrl.title = title;
           ctrl.body = body;
         }
-        service.open(afEventConfig.genericModalPath, ctrl);
+        service.open(afModelConfig.genericModalPath, ctrl);
       }
     };
     return service;
