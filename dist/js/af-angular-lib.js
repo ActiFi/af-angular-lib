@@ -1363,17 +1363,17 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.catch
 
 
         roadmap:{
-          openRoadmapPage:function(page, hash, hui, searchParams, options){
-            var defaults = { page:page };
-            if(_.isString(hash)) defaults.hash = hash;
-            if(_.isBoolean(hui)) defaults.hui = hui;
-            searchParams = _.extend({}, defaults, searchParams);
-            return afRedirectionManager.redirect('roadmap', searchParams, options);
+          openRoadmapPage:function(page, route, hui, searchParams, options){
+            // send them into portals login.window with a redirect in url
+            var url = page;
+            if(route) url += '#/' + route;
+            url += convertToHttpParams(searchParams);
+            return afRedirectionManager.redirect('roadmap', { redirect:url }, options);
           },
           editRoadmap:function(roadmapId, userId, hui, searchParams, options){
             searchParams = searchParams || {};
             searchParams.userId = userId;
-            return afRedirectionManager.roadmap.openRoadmapPage('user-roadmaps', 'roadmapsEdit/'+roadmapId, hui, searchParams, options);
+            return afRedirectionManager.roadmap.openRoadmapPage('user-roadmaps.php', 'roadmapsEdit/'+roadmapId, hui, searchParams, options);
           }
         }
 
