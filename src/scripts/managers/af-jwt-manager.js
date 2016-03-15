@@ -1,7 +1,7 @@
 
-angular.module('af.jwtManager', ['moment'])
+angular.module('af.jwtManager', ['af.appCatch', 'moment'])
 
-    .service('afJwtManager', function($window, $log, moment) {
+    .service('afJwtManager', function($window, $log, appCatch, moment) {
 
       function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
@@ -22,7 +22,7 @@ angular.module('af.jwtManager', ['moment'])
         } else if($window.Base64) {
           return $window.Base64.atob(output);
         }
-        $log.error('jwtManager: Failed to decode webToken, atob not supported');
+        appCatch.error('jwtManager: Failed to decode webToken, atob not supported');
         return null;
       }
 
@@ -31,6 +31,11 @@ angular.module('af.jwtManager', ['moment'])
 
         decode:function(token){
           if(!token) return false;
+          token = (''+token); // ensure string
+          if(token.indexOf('.') < 0){
+            appCatch.error('Invalid JWT ' + token);
+            return null;
+          }
           var encoded = token.split('.')[1];
           var decoded = JSON.parse(urlBase64Decode(encoded));
           if(afJwtManager.hasExpired(decoded)){
