@@ -36,7 +36,7 @@ angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionM
           if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
 
           scope.clickModule = function(desiredModule){
-            afRedirectionManager.changeApp(desiredModule)
+            afRedirectionManager.changeApp(desiredModule.key)
               .catch(function(response){
                 afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
                 afMsg.error('Failed to redirect');
