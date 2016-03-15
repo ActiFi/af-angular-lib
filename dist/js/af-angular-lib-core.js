@@ -923,6 +923,9 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.catch
           redirectKey = ('' + redirectKey).toLowerCase();
 
 
+          if(searchParams && searchParams.debug)
+            alert('debug'); // pause js execution for debugging...
+
           // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
             var queryString = convertToHttpParams(searchParams);
