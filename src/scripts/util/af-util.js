@@ -10,8 +10,8 @@ Number.prototype.formatNumber = function(precision, decimal, seperator) {
   return s + (j ? i.substr(0, j) + seperator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + seperator) + (precision ? decimal + Math.abs(n - i).toFixed(precision).slice(2) : "");
 };
 
-angular.module('af.util', ['_', 'moment', 'af.appTenant'])
-  .service('afUtil', function($window, $location, _, moment, appTenant) {
+angular.module('af.util', ['_', 'moment', 'af.tenant'])
+  .service('afUtil', function($window, $location, _, moment, afTenant) {
 
     var afUtil = null;
     return afUtil = {
@@ -129,7 +129,7 @@ angular.module('af.util', ['_', 'moment', 'af.appTenant'])
           if (!value) return '';
           if (!inputType) inputType = "utc";
           if (moment) {
-            if(!format) format = appTenant.config('settings.dates.format') || 'MM/DD/YY';
+            if(!format) format = afTenant.config('settings.dates.format') || 'MM/DD/YY';
             if (typeof value === 'string') {
               switch (inputType.toLowerCase()) {
                 case 'utc':

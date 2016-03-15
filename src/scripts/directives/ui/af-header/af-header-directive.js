@@ -1,4 +1,4 @@
-angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch', 'af.msg', 'af.appEnv', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.msg', 'af.env', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -8,7 +8,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch',
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, appCatch, afMsg, appEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(afTenant, $window, afAuthManager, afCatch, afMsg, afEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -36,7 +36,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch',
         scope.clickModule = function(desiredModule){
           afRedirectionManager.changeApp(desiredModule)
               .catch(function(response){
-                appCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+                afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
                 afMsg.error('Failed to redirect');
               });
         };

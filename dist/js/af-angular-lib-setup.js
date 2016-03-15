@@ -3,7 +3,7 @@ if (typeof console === "undefined") { var console = { log : function(){} }; }
 //
 // THIS IS GLOBALLY scoped on window because we need it before angular even loads..
 //
-var appCatch = {
+var afCatch = {
 
   loaded:false,
 
@@ -21,26 +21,26 @@ var appCatch = {
   // INITIALIZE
   //
   init:function(uid){
-    if(appCatch.loaded)  return;
+    if(afCatch.loaded)  return;
 
     // set uid
-    appCatch.config.uid = uid;
+    afCatch.config.uid = uid;
 
     // sanity checks
-    if(appEnv == void 0)              return console.log('AppCatch - Cannot initialize. appEnv must be defined.');
-    if(appEnv.ENV() !== 'production') return console.log('AppCatch - Disabled in ' + appEnv.ENV() + ' environment');
-    if(!appCatch.config.enabled)      return console.log('AppCatch - Disabled via config.');
-    if(typeof Raven === void 0)       return console.log('AppCatch - ERROR!! Cannot initialize Sentry. Missing Raven library.');
-    if(!appCatch.config.uid)          return console.log('AppCatch - ERROR!! Sentry init error. Application Config not defined.');
+    if(afEnv == void 0)              return console.log('AfCatch - Cannot initialize. afEnv must be defined.');
+    if(afEnv.ENV() !== 'production') return console.log('AfCatch - Disabled in ' + afEnv.ENV() + ' environment');
+    if(!afCatch.config.enabled)      return console.log('AfCatch - Disabled via config.');
+    if(typeof Raven === void 0)      return console.log('AfCatch - ERROR!! Cannot initialize Sentry. Missing Raven library.');
+    if(!afCatch.config.uid)          return console.log('AfCatch - ERROR!! Sentry init error. Application Config not defined.');
 
     // init
-    Raven.config(appCatch.config.uid, appCatch.config.options).install();
+    Raven.config(afCatch.config.uid, afCatch.config.options).install();
     console.log('SENTRY - Enabled');
-    appCatch.loaded = true;
+    afCatch.loaded = true;
   },
 
   isEnabled:function(){
-    return appCatch.loaded && appCatch.enabled;
+    return afCatch.loaded && afCatch.enabled;
   },
 
 
@@ -49,7 +49,7 @@ var appCatch = {
   //
   // alias
   send:function(message, extra, tags){
-    appCatch.error(message, extra, tags);
+    afCatch.error(message, extra, tags);
   },
   error:function(message, extra, tags){
     extra = extra || {};
@@ -60,10 +60,10 @@ var appCatch = {
     options.extra.url = extra.href || window.location.href;
     if(options.extra.password) options.extra.password = '******';
     // tags
-    options.tags.env = tags.env || appEnv.ENV();
-    options.tags.subDomain = tags.subDomain || tags.host || appEnv.HOST();
+    options.tags.env = tags.env || afEnv.ENV();
+    options.tags.subDomain = tags.subDomain || tags.host || afEnv.HOST();
 
-    if(!appCatch.isEnabled()){
+    if(!afCatch.isEnabled()){
       console.log('SENTRY DISABLED - error()', message, options);
       return;
     }
@@ -73,14 +73,14 @@ var appCatch = {
 
   // additional info about the user that threw error...
   setUser:function(id, email){
-    if(!appCatch.isEnabled()) return;
+    if(!afCatch.isEnabled()) return;
     var user = { id:id };
     if(email) user.email = email;
     console.log('SENTRY - setUser()', user);
     Raven.setUser(user);
   },
   clearUser:function(){
-    if(!appCatch.isEnabled()) return;
+    if(!afCatch.isEnabled()) return;
     console.log('SENTRY - clearUser()');
     Raven.setUser(); // this clears out any current user
   }
@@ -89,64 +89,64 @@ var appCatch = {
 //
 // SERVER CONFIGURATION (ENV, TENANT_HASH, TENANT_INDEX, etc)
 //
-var appEnv = {
+var afEnv = {
   _config:{}, // holds config (loaded from db or php, or whatever)
   init:function(config, app){
-    if(!config.ENV)           throw new Error('appEnv.init failed. ENV not defined');
-    if(!config.TENANT_HASH)   throw new Error('appEnv.init failed. TENANT_HASH not defined');
-    if(!config.TENANT_INDEX)  throw new Error('appEnv.init failed. TENANT_INDEX not defined');
-    if(!app)                  throw new Error('appEnv.init failed. must specify app'); // eg, portal, auth, metrics, assessment etc...
-    appEnv._config = config;
-    appEnv._config.HOST = window.location.protocol + "//" + window.location.host;
-    appEnv._config.APP = app;
+    if(!config.ENV)           throw new Error('afEnv.init failed. ENV not defined');
+    if(!config.TENANT_HASH)   throw new Error('afEnv.init failed. TENANT_HASH not defined');
+    if(!config.TENANT_INDEX)  throw new Error('afEnv.init failed. TENANT_INDEX not defined');
+    if(!app)                  throw new Error('afEnv.init failed. must specify app'); // eg, portal, auth, metrics, assessment etc...
+    afEnv._config = config;
+    afEnv._config.HOST = window.location.protocol + "//" + window.location.host;
+    afEnv._config.APP = app;
 
     // log it...
-    console.log('appEnv', appEnv._config);
+    console.log('afEnv', afEnv._config);
   },
-  ENV:function(){ return appEnv._config.ENV },
-  TENANT_HASH:function(){ return appEnv._config.TENANT_HASH },
-  TENANT_INDEX:function(){ return appEnv._config.TENANT_INDEX },
-  SENTRY:function(){ return appEnv._config.SENTRY },
-  MIXPANEL:function(){ return appEnv._config.MIXPANEL },
-  HOST:function(){ return appEnv._config.HOST },
-  APP:function(){ return appEnv._config.APP },
+  ENV:function(){ return afEnv._config.ENV },
+  TENANT_HASH:function(){ return afEnv._config.TENANT_HASH },
+  TENANT_INDEX:function(){ return afEnv._config.TENANT_INDEX },
+  SENTRY:function(){ return afEnv._config.SENTRY },
+  MIXPANEL:function(){ return afEnv._config.MIXPANEL },
+  HOST:function(){ return afEnv._config.HOST },
+  APP:function(){ return afEnv._config.APP },
 
   // global getter
   config : function(path){
-    if(!path) return appEnv._config; // return entire config if no path
-    return _.get(appEnv._config, path);
+    if(!path) return afEnv._config; // return entire config if no path
+    return _.get(afEnv._config, path);
   }
 };
-appEnv.get = appEnv.config; // alias
+afEnv.get = afEnv.config; // alias
 ;
 //
 // TENANTS CONFIGURATION (labels, theme, etc)
 //
-var appTenant = {
+var afTenant = {
 
   _config:{}, // holds config (loaded from db or php, or whatever)
 
   init:function(config){
-    appTenant._config = config;
-    console.log('appTenant:', appTenant.get('app.tenant'));
+    afTenant._config = config;
+    console.log('afTenant:', afTenant.get('app.tenant'));
   },
 
   // quickie makers
-  label:function(value, plural){ return appTenant.config('label.'+value, plural)},
+  label:function(value, plural){ return afTenant.config('label.'+value, plural)},
   exists:function(path){
-    return _.get(appTenant._config, path) !== void 0;
+    return _.get(afTenant._config, path) !== void 0;
   },
   config:function(path, makePlural){
-    if(!path) return appTenant._config; // return entire config if no path
-    var value = _.get(appTenant._config, path);
+    if(!path) return afTenant._config; // return entire config if no path
+    var value = _.get(afTenant._config, path);
     if(value === void 0) {
-      console.log('appTenant.config(' + path + ') MISSING!');
+      console.log('afTenant.config(' + path + ') MISSING!');
       return '';
     }
     if(makePlural) {
-      var customPluralValue = _.get(appTenant._config, path + '_plural');
+      var customPluralValue = _.get(afTenant._config, path + '_plural');
       if(customPluralValue !== void 0) return customPluralValue;
-      return appTenant.makePlural(value);
+      return afTenant.makePlural(value);
     }
     return value;
   },
@@ -165,12 +165,12 @@ var appTenant = {
   }
 
 };
-appTenant.get = appTenant.config; // alias
+afTenant.get = afTenant.config; // alias
 ;
 //
 // THIS IS GLOBALLY scoped on window because we need it before angular even loads..
 //
-var appTrack = {
+var afTrack = {
 
   loaded: false,
 
@@ -190,38 +190,38 @@ var appTrack = {
   // INITIALIZE
   //
   init:function(uid){
-    if(appTrack.loaded) return;
+    if(afTrack.loaded) return;
 
     // set uid
-    appTrack.config.uid = uid;
+    afTrack.config.uid = uid;
 
     // sanity checks
-    if(appEnv == void 0)              return console.log('AppTrack - Cannot initialize. appEnv must be defined.');
-    if(appEnv.ENV() !== 'production') return console.log('AppTrack - Disabled in ' + appEnv.ENV() + ' environment');
-    if(appCatch == void 0)            return console.log('AppTrack - Cannot initialize. appCatch must be defined.');
-    if(!appTrack.config.enabled)      return console.log('appTrack - Disabled via config.');
+    if(afEnv == void 0)              return console.log('AfTrack - Cannot initialize. afEnv must be defined.');
+    if(afEnv.ENV() !== 'production') return console.log('AfTrack - Disabled in ' + afEnv.ENV() + ' environment');
+    if(afCatch == void 0)            return console.log('AfTrack - Cannot initialize. afCatch must be defined.');
+    if(!afTrack.config.enabled)      return console.log('afTrack - Disabled via config.');
 
-    if(amplify == void 0)             return appCatch.send('AppTrack - Cannot initialize. amplify must be loaded first.');
-    if(_ == void 0)                   return appCatch.send('AppTrack - Cannot initialize. lodash must be loaded first.');
-    if(!appTrack.config.uid)          return appCatch.send('AppTrack - Cannot initialize. uid not defined.');
-    if(typeof mixpanel === void 0)    return appCatch.send('AppTrack - Cannot initialize. mixpanel must be defiend.');
+    if(amplify == void 0)             return afCatch.send('AfTrack - Cannot initialize. amplify must be loaded first.');
+    if(_ == void 0)                   return afCatch.send('AfTrack - Cannot initialize. lodash must be loaded first.');
+    if(!afTrack.config.uid)          return afCatch.send('AfTrack - Cannot initialize. uid not defined.');
+    if(typeof mixpanel === void 0)    return afCatch.send('AfTrack - Cannot initialize. mixpanel must be defiend.');
 
     // init
-    mixpanel.init(appTrack.config.uid, appTrack.config.options);
+    mixpanel.init(afTrack.config.uid, afTrack.config.options);
     // always pass these with events:
-    appTrack.config.globals = {
-      'Domain': appEnv.HOST(),
-      'Tenant': appEnv.TENANT_HASH(),
+    afTrack.config.globals = {
+      'Domain': afEnv.HOST(),
+      'Tenant': afEnv.TENANT_HASH(),
       'Browser Version':navigator.sayswho,
-      'App': appEnv.APP()
+      'App': afEnv.APP()
     };
-    mixpanel.register(appTrack.config.globals);
+    mixpanel.register(afTrack.config.globals);
     console.log('MIXPANEL - Enabled');
-    appTrack.loaded = true;
+    afTrack.loaded = true;
   },
 
   isEnabled:function(){
-    return (appTrack.loaded && appTrack.config.enabled && amplify.store('mixpanel_trackUserStats')) ? true:false;
+    return (afTrack.loaded && afTrack.config.enabled && amplify.store('mixpanel_trackUserStats')) ? true:false;
   },
 
 
@@ -233,16 +233,16 @@ var appTrack = {
     amplify.store('mixpanel_trackUserStats', value);
   },
   setUserId: function (userId) {
-    if(!appTrack.loaded) return;
+    if(!afTrack.loaded) return;
     amplify.store('mixpanel_trackUserId', userId);
     mixpanel.identify(userId);
   },
   getUserId:function(){
-    if(!appTrack.loaded) return;
+    if(!afTrack.loaded) return;
     return amplify.store('mixpanel_trackUserId');
   },
   setProfile: function (object) {
-    if(!appTrack.loaded) return;
+    if(!afTrack.loaded) return;
     mixpanel.people.set(object);
   },
 
@@ -251,36 +251,36 @@ var appTrack = {
   // METHODS
   //
   // mixpanel.track("Register", {"Gender": "Male", "Age": 21}, 'Auth');
-  send: function (name, tags, globalModule) { appTrack.track(name, tags, globalModule); }, // alias
+  send: function (name, tags, globalModule) { afTrack.track(name, tags, globalModule); }, // alias
   track: function (name, tags, globalModule) {
-    if(!appTrack.isEnabled()) return;
+    if(!afTrack.isEnabled()) return;
     mixpanel.track(name, tags);
-    if(globalModule) appTrack.trackGlobalUsage(globalModule);
+    if(globalModule) afTrack.trackGlobalUsage(globalModule);
   },
   trackGlobalUsage:function(module){
     module = module || 'Other';
-    if(!appTrack.isEnabled() || !appTrack.getUserId()) return;
-    var key = 'mixpanel_globalUsage_'+module+'-'+appTrack.getUserId();
+    if(!afTrack.isEnabled() || !afTrack.getUserId()) return;
+    var key = 'mixpanel_globalUsage_'+module+'-'+afTrack.getUserId();
     if(amplify.store(key)) return; // tracked recently?
-    appTrack.send('Global Usage', { Module:module });
-    appTrack.increment('Global Usage');
+    afTrack.send('Global Usage', { Module:module });
+    afTrack.increment('Global Usage');
     // cache so we don't send again right away...
-    amplify.store(key, true, { expires:appTrack.config.globalUsageDelay });
+    amplify.store(key, true, { expires:afTrack.config.globalUsageDelay });
   },
   increment:function(name){
-    if(!appTrack.isEnabled() || !appTrack.getUserId()) return;
+    if(!afTrack.isEnabled() || !afTrack.getUserId()) return;
     mixpanel.people.increment(name);
   },
 
   // Register a set of super properties, which are automatically included with all events.
   // { key:value }
   register: function (options) {
-    if(!appTrack.isEnabled()) return;
+    if(!afTrack.isEnabled()) return;
     mixpanel.register(options);
   },
   // removes a registered key
   unregister: function (key) {
-    if(!appTrack.isEnabled()) return;
+    if(!afTrack.isEnabled()) return;
     mixpanel.unregister(key);
   },
 
@@ -290,10 +290,10 @@ var appTrack = {
   // METHODS
   //
   TRACK_LOGIN:function(type, from, to){
-    appTrack.send('Login', {'Login Type':type, 'Login Via':_.capitalize(from), 'Login To':_.capitalize(to) });
+    afTrack.send('Login', {'Login Type':type, 'Login Via':_.capitalize(from), 'Login To':_.capitalize(to) });
   },
   PageView:function(name){
-    appTrack.send('Page View');
+    afTrack.send('Page View');
   }
 };
 

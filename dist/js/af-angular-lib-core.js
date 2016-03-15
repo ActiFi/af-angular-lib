@@ -31,10 +31,10 @@ angular.module('af.lib',
     'af.modal',
     'af.msg',
     'af.storage',
-    'af.appEnv',
-    'af.appTenant',
-    'af.appTrack',
-    'af.appCatch',
+    'af.env',
+    'af.tenant',
+    'af.track',
+    'af.catch',
     '$',
     'amplify',
     '_',
@@ -412,7 +412,7 @@ angular.module('af.bar', [])
     };
   });
 ;
-angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.redirectionManager', 'af.appCatch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
     .service('afBreadcrumbService', function(){
       return {
@@ -427,7 +427,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.redirecti
       this.$get = function () { return this; };
     })
 
-    .directive('afBreadcrumb',  function(afBreadcrumbService, appCatch, afMsg, appTenant, $window, afAuthManager, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
+    .directive('afBreadcrumb',  function(afBreadcrumbService, afCatch, afMsg, afTenant, $window, afAuthManager, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",
@@ -452,7 +452,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.redirecti
           scope.clickModule = function(desiredModule){
             afRedirectionManager.changeApp(desiredModule)
               .catch(function(response){
-                appCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+                afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
                 afMsg.error('Failed to redirect');
               });
           };
@@ -469,7 +469,7 @@ angular.module('af.breadcrumb', ['af.appTenant', 'af.authManager', 'af.redirecti
       return afBreadcrumb;
     });
 ;
-angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch', 'af.msg', 'af.appEnv', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.msg', 'af.env', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -479,7 +479,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch',
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(appTenant, $window, afAuthManager, appCatch, afMsg, appEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(afTenant, $window, afAuthManager, afCatch, afMsg, afEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -507,7 +507,7 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch',
         scope.clickModule = function(desiredModule){
           afRedirectionManager.changeApp(desiredModule)
               .catch(function(response){
-                appCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+                afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
                 afMsg.error('Failed to redirect');
               });
         };
@@ -520,14 +520,14 @@ angular.module('af.headerBar', ['af.appTenant', 'af.authManager', 'af.appCatch',
     };
   });
 ;
-angular.module('af.sideBar', ['af.appTenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.sideBar', ['af.tenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
   .provider('afSideBarConfig', function(){
     this.templateUrl = '/tenant/assets/templates/af-sidebar-directive-view.html';
     this.$get = function () { return this; };
   })
 
-  .directive('afSideBar',  function(appTenant, $window, amplify, afSideBarConfig) {
+  .directive('afSideBar',  function(afTenant, $window, amplify, afSideBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -596,7 +596,7 @@ angular.module('af.formatterFilters', ['af.util'])
   })
 ;
 
-angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jwtManager'])
 
 
   // config
@@ -662,7 +662,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af
         // cache sessionToken as well if user contains one (like from a decoded jwt)
         afAuthManager.setSessionToken(decodedToken.sessionToken, timeTillExpires);
 
-        if(appEnv.ENV() !== 'production')
+        if(afEnv.ENV() !== 'production')
           $log.info('afAuthManager - User Set:', afAuthManager.user());
         $log.info('afAuthManager - Session will expire:', afJwtManager.getExpiresOn(decodedToken.exp).format('YYYY-MM-DD HH:mm:ss'));
       },
@@ -692,7 +692,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af
       //
       setUser:function(user, expires){
         // put a "displayName" on the user
-        user.displayName = afUtil.createDisplayName(user, appTenant.config('app.preferredDisplayName'));
+        user.displayName = afUtil.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
         // cache user
         afStorage.store(afAuthManagerConfig.cacheUserAs, user, expires);
 
@@ -728,9 +728,9 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.appEnv', 'af
 });
 ;
 
-angular.module('af.jwtManager', ['af.appCatch', 'moment'])
+angular.module('af.jwtManager', ['af.catch', 'moment'])
 
-    .service('afJwtManager', function($window, $log, appCatch, moment) {
+    .service('afJwtManager', function($window, $log, afCatch, moment) {
 
       function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
@@ -751,7 +751,7 @@ angular.module('af.jwtManager', ['af.appCatch', 'moment'])
         } else if($window.Base64) {
           return $window.Base64.atob(output);
         }
-        appCatch.error('jwtManager: Failed to decode webToken, atob not supported');
+        afCatch.error('jwtManager: Failed to decode webToken, atob not supported');
         return null;
       }
 
@@ -762,7 +762,7 @@ angular.module('af.jwtManager', ['af.appCatch', 'moment'])
           if(!token) return false;
           token = (''+token); // ensure string
           if(token.indexOf('.') < 0){
-            appCatch.error('Invalid JWT ' + token);
+            afCatch.error('Invalid JWT ' + token);
             return null;
           }
           var encoded = token.split('.')[1];
@@ -796,33 +796,33 @@ angular.module('af.jwtManager', ['af.appCatch', 'moment'])
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
+angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 
-    .service('afModuleManager', function($q, $window, _, appTenant, afAuthManager) {
+    .service('afModuleManager', function($q, $window, _, afTenant, afAuthManager) {
 
       var system_modules = [
         {
           key:'roadmap',
-          enabled:appTenant.config('app.showRoadmap'),
-          label:appTenant.config('label.moduleRoadmap'),
+          enabled:afTenant.config('app.showRoadmap'),
+          label:afTenant.config('label.moduleRoadmap'),
           canLogInto:true
         },
         {
           key:'assmt',
-          enabled:appTenant.config('app.showAssmt'),
-          label:appTenant.config('label.moduleAssmt'),
+          enabled:afTenant.config('app.showAssmt'),
+          label:afTenant.config('label.moduleAssmt'),
           canLogInto:false // requires transfer from another app
         },
         {
           key:'metrics',
-          enabled:appTenant.config('app.showSPAT'),
-          label:appTenant.config('label.moduleSpat'),
+          enabled:afTenant.config('app.showSPAT'),
+          label:afTenant.config('label.moduleSpat'),
           canLogInto:true
         },
         {
           key:'processpro',
-          enabled:appTenant.config('app.showProcessPro'),
-          label:appTenant.config('label.moduleProcessPro'),
+          enabled:afTenant.config('app.showProcessPro'),
+          label:afTenant.config('label.moduleProcessPro'),
           canLogInto:true
         },
         {
@@ -879,9 +879,9 @@ angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCatch', 'af.moduleManager', 'af.appEnv', 'af.appTenant', 'af.authManager'])
+angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.catch', 'af.moduleManager', 'af.env', 'af.tenant', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, appEnv, afStorage, appCatch, _, afModuleManager, appTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, afEnv, afStorage, afCatch, _, afModuleManager, afTenant, afAuthManager) {
 
       var go = function(url, options){
         options = options || {}; // { body, replace, newWindow }
@@ -905,7 +905,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
       };
 
       var convertToHttpParams = function(searchParams, searchParamsToAdd){
-        var searchParams = _.extend({ from:appEnv.APP() }, searchParamsToAdd, searchParams);
+        var searchParams = _.extend({ from:afEnv.APP() }, searchParamsToAdd, searchParams);
         // return nothing if searchParams is empty...
         return _.keys(searchParams).length ? '?'+$httpParamSerializer(searchParams):'';
       };
@@ -934,7 +934,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
             // whoops.. need to be logged in...
             var error = 'Invalid Session. Redirect to '+redirectKey+' failed.';
-            appCatch.send(error);
+            afCatch.send(error);
             // send them to login page....
             afRedirectionManager.invalidSession({ redirect:redirectKey || '' });
 
@@ -983,7 +983,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                 break;
 
               default:
-                appCatch.send('Redirection ['+redirectKey+'] not found.');
+                afCatch.send('Redirection ['+redirectKey+'] not found.');
                 defer.reject('Redirection ['+redirectKey+'] not found.');
             }
 
@@ -1469,6 +1469,20 @@ angular.module('af.httpInterceptor', ['_', 'af.apiUtil'])
   }
 })(this);
 ;
+angular.module('af.catch', [])
+  .service('afCatch', function($window, $log) {
+    if(typeof $window.afCatch === void 0)
+      $log.error('Failed to initialize afCatch. afCatch undefined.');
+    return $window.afCatch;
+  });
+;
+angular.module('af.env', [])
+  .service('afEnv', function($window, $log) {
+    if(typeof $window.afEnv === void 0)
+      $log.error('Failed to initialize afEnv. afEnv undefined.');
+    return $window.afEnv;
+  });
+;
 
 angular.module('af.event', [])
 
@@ -1858,37 +1872,31 @@ angular.module('af.storage', [ '_', 'amplify' ])
 
 
 ;
-angular.module('af.appCatch', [])
-  .service('appCatch', function($window) {
-    return $window.appCatch;
-  });
-;
-angular.module('af.appEnv', [])
-  .service('appEnv', function($window) {
-    return $window.appEnv;
-  });
-;
-angular.module('af.appTenant', ['af.appEnv'])
+angular.module('af.tenant', ['af.env'])
 
-  .service('appTenant', function($window) {
-    return $window.appTenant;
+  .service('afTenant', function($window, $log) {
+    if(typeof $window.afTenant === void 0)
+      $log.error('Failed to initialize afTenant. afTenant undefined.');
+    return $window.afTenant;
   })
 
   // include some filters
-  .filter('appTenant',    function(appTenant) {  return appTenant.config;     })
-  .filter('tenantConfig', function(appTenant) {  return appTenant.config;     }) // alias
-  .filter('tenantLabel',  function(appTenant) {  return appTenant.label;      })
-  .filter('plural',       function(appTenant) {  return appTenant.makePlural; })
+  .filter('afTenant',    function(afTenant) {  return afTenant.config;     })
+  .filter('tenantConfig', function(afTenant) {  return afTenant.config;     }) // alias
+  .filter('tenantLabel',  function(afTenant) {  return afTenant.label;      })
+  .filter('plural',       function(afTenant) {  return afTenant.makePlural; })
 
-  .filter('tenantImage', function(appEnv) {
+  .filter('tenantImage', function(afEnv) {
     return function(file) {
-      return '/tenant/' + appEnv.TENANT_HASH() + '/images/' + appEnv.TENANT_HASH() + '_' + file;
+      return '/tenant/' + afEnv.TENANT_HASH() + '/images/' + afEnv.TENANT_HASH() + '_' + file;
     };
   });
 ;
-angular.module('af.appTrack', [])
-  .service('appTrack', function($window) {
-    return $window.appTrack;
+angular.module('af.track', [])
+  .service('afTrack', function($window, $log) {
+    if(typeof $window.afTrack === void 0)
+      $log.error('Failed to initialize afTrack. afTrack undefined.');
+    return $window.afTrack;
   });
 ;
 //these are just references the instance of related lib so we can inject them to the controllers/services in an angular way.
@@ -1931,8 +1939,8 @@ angular.module('moment', [])
   ]);
 ;
 
-angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
-    .service('afApiUtil', function(_, appCatch, $log, afAuthManager, afRedirectionManager, $location, afMsg, $) {
+angular.module('af.apiUtil', ['_', 'af.catch', 'af.authManager', 'af.msg'])
+    .service('afApiUtil', function(_, afCatch, $log, afAuthManager, afRedirectionManager, $location, afMsg, $) {
 
       var afApiUtil = null;
       return afApiUtil = {
@@ -1965,7 +1973,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             return request;
           },
           attachTenantIndex:function(request){
-            var tenant = appEnv.TENANT_INDEX();
+            var tenant = afEnv.TENANT_INDEX();
             request.data = request.data || {};
             request.data.tenant = tenant;
             return request;
@@ -2099,7 +2107,7 @@ angular.module('af.apiUtil', ['_', 'af.appCatch', 'af.authManager', 'af.msg'])
             // log it
             $log.error(error);
             // send to sentry
-            appCatch.send(error.message, error.debug);
+            afCatch.send(error.message, error.debug);
           },
 
           getErrCodeLabel:function(code){
@@ -2211,8 +2219,8 @@ Number.prototype.formatNumber = function(precision, decimal, seperator) {
   return s + (j ? i.substr(0, j) + seperator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + seperator) + (precision ? decimal + Math.abs(n - i).toFixed(precision).slice(2) : "");
 };
 
-angular.module('af.util', ['_', 'moment', 'af.appTenant'])
-  .service('afUtil', function($window, $location, _, moment, appTenant) {
+angular.module('af.util', ['_', 'moment', 'af.tenant'])
+  .service('afUtil', function($window, $location, _, moment, afTenant) {
 
     var afUtil = null;
     return afUtil = {
@@ -2330,7 +2338,7 @@ angular.module('af.util', ['_', 'moment', 'af.appTenant'])
           if (!value) return '';
           if (!inputType) inputType = "utc";
           if (moment) {
-            if(!format) format = appTenant.config('settings.dates.format') || 'MM/DD/YY';
+            if(!format) format = afTenant.config('settings.dates.format') || 'MM/DD/YY';
             if (typeof value === 'string') {
               switch (inputType.toLowerCase()) {
                 case 'utc':

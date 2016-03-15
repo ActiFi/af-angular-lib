@@ -1,33 +1,33 @@
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.moduleManager', ['_', 'af.appTenant', 'af.authManager'])
+angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 
-    .service('afModuleManager', function($q, $window, _, appTenant, afAuthManager) {
+    .service('afModuleManager', function($q, $window, _, afTenant, afAuthManager) {
 
       var system_modules = [
         {
           key:'roadmap',
-          enabled:appTenant.config('app.showRoadmap'),
-          label:appTenant.config('label.moduleRoadmap'),
+          enabled:afTenant.config('app.showRoadmap'),
+          label:afTenant.config('label.moduleRoadmap'),
           canLogInto:true
         },
         {
           key:'assmt',
-          enabled:appTenant.config('app.showAssmt'),
-          label:appTenant.config('label.moduleAssmt'),
+          enabled:afTenant.config('app.showAssmt'),
+          label:afTenant.config('label.moduleAssmt'),
           canLogInto:false // requires transfer from another app
         },
         {
           key:'metrics',
-          enabled:appTenant.config('app.showSPAT'),
-          label:appTenant.config('label.moduleSpat'),
+          enabled:afTenant.config('app.showSPAT'),
+          label:afTenant.config('label.moduleSpat'),
           canLogInto:true
         },
         {
           key:'processpro',
-          enabled:appTenant.config('app.showProcessPro'),
-          label:appTenant.config('label.moduleProcessPro'),
+          enabled:afTenant.config('app.showProcessPro'),
+          label:afTenant.config('label.moduleProcessPro'),
           canLogInto:true
         },
         {

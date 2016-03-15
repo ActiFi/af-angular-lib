@@ -1,9 +1,9 @@
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCatch', 'af.moduleManager', 'af.appEnv', 'af.appTenant', 'af.authManager'])
+angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.catch', 'af.moduleManager', 'af.env', 'af.tenant', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, appEnv, afStorage, appCatch, _, afModuleManager, appTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, afEnv, afStorage, afCatch, _, afModuleManager, afTenant, afAuthManager) {
 
       var go = function(url, options){
         options = options || {}; // { body, replace, newWindow }
@@ -27,7 +27,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
       };
 
       var convertToHttpParams = function(searchParams, searchParamsToAdd){
-        var searchParams = _.extend({ from:appEnv.APP() }, searchParamsToAdd, searchParams);
+        var searchParams = _.extend({ from:afEnv.APP() }, searchParamsToAdd, searchParams);
         // return nothing if searchParams is empty...
         return _.keys(searchParams).length ? '?'+$httpParamSerializer(searchParams):'';
       };
@@ -56,7 +56,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
 
             // whoops.. need to be logged in...
             var error = 'Invalid Session. Redirect to '+redirectKey+' failed.';
-            appCatch.send(error);
+            afCatch.send(error);
             // send them to login page....
             afRedirectionManager.invalidSession({ redirect:redirectKey || '' });
 
@@ -105,7 +105,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.appCa
                 break;
 
               default:
-                appCatch.send('Redirection ['+redirectKey+'] not found.');
+                afCatch.send('Redirection ['+redirectKey+'] not found.');
                 defer.reject('Redirection ['+redirectKey+'] not found.');
             }
 
