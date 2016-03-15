@@ -58,7 +58,6 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
         //
         // cache both coded and decoded version till it expires
         afStorage.store(afAuthManagerConfig.cacheJwtAs, jwt, timeTillExpires);
-        afStorage.store(afAuthManagerConfig.cacheJwtAs+'_decoded', decodedToken, timeTillExpires);
 
         // cache decoded as user...
         afAuthManager.setUser(decodedToken, timeTillExpires);
@@ -71,9 +70,6 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
       },
       jwt:function(priorities){
         return getViaPriority(afAuthManagerConfig.cacheJwtAs, priorities);
-      },
-      jwtDecoded:function(){
-        return getViaPriority(afAuthManagerConfig.cacheJwtAs+'_decoded');
       },
 
       //
