@@ -1,18 +1,18 @@
 
-angular.module('af.formatterFilters', ['af.util'])
+angular.module('af.formatterFilters', ['af.formatUtil'])
 
-  .filter('formatNumber', function(afUtil) {
-    return afUtil.format.number;
+  .filter('formatNumber', function(afFormatUtil) {
+    return afFormatUtil.format.number;
   })
-  .filter('formatPercent', function(afUtil) {
-    return afUtil.format.percent;
+  .filter('formatPercent', function(afFormatUtil) {
+    return afFormatUtil.format.percent;
   })
-  .filter('formatDate', function(afUtil) {
-    return afUtil.format.date;
+  .filter('formatDate', function(afFormatUtil) {
+    return afFormatUtil.format.date;
   })
-  .filter('formatCurrency', function(afUtil) {
-    return afUtil.format.currency;
+  .filter('formatCurrency', function(afFormatUtil) {
+    return afFormatUtil.format.currency;
   })
-  .filter('formatTargetValue', function(afUtil) {
-    return afUtil.format.targetValue;
+  .filter('formatTargetValue', function(afFormatUtil) {
+    return afFormatUtil.format.targetValue;
   })

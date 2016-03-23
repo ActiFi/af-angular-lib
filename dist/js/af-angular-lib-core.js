@@ -575,22 +575,22 @@ angular.module('af.sideBar', ['af.tenant', 'amplify', 'af.authManager', 'af.modu
   });
 ;
 
-angular.module('af.formatterFilters', ['af.util'])
+angular.module('af.formatterFilters', ['af.formatUtil'])
 
-  .filter('formatNumber', function(afUtil) {
-    return afUtil.format.number;
+  .filter('formatNumber', function(afFormatUtil) {
+    return afFormatUtil.format.number;
   })
-  .filter('formatPercent', function(afUtil) {
-    return afUtil.format.percent;
+  .filter('formatPercent', function(afFormatUtil) {
+    return afFormatUtil.format.percent;
   })
-  .filter('formatDate', function(afUtil) {
-    return afUtil.format.date;
+  .filter('formatDate', function(afFormatUtil) {
+    return afFormatUtil.format.date;
   })
-  .filter('formatCurrency', function(afUtil) {
-    return afUtil.format.currency;
+  .filter('formatCurrency', function(afFormatUtil) {
+    return afFormatUtil.format.currency;
   })
-  .filter('formatTargetValue', function(afUtil) {
-    return afUtil.format.targetValue;
+  .filter('formatTargetValue', function(afFormatUtil) {
+    return afFormatUtil.format.targetValue;
   })
 ;
 
@@ -616,7 +616,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
       _.each(priorities, function(priority) {
         if(value) return;
         switch (priority) {
-          case 'url':     value = afUtil.GET(key); break;
+          case 'url':     value = afUtil.location.search(key); break;
           case 'cache':   value = afStorage.store(key); break;
           case 'window':  value = $window[key]; break;
         }
@@ -686,7 +686,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
       //
       setUser:function(user, expires){
         // put a "displayName" on the user
-        user.displayName = afUtil.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
+        user.displayName = afUtil.format.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
         // cache user
         afStorage.store(afAuthManagerConfig.cacheUserAs, user, expires);
 
@@ -882,7 +882,7 @@ angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.catch
         if(options.replace)
           $window.location.replace(url); // no history state...
         if(options.newWindow)
-          afUtil.postToUrl(url, options.body, true); // new window...
+          afUtil.location.postFormData(url, options.body, true); // new window...
         else
           $window.location.href = url;
       };
