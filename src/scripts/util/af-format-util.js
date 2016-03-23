@@ -17,8 +17,7 @@ angular.module('af.formatUtil', ['_', 'moment', 'af.tenant'])
       return (value === 'true' || value === true || value == '1' || value === 1)
     };
 
-    var afFormatUtil = null;
-    return afFormatUtil = {
+    var afFormatUtil = {
 
       createDisplayName:function(user, preference){
         if(!user) return 'Unknown User';
@@ -49,7 +48,7 @@ angular.module('af.formatUtil', ['_', 'moment', 'af.tenant'])
               correction = Math.pow(10, precision);
           return Math.round(correction * number)/correction;
         },
-        nc:afFormatUtil.number.floatFix // alias
+        //nc: floatFix alias (see bottom of file)
       },
 
       string: {
@@ -190,7 +189,8 @@ angular.module('af.formatUtil', ['_', 'moment', 'af.tenant'])
           return final;
         }
       }
+    };
 
-    }
-
+    afFormatUtil.number.nc = afFormatUtil.number.floatFix; // alias
+    return afFormatUtil;
   });
