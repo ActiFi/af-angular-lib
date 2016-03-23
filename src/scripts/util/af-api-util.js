@@ -22,7 +22,6 @@ angular.module('af.apiUtil', ['_', 'af.catch', 'af.authManager', 'af.msg'])
 
         },
 
-
         request:{
           attachJWT:function(request){
             var token = afAuthManager.jwt();
@@ -176,7 +175,6 @@ angular.module('af.apiUtil', ['_', 'af.catch', 'af.authManager', 'af.msg'])
             return 'Unknown Error'
           }
         },
-
 
         http_codes : {
           100: 'Continue',

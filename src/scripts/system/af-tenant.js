@@ -7,7 +7,7 @@ angular.module('af.tenant', ['af.env'])
   })
 
   // include some filters
-  .filter('afTenant',    function(afTenant) {  return afTenant.config;     })
+  .filter('afTenant',     function(afTenant) {  return afTenant.config;     })
   .filter('tenantConfig', function(afTenant) {  return afTenant.config;     }) // alias
   .filter('tenantLabel',  function(afTenant) {  return afTenant.label;      })
   .filter('plural',       function(afTenant) {  return afTenant.makePlural; })

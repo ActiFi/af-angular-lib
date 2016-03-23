@@ -40,8 +40,6 @@ angular.module('af.lib',
     '_',
     'moment',
   // UTIL
-    'af.apiUtil',
-    'af.util',
-    'af.timeout'
+    'af.util' // includes all sub-util modules
   ]
 );
