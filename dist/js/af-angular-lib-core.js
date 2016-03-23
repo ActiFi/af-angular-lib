@@ -594,7 +594,7 @@ angular.module('af.formatterFilters', ['af.formatUtil'])
   })
 ;
 
-angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jwtManager'])
+angular.module('af.authManager', ['_', 'af.storage', 'af.locationUtil', 'af.formatUtil', 'af.env', 'af.jwtManager'])
 
 
   // config
@@ -607,7 +607,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
     this.$get = function () { return this; };
   })
 
-  .service('afAuthManager', function(afAuthManagerConfig, _, $log, afUtil, afStorage, afJwtManager, $window) {
+  .service('afAuthManager', function(afAuthManagerConfig, _, $log, afLocationUtil, afFormatUtil, afStorage, afJwtManager, $window) {
 
     var getViaPriority  = function(key, priorities){
       priorities = priorities || afAuthManagerConfig.tokenPriority;
@@ -616,7 +616,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
       _.each(priorities, function(priority) {
         if(value) return;
         switch (priority) {
-          case 'url':     value = afUtil.location.search(key); break;
+          case 'url':     value = afLocationUtil.search(key); break;
           case 'cache':   value = afStorage.store(key); break;
           case 'window':  value = $window[key]; break;
         }
@@ -686,7 +686,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.util', 'af.env', 'af.jw
       //
       setUser:function(user, expires){
         // put a "displayName" on the user
-        user.displayName = afUtil.format.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
+        user.displayName = afFormatUtil.format.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
         // cache user
         afStorage.store(afAuthManagerConfig.cacheUserAs, user, expires);
 
