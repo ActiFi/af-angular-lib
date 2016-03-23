@@ -873,16 +873,16 @@ angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.redirectionManager', ['_', 'af.util', 'af.storage', 'af.catch', 'af.moduleManager', 'af.env', 'af.tenant', 'af.authManager'])
+angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', 'af.catch', 'af.moduleManager', 'af.env', 'af.tenant', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afUtil, afEnv, afStorage, afCatch, _, afModuleManager, afTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afLocationUtil, afEnv, afStorage, afCatch, _, afModuleManager, afTenant, afAuthManager) {
 
       var go = function(url, options){
         options = options || {}; // { body, replace, newWindow }
         if(options.replace)
           $window.location.replace(url); // no history state...
         if(options.newWindow)
-          afUtil.location.postFormData(url, options.body, true); // new window...
+          afLocationUtil.postFormData(url, options.body, true); // new window...
         else
           $window.location.href = url;
       };
