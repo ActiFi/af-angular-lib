@@ -2461,6 +2461,24 @@ angular.module('af.apiUtil', ['_', 'af.catch', 'af.authManager', 'af.msg'])
           }
         },
 
+        // this can sunset after java dies
+        ensure:{
+          ensureInt:function(value){
+            if (_.isString(value))
+              return parseInt(value);
+            return value;
+          },
+          ensureBool: function(value) {
+            if(_.isBoolean(value)) return value;
+            if(value === 'true' || 1) return true;
+            if(value === 'false' || 0) return true;
+            return value;
+          },
+          ensureString: function(value) {
+            return ''+value;
+          }
+        },
+
         http_codes : {
           100: 'Continue',
           101: 'Switching Protocols',
