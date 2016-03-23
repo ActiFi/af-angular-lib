@@ -576,6 +576,11 @@ ng\:form {
   overflow: hidden;
   padding: 10px;
 }
+#af-footer {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: #666;
+}
 #af-pane {
   background-color: #e7e7e7;
   position: absolute;

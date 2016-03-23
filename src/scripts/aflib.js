@@ -9,6 +9,7 @@ angular.module('af.lib',
     //'af.headerBar',           // not part of default build
     //'af.breadcrumb',          // not part of default build
     //'af.sideBar',             // not part of default build
+    //'af.footer',
     //'ui.bootstrap.dropdown'   // not part of default build
     'af.bsIcons',
   // FILTERS

@@ -333,6 +333,7 @@ angular.module('af.lib',
     //'af.headerBar',           // not part of default build
     //'af.breadcrumb',          // not part of default build
     //'af.sideBar',             // not part of default build
+    //'af.footer',
     //'ui.bootstrap.dropdown'   // not part of default build
     'af.bsIcons',
   // FILTERS
@@ -790,6 +791,25 @@ angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionM
 
       return afBreadcrumb;
     });
+;
+angular.module('af.footer', ['af.tenant'])
+
+
+  .directive('afFooter',  function(afTenant) {
+    return {
+      restrict: "A",
+      replace:true,
+      scope:{
+        afFooter:'@'
+      },
+      template:'<div id="af-footer" class="hidden"></div>',
+      compile:function(elm, attrs){
+        var content = afTenant.config(attrs['af-footer']);
+        if(content)
+          angular.element(elm).html(hidden).removeClass('hidden');
+      }
+    };
+  });
 ;
 angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.msg', 'af.env', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
