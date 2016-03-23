@@ -1010,7 +1010,7 @@ angular.module('af.authManager', ['_', 'af.storage', 'af.locationUtil', 'af.form
       //
       setUser:function(user, expires){
         // put a "displayName" on the user
-        user.displayName = afFormatUtil.format.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
+        user.displayName = afFormatUtil.createDisplayName(user, afTenant.config('app.preferredDisplayName'));
         // cache user
         afStorage.store(afAuthManagerConfig.cacheUserAs, user, expires);
 
