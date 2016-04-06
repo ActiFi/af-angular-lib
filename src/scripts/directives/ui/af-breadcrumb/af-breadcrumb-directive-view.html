@@ -20,7 +20,7 @@
     </li>
 
     <!-- breadcrumbs -->
-    <li ng-repeat="crumb in crumbs" ng-class="{active:!crumb.state}">
+    <li ng-repeat="crumb in crumbs" class="breadcrumb-crumb" ng-class="{active:!crumb.state}">
       <a ui-sref="{{crumb.state}}" ng-if="crumb.state" ng-bind="crumb.label"></a>
       <span ng-if="!crumb.state" ng-bind="crumb.label"></span>
     </li>
