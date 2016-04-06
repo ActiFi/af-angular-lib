@@ -542,6 +542,7 @@ angular.module('af.bsIcons', [])
       }
     };
   })
+
   .directive("faIcon", function() {
     return {
       compile: function(elm, attrs) {
@@ -577,6 +578,7 @@ angular.module('af.bsIcons', [])
 //    <div ng-message="match">Fields do not match. You must type in your new password twice.</div>
 //  </div>
 //</form>
+
 angular.module('af.formMessenger', [])
   .service('afFormMessenger', function() {
     var afFormMessenger = null;
@@ -735,7 +737,7 @@ angular.module('af.bar', [])
     };
   });
 ;
-angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.breadcrumb', ['af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
     .service('afBreadcrumbService', function(){
       return {
@@ -750,7 +752,7 @@ angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionM
       this.$get = function () { return this; };
     })
 
-    .directive('afBreadcrumb',  function(afBreadcrumbService, afCatch, afMsg, afTenant, $window, afAuthManager, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
+    .directive('afBreadcrumb',  function($window, afBreadcrumbService, afCatch, afMsg, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",
@@ -811,7 +813,7 @@ angular.module('af.footer', ['af.tenant'])
     };
   });
 ;
-angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.msg', 'af.env', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -821,7 +823,7 @@ angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.m
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(afTenant, $window, afAuthManager, afCatch, afMsg, afEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(afAuthManager, afCatch, afMsg, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -862,14 +864,14 @@ angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.m
     };
   });
 ;
-angular.module('af.sideBar', ['af.tenant', 'amplify', 'af.authManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.sideBar', ['amplify', 'ui.bootstrap.dropdown'])
 
   .provider('afSideBarConfig', function(){
     this.templateUrl = '/tenant/assets/templates/af-sidebar-directive-view.html';
     this.$get = function () { return this; };
   })
 
-  .directive('afSideBar',  function(afTenant, $window, amplify, afSideBarConfig) {
+  .directive('afSideBar',  function($window, amplify, afSideBarConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -1217,9 +1219,9 @@ angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', 'af.catch', 'af.moduleManager', 'af.env', 'af.tenant', 'af.authManager'])
+angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.env', 'af.catch', 'af.moduleManager', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afLocationUtil, afEnv, afStorage, afCatch, _, afModuleManager, afTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $window, $httpParamSerializer, _, afLocationUtil, afEnv, afCatch, afModuleManager, afAuthManager) {
 
       var go = function(url, options){
         options = options || {}; // { body, replace, newWindow }
@@ -1243,7 +1245,7 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
       };
 
       var convertToHttpParams = function(searchParams, searchParamsToAdd){
-        var searchParams = _.extend({ from:afEnv.APP() }, searchParamsToAdd, searchParams);
+        searchParams = _.extend({ from:afEnv.APP() }, searchParamsToAdd, searchParams);
         // return nothing if searchParams is empty...
         return _.keys(searchParams).length ? '?'+$httpParamSerializer(searchParams):'';
       };
@@ -1264,9 +1266,10 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
           if(searchParams && searchParams.debug)
             alert('debug'); // pause js execution for debugging...
 
+          var queryString = '';
           // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
-            var queryString = convertToHttpParams(searchParams);
+            queryString = convertToHttpParams(searchParams);
             go('/auth/#/login'+queryString, options);
 
 
@@ -1286,28 +1289,28 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
               //
               // PORTAL -> standard login
               case 'roadmap':
-                var queryString = convertToHttpParams(searchParams);
+                queryString = convertToHttpParams(searchParams);
                 go('/portal/login-window.php#/'+queryString, options);
                 break;
 
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
-                var queryString = convertToHttpParams(searchParams, { sessionToken: afAuthManager.sessionToken() });
+                queryString = convertToHttpParams(searchParams, { sessionToken: afAuthManager.sessionToken() });
                 go('/metrics/#/login'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // PROCESS PRO
               case 'processpro':
-                var queryString = convertToHttpParams(searchParams);
+                queryString = convertToHttpParams(searchParams);
                 go('/processpro/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // ADMIN
               case 'admin':
-                var queryString = convertToHttpParams(searchParams);
+                queryString = convertToHttpParams(searchParams);
                 go('/admin/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
@@ -1318,7 +1321,7 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
                 if(missing) {
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
-                  var queryString = convertToHttpParams({ dateFrom: searchParams.dateFrom });
+                  queryString = convertToHttpParams({ dateFrom: searchParams.dateFrom });
                   go('/act/rmupdater/#/rm/updater'+queryString, options);
                 }
                 break;
