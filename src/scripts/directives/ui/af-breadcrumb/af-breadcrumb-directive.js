@@ -1,4 +1,4 @@
-angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.breadcrumb', ['af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
     .service('afBreadcrumbService', function(){
       return {
@@ -13,7 +13,7 @@ angular.module('af.breadcrumb', ['af.tenant', 'af.authManager', 'af.redirectionM
       this.$get = function () { return this; };
     })
 
-    .directive('afBreadcrumb',  function(afBreadcrumbService, afCatch, afMsg, afTenant, $window, afAuthManager, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
+    .directive('afBreadcrumb',  function($window, afBreadcrumbService, afCatch, afMsg, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
 
       var afBreadcrumb = {
         restrict: "A",

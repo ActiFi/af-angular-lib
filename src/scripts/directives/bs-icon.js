@@ -7,6 +7,7 @@ angular.module('af.bsIcons', [])
       }
     };
   })
+
   .directive("faIcon", function() {
     return {
       compile: function(elm, attrs) {

@@ -13,6 +13,7 @@
 //    <div ng-message="match">Fields do not match. You must type in your new password twice.</div>
 //  </div>
 //</form>
+
 angular.module('af.formMessenger', [])
   .service('afFormMessenger', function() {
     var afFormMessenger = null;

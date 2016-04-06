@@ -1,4 +1,4 @@
-angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.msg', 'af.env', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
 
   .provider('afHeaderBarConfig', function(){
@@ -8,7 +8,7 @@ angular.module('af.headerBar', ['af.tenant', 'af.authManager', 'af.catch', 'af.m
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(afTenant, $window, afAuthManager, afCatch, afMsg, afEnv, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderBar',  function(afAuthManager, afCatch, afMsg, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
     return {
       restrict: "A",
       replace:true,

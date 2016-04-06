@@ -1,9 +1,9 @@
 //
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
 //
-angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', 'af.catch', 'af.moduleManager', 'af.env', 'af.tenant', 'af.authManager'])
+angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.env', 'af.catch', 'af.moduleManager', 'af.authManager'])
 
-    .service('afRedirectionManager', function($q, $log, $window, $location, $httpParamSerializer, afLocationUtil, afEnv, afStorage, afCatch, _, afModuleManager, afTenant, afAuthManager) {
+    .service('afRedirectionManager', function($q, $window, $httpParamSerializer, _, afLocationUtil, afEnv, afCatch, afModuleManager, afAuthManager) {
 
       var go = function(url, options){
         options = options || {}; // { body, replace, newWindow }
@@ -27,7 +27,7 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
       };
 
       var convertToHttpParams = function(searchParams, searchParamsToAdd){
-        var searchParams = _.extend({ from:afEnv.APP() }, searchParamsToAdd, searchParams);
+        searchParams = _.extend({ from:afEnv.APP() }, searchParamsToAdd, searchParams);
         // return nothing if searchParams is empty...
         return _.keys(searchParams).length ? '?'+$httpParamSerializer(searchParams):'';
       };
@@ -48,9 +48,10 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
           if(searchParams && searchParams.debug)
             alert('debug'); // pause js execution for debugging...
 
+          var queryString = '';
           // PUBLIC REDIRECTS
           if(redirectKey == 'auth'){
-            var queryString = convertToHttpParams(searchParams);
+            queryString = convertToHttpParams(searchParams);
             go('/auth/#/login'+queryString, options);
 
 
@@ -70,28 +71,28 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
               //
               // PORTAL -> standard login
               case 'roadmap':
-                var queryString = convertToHttpParams(searchParams);
+                queryString = convertToHttpParams(searchParams);
                 go('/portal/login-window.php#/'+queryString, options);
                 break;
 
               // METRICS
               // eg. /metrics/#/login?from=auth&sessionToken=abc123
               case 'metrics':
-                var queryString = convertToHttpParams(searchParams, { sessionToken: afAuthManager.sessionToken() });
+                queryString = convertToHttpParams(searchParams, { sessionToken: afAuthManager.sessionToken() });
                 go('/metrics/#/login'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // PROCESS PRO
               case 'processpro':
-                var queryString = convertToHttpParams(searchParams);
+                queryString = convertToHttpParams(searchParams);
                 go('/processpro/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
               //
               // ADMIN
               case 'admin':
-                var queryString = convertToHttpParams(searchParams);
+                queryString = convertToHttpParams(searchParams);
                 go('/admin/#/'+queryString, options); // page that has code that mimics portals login page.
                 break;
 
@@ -102,7 +103,7 @@ angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.storage', '
                 if(missing) {
                   defer.reject('Redirection ['+redirectKey+'] not found.');
                 } else {
-                  var queryString = convertToHttpParams({ dateFrom: searchParams.dateFrom });
+                  queryString = convertToHttpParams({ dateFrom: searchParams.dateFrom });
                   go('/act/rmupdater/#/rm/updater'+queryString, options);
                 }
                 break;
