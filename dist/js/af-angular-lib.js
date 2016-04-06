@@ -333,7 +333,6 @@ angular.module('af.lib',
     //'af.headerBar',           // not part of default build
     //'af.breadcrumb',          // not part of default build
     //'af.sideBar',             // not part of default build
-    //'af.footer',
     //'ui.bootstrap.dropdown'   // not part of default build
     'af.bsIcons',
   // FILTERS
@@ -793,33 +792,6 @@ angular.module('af.breadcrumb', ['af.redirectionManager', 'af.catch', 'af.msg', 
 
       return afBreadcrumb;
     });
-;
-// usage
-// ngApp.config(function($locationProvider, afFooterConfigProvider) {
-  //afFooterConfigProvider.content = afTenant.config('somecontent');
-//}
-angular.module('af.footer', [])
-
-  .provider('afFooterConfig', function(){
-    this.content = '[[FOOTER]]';
-    this.$get = function () { return this; };
-  })
-
-  .directive('afFooter',  function(afFooterConfig) {
-    return {
-      restrict: "A",
-      replace:true,
-      scope:{
-        afFooter:'@'
-      },
-      template:'<div id="af-footer" class="hidden"></div>',
-      compile:function(elm, attrs){
-        var content = afFooterConfig.content;
-        if(content)
-          angular.element(elm).html(hidden).removeClass('hidden');
-      }
-    };
-  });
 ;
 angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
 
