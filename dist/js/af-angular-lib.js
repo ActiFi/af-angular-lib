@@ -800,6 +800,8 @@ angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redi
     this.templateUrl = '/tenant/assets/templates/af-header-directive-view.html';
     this.showAppDropDown = true;
     this.showHelpDropDown = true;
+    this.showSettings = true;
+    this.showProfile = true;
     this.$get = function () { return this; };
   })
 
@@ -814,7 +816,9 @@ angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redi
       link:function(scope, elm, attrs){
 
         scope.loggedInUser = afAuthManager.user();
-	
+
+        scope.showProfile = afHeaderBarConfig.showProfile;
+        scope.showSettings = afHeaderBarConfig.showSettings;
         scope.showAppDropDown = afHeaderBarConfig.showAppDropDown;
         scope.showHelpDropDown = afHeaderBarConfig.showHelpDropDown;
 

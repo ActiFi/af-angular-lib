@@ -48,11 +48,9 @@
         </button>
         <ul class="dropdown-menu" role="menu">
           <!--<li><a ui-sref="user.summary({userId:loggedInUser.userId})"><span fa-icon="home" class="text-gray"></span> My Home</a></li>-->
-          <li><a href="javascript:;"><span fa-icon="user" class="text-gray"></span> My Profile</a></li>
-          <li class="divider"></li>
-          <li><a href="javascript:;">
-            <span fa-icon="cogs" class="text-gray"></span> Settings</a>
-          </li>
+          <li ng-if="::showProfile" ><a href="javascript:;"><span fa-icon="user" class="text-gray"></span> My Profile</a></li>
+          <li ng-if="::showSettings" class="divider"></li>
+          <li ng-if="::showSettings" ><a href="javascript:;"><span fa-icon="cogs" class="text-gray"></span> Settings</a></li>
           <li class="divider"></li>
           <li><a href="javascript:;" ng-click="logout()"> Logout</a></li>
         </ul>
