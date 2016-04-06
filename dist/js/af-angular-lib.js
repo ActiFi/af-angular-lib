@@ -794,10 +794,18 @@ angular.module('af.breadcrumb', ['af.redirectionManager', 'af.catch', 'af.msg', 
       return afBreadcrumb;
     });
 ;
-angular.module('af.footer', ['af.tenant'])
+// usage
+// ngApp.config(function($locationProvider, afFooterConfigProvider) {
+  //afFooterConfigProvider.content = afTenant.config('somecontent');
+//}
+angular.module('af.footer', [])
 
+  .provider('afFooterConfig', function(){
+    this.content = '[[FOOTER]]';
+    this.$get = function () { return this; };
+  })
 
-  .directive('afFooter',  function(afTenant) {
+  .directive('afFooter',  function(afFooterConfig) {
     return {
       restrict: "A",
       replace:true,
@@ -806,7 +814,7 @@ angular.module('af.footer', ['af.tenant'])
       },
       template:'<div id="af-footer" class="hidden"></div>',
       compile:function(elm, attrs){
-        var content = afTenant.config(attrs['af-footer']);
+        var content = afFooterConfig.content;
         if(content)
           angular.element(elm).html(hidden).removeClass('hidden');
       }
