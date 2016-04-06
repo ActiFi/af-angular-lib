@@ -556,8 +556,6 @@ ng\:form {
 }
 #af-breadcrumb ol.breadcrumb > li,
 #af-breadcrumb ol.breadcrumb > li > a {
-  line-height: 32px;
-  vertical-align: middle;
   color: white;
 }
 #af-breadcrumb ol.breadcrumb > li > a {
@@ -565,6 +563,10 @@ ng\:form {
 }
 #af-breadcrumb ol.breadcrumb > li.active {
   color: #BBB;
+}
+#af-breadcrumb ol.breadcrumb > li.breadcrumb-crumb {
+  line-height: 32px;
+  vertical-align: middle;
 }
 #af-breadcrumb ol.breadcrumb > li.breadcrumb-crumb:first-child {
   padding-left: 15px;
