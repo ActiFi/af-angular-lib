@@ -6,7 +6,8 @@ angular.module('af.bsIcons', [])
       //  angular.element(elm).addClass('ng-show-inline glyphicon glyphicon-' + attrs.bsIcon);
       //}
       link:function(scope, elm, attrs){
-        angular.element(elm).addClass('ng-show-inline glyphicon glyphicon-' + attrs.bsIcon);
+        if(attrs.bsIcon)
+          angular.element(elm).addClass('ng-show-inline glyphicon glyphicon-' + attrs.bsIcon);
       }
     };
   })
