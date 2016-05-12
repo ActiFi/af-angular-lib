@@ -11,7 +11,7 @@ angular.module('af.validators', [])
             return;
           }
 
-          var matchGetter = $parse(attrs.validateMatch);
+          var matchGetter = $parse(attrs.afValidateMatch);
           var caselessGetter = $parse(attrs.matchCaseless);
           var noMatchGetter = $parse(attrs.notMatch);
 

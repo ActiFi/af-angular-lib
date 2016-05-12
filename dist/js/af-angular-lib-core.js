@@ -212,7 +212,10 @@ angular.module('af.bsIcons', [])
 
   .directive('bsIcon', function() {
     return {
-      compile:function(elm, attrs){
+      //compile:function(elm, attrs){
+      //  angular.element(elm).addClass('ng-show-inline glyphicon glyphicon-' + attrs.bsIcon);
+      //}
+      link:function(scope, elm, attrs){
         angular.element(elm).addClass('ng-show-inline glyphicon glyphicon-' + attrs.bsIcon);
       }
     };
@@ -220,7 +223,7 @@ angular.module('af.bsIcons', [])
 
   .directive("faIcon", function() {
     return {
-      compile: function(elm, attrs) {
+      link: function(scope, elm, attrs) {
         switch((''+attrs.faIcon).toLowerCase()){
           case 'roadmap': attrs.faIcon = 'road'; break;
           case 'assessment': attrs.faIcon = 'check-circle-o'; break;
@@ -310,7 +313,7 @@ angular.module('af.validators', [])
             return;
           }
 
-          var matchGetter = $parse(attrs.validateMatch);
+          var matchGetter = $parse(attrs.afValidateMatch);
           var caselessGetter = $parse(attrs.matchCaseless);
           var noMatchGetter = $parse(attrs.notMatch);
 

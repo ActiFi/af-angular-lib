@@ -22,6 +22,7 @@ var afEnv = {
   MIXPANEL:function(){ return afEnv._config.MIXPANEL },
   HOST:function(){ return afEnv._config.HOST },
   APP:function(){ return afEnv._config.APP },
+  VERSION:function(){ return afEnv._config.VERSION },
 
   // global getter
   config : function(path){
