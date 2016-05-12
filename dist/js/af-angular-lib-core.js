@@ -228,6 +228,7 @@ angular.module('af.bsIcons', [])
         angular.element(elm).addClass('ng-show-inline fa');
         var linkFunction = function(scope, elm, attrs) {
           var getIcon = function(icon){
+            icon = icon || 'file';
             switch((''+icon).toLowerCase()){
               case 'roadmap':     return 'road';
               case 'assessment':  return 'check-circle-o';
@@ -239,6 +240,7 @@ angular.module('af.bsIcons', [])
               case 'rtf':     return 'file-word-o';
               case 'csv':     return 'file-excel-o';
             }
+            return icon;
           };
           scope.$watch('faIcon', function(newValue, oldValue){
             var icon = getIcon(newValue);
