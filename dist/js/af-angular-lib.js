@@ -549,7 +549,6 @@ angular.module('af.bsIcons', [])
   .directive("faIcon", function() {
     return {
       link: function(scope, elm, attrs) {
-        console.log('faIcon:', attrs.faIcon);
         switch((''+attrs.faIcon).toLowerCase()){
           case 'roadmap': attrs.faIcon = 'road'; break;
           case 'assessment': attrs.faIcon = 'check-circle-o'; break;
