@@ -83,14 +83,14 @@ module.exports = function(grunt) {
         },
         nonull: true,
         files: {
-          '<%= dirs.js.out %>/af-angular-lib-core.js':[
+          '<%= dirs.js.out %>/af-lib-core.js':[
             'src/scripts/**/*.js'
           ],
-          '<%= dirs.js.out %>/af-angular-lib-setup.js':[
+          '<%= dirs.js.out %>/af-lib-setup.js':[
             'src/setup/console-fix.js',
             'src/setup/**/*.js'
           ],
-          '<%= dirs.js.out %>/af-angular-lib.js':[
+          '<%= dirs.js.out %>/af-lib-full.js':[
             'src/setup/console-fix.js',
             'src/setup/**/*.js',
             'src/scripts/**/*.js'
@@ -102,7 +102,7 @@ module.exports = function(grunt) {
       //
       // AF-CORE
       //
-      libs: utils.concat.files('<%= dirs.js.out %>/af-core-libs.js', [
+      libs: utils.concat.files('<%= dirs.js.out %>/af-lib-vendor.js', [
         // angular
         'bower_components/jquery/dist/jquery.min.js',
         'bower_components/amplify/lib/amplify.core.js',
@@ -119,7 +119,7 @@ module.exports = function(grunt) {
         // raven
         'bower_components/raven-js/dist/raven.min.js'
       ]),
-      libsMin: utils.concat.files('<%= dirs.js.out %>/af-core-libs.min.js', [
+      libsMin: utils.concat.files('<%= dirs.js.out %>/af-lib-vendor.min.js', [
         // angular
         'bower_components/jquery/dist/jquery.min.js',
         'bower_components/amplify/lib/amplify.core.min.js',
