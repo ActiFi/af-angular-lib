@@ -19,6 +19,7 @@ var afCatch = {
   // INITIALIZE
   //
   init:function(uid){
+
     if(afCatch.loaded)  return;
 
     // set uid
