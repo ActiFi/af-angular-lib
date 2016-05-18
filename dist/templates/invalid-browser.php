@@ -5,8 +5,8 @@ require_once $_SERVER['DOCUMENT_ROOT'].'/tenant/tenantContent.php';
 $minVersion = isset($_GET['min']) ? intval($_GET['min']) : 9;
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
 
-$loginUrl = '';
-if($redirect) $loginUrl .= '?redirect='.$redirect;
+$loginUrl = 'index.php';
+if($redirect) $loginUrl = $redirect;
 
 ?>
 <!DOCTYPE html>
@@ -24,7 +24,6 @@ if($redirect) $loginUrl .= '?redirect='.$redirect;
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
   </head>
 <body>
-
 <div style="margin:20px auto; width:450px;">
   <div style="padding:20px; background-color:#FFF;">
     <img style="float:left"
