@@ -5,8 +5,8 @@ require_once $_SERVER['DOCUMENT_ROOT'].'/tenant/tenantContent.php';
 $minVersion = isset($_GET['min']) ? intval($_GET['min']) : 9;
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
 
-$loginUrl = '/auth/';
-if($redirect) $loginUrl = $loginUrl.'?redirect='.$redirect;
+$loginUrl = '/';
+if($redirect) $loginUrl .= '?redirect='.$redirect;
 
 ?>
 <!DOCTYPE html>
