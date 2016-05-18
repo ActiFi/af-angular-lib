@@ -1,0 +1,61 @@
+<div id="af-header">
+  <div id="af-header-brand">
+    <div class="tenant-logo"></div>
+  </div>
+  <ul class="nav nav-pills pull-right">
+
+    <!-- HELP -->
+    <li ng-if="showHelpDropDown">
+      <div class="btn-group pull-right" dropdown>
+        <button type="button" style="border:none;" dropdown-toggle
+          class="btn btn-default dropdown-toggle">
+        <span class="tenant-primary-font">Help</span>
+        <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="javascript:;"><span fa-icon="comment-o" class="text-gray"></span> Contact Support</a></li>
+          <li class="divider"></li>
+          <li><a href="javascript:;">Online Documentation</a></li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- APP -->
+    <li ng-if="showAppDropDown && modules.length > 1">
+      <div class="btn-group pull-right" dropdown>
+        <button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>
+          <span class="tenant-primary-font" ng-bind="::currentModule.label"></span>
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li ng-repeat="module in ::modules">
+            <a href="javascript:;" ng-click="clickModule(module)">
+              <span ng-bind="::module.label"></span>
+              <i class="tenant-primary-font" bs-icon="ok" ng-if="module.key == currentModule.key"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- USER -->
+    <li>
+      <div class="btn-group pull-right" dropdown>
+        <button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>
+          <span fa-icon="user" class="tenant-primary-font visible-xs-inline-block"></span>
+          <span class="hidden-xs tenant-primary-font">{{loggedInUser.displayName}}</span>
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <!--<li><a ui-sref="user.summary({userId:loggedInUser.userId})"><span fa-icon="home" class="text-gray"></span> My Home</a></li>-->
+          <li ng-if="::showProfile" ><a href="javascript:;"><span fa-icon="user" class="text-gray"></span> My Profile</a></li>
+          <li ng-if="::showSettings" class="divider"></li>
+          <li ng-if="::showSettings" ><a href="javascript:;"><span fa-icon="cogs" class="text-gray"></span> Settings</a></li>
+          <li class="divider"></li>
+          <li><a href="javascript:;" ng-click="logout()"> Logout</a></li>
+        </ul>
+      </div>
+    </li>
+
+  </ul>
+</div>

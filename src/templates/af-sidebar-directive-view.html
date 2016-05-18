@@ -1,0 +1,35 @@
+<div>
+
+  <!-- TOGGLES -->
+  <div id="hideMenuBar" class="pointer" ng-click="toggle()">
+    <h5 class="mar text-right" ng-show="managerBarOpen">Hide Menu <span fa-icon="chevron-left"></span></h5>
+    <h5 class="mar text-right" ng-hide="managerBarOpen" style="padding-right:5px"><span fa-icon="bars"></span></h5>
+  </div>
+  <div id="collapsedMenu" class="text-center pointer"
+       ng-hide="managerBarOpen"
+       ng-click="toggle($event)"></div>
+
+
+  <!-- MENU -->
+  <div ng-show="managerBarOpen">
+    <h4 class="padH">Search <span ng-bind="::'roleUser' | tenantLabel:true"></span></h4>
+    <form ng-sumbit="doSearch()" style="margin-bottom:20px;">
+      <div class="input-group">
+        <input type="text" class="form-control" ng-model="searchOn"
+             placeholder="Search {{::'user' | tenantLabel | plural}}" style="border-left:none;">
+        <span class="input-group-btn">
+          <button type="submit"
+                  ng-click="doSearch()"
+                  class="btn btn-default"
+                  ng-disabled="!searchOn"
+                  style="border-right:none;">
+            <span fa-icon="search"></span>
+          </button>
+        </span>
+      </div>
+    </form>
+    <!--<h4 class="padH"><span ng-bind="::'roleCoach' | tenantLabel"></span> Menu</h4>-->
+    <h4 class="padH">[[APP NAME]] Menu</h4>
+    <div ng-transclude></div>
+  </div>
+</div>
