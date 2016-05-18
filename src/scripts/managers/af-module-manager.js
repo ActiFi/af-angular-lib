@@ -1,6 +1,6 @@
-//
+
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
-//
+
 angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 
     .service('afModuleManager', function($q, $window, _, afTenant, afAuthManager) {
@@ -37,7 +37,6 @@ angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
           canLogInto:true
         }
       ];
-
 
       var isAuthorized = function(module){
         if(module != 'admin') return true;

@@ -11,7 +11,7 @@ angular.module('af.formGroup', [])
         formRequired: '@'
       },
       template: '<div class="form-group"> ' +
-                  '<label class="text-capitalize" style="color:#333333;">' +
+                  '<label style="color:#333333;">' +
                     '{{::afFormGroup}}' +
                     ' <span ng-show="formRequired" class="text-danger required">*</span> ' +
                   '</label> ' +

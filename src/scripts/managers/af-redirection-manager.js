@@ -1,6 +1,6 @@
-//
+
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
-//
+
 angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.env', 'af.catch', 'af.moduleManager', 'af.authManager'])
 
     .service('afRedirectionManager', function($q, $window, $httpParamSerializer, _, afLocationUtil, afEnv, afCatch, afModuleManager, afAuthManager) {
