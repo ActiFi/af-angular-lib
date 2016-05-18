@@ -21,8 +21,7 @@ var afCatch = {
   // INITIALIZE
   //
   init:function(uid){
-
-    if(afCatch.loaded)  return;
+    if(afCatch.loaded) return;
 
     // set uid
     afCatch.config.uid = uid;
@@ -99,9 +98,20 @@ var afEnv = {
     if(!config.ENV)           throw new Error('afEnv.init failed. ENV not defined');
     if(!config.TENANT_HASH)   throw new Error('afEnv.init failed. TENANT_HASH not defined');
     if(!config.TENANT_INDEX)  throw new Error('afEnv.init failed. TENANT_INDEX not defined');
-    if(!config.APP)           throw new Error('afEnv.init failed. must specify app'); // eg, portal, auth, metrics, assessment etc...
+    if(!config.APP)           throw new Error('afEnv.init failed. must specify APP'); // eg, portal, auth, metrics, assessment etc...
     afEnv._config = config;
     afEnv._config.HOST = window.location.protocol + "//" + window.location.host;
+    if(!afEnv._config.SENTRY){
+      var sentryProd = 'https://c62072b6aefc4bf1bd217382b9b7dad5@app.getsentry.com/27961';
+      var sentryDev = 'https://656d24f28bbd4037b64638a4cdf6d61d@app.getsentry.com/26791';
+      afEnv._config.SENTRY = (afEnv._config.ENV == 'development') ? sentryDev:sentryProd;
+    }
+    if(!afEnv._config.MIXPANEL){
+      var mixpanelProd = 'd0695354d367ec464143a4fc30d25cd5';
+      var mixpanelDev = 'd71bf20acd263bf696cfdc594ef80ce6';
+      afEnv._config.MIXPANEL = (afEnv._config.ENV == 'development') ? mixpanelDev:mixpanelProd;
+    }
+
     // log it...
     console.log('afEnv', afEnv._config);
   },
@@ -113,6 +123,7 @@ var afEnv = {
   HOST:function(){ return afEnv._config.HOST },
   APP:function(){ return afEnv._config.APP },
   VERSION:function(){ return afEnv._config.VERSION }
+
 };
 afEnv.get = afEnv.config; // alias
 ;
@@ -602,7 +613,7 @@ angular.module('af.formGroup', [])
         formRequired: '@'
       },
       template: '<div class="form-group"> ' +
-                  '<label class="text-capitalize" style="color:#333333;">' +
+                  '<label style="color:#333333;">' +
                     '{{::afFormGroup}}' +
                     ' <span ng-show="formRequired" class="text-danger required">*</span> ' +
                   '</label> ' +
@@ -733,62 +744,62 @@ angular.module('af.bar', [])
     };
   });
 ;
-angular.module('af.breadcrumb', ['af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
-
-    .service('afBreadcrumbService', function(){
-      return {
-        crumbs:[]
-      }
-    })
-
-    // config
-    .provider('afBreadcrumbConfig', function(){
-      this.templateUrl = '/tenant/assets/templates/af-breadcrumb-directive-view.html';
-      this.showAppDropDown = true;
-      this.$get = function () { return this; };
-    })
-
-    .directive('afBreadcrumb',  function($window, afBreadcrumbService, afCatch, afMsg, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
-
-      var afBreadcrumb = {
-        restrict: "A",
-        replace:true,
-        scope:{
-          afBreadcrumb:'@'
-        },
-        templateUrl:afBreadcrumbConfig.templateUrl,
-        link:function(scope, elm, attrs){
-
-          scope.showAppDropDown = afBreadcrumbConfig.showAppDropDown;
-          scope.modules = afModuleManager.getUserAccessibleModules();
-
-
-          _.each(scope.modules, function(module){
-            module.active = (module.key == attrs.afBreadcrumb);
-          });
-
-          scope.currentModule = _.find(scope.modules, 'active');
-          if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
-
-          scope.clickModule = function(desiredModule){
-            afRedirectionManager.changeApp(desiredModule.key)
-              .catch(function(response){
-                afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
-                afMsg.error('Failed to redirect');
-              });
-          };
-
-          scope.$watch(function(){
-            return afBreadcrumbService.crumbs
-          }, function(newValue){
-            scope.crumbs = newValue;
-          });
-
-        }
-      };
-
-      return afBreadcrumb;
-    });
+//angular.module('af.breadcrumb', ['af.redirectionManager', 'af.catch', 'af.msg', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+//
+//    .service('afBreadcrumbService', function(){
+//      return {
+//        crumbs:[]
+//      }
+//    })
+//
+//    // config
+//    .provider('afBreadcrumbConfig', function(){
+//      this.templateUrl = '/tenant/assets/templates/af-breadcrumb-directive-view.html';
+//      this.showAppDropDown = true;
+//      this.$get = function () { return this; };
+//    })
+//
+//    .directive('afBreadcrumb',  function($window, afBreadcrumbService, afCatch, afMsg, afRedirectionManager, afModuleManager, afBreadcrumbConfig) {
+//
+//      var afBreadcrumb = {
+//        restrict: "A",
+//        replace:true,
+//        scope:{
+//          afBreadcrumb:'@'
+//        },
+//        templateUrl:afBreadcrumbConfig.templateUrl,
+//        link:function(scope, elm, attrs){
+//
+//          scope.showAppDropDown = afBreadcrumbConfig.showAppDropDown;
+//          scope.modules = afModuleManager.getUserAccessibleModules();
+//
+//
+//          _.each(scope.modules, function(module){
+//            module.active = (module.key == attrs.afBreadcrumb);
+//          });
+//
+//          scope.currentModule = _.find(scope.modules, 'active');
+//          if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
+//
+//          scope.clickModule = function(desiredModule){
+//            afRedirectionManager.changeApp(desiredModule.key)
+//              .catch(function(response){
+//                afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+//                afMsg.error('Failed to redirect');
+//              });
+//          };
+//
+//          scope.$watch(function(){
+//            return afBreadcrumbService.crumbs
+//          }, function(newValue){
+//            scope.crumbs = newValue;
+//          });
+//
+//        }
+//      };
+//
+//      return afBreadcrumb;
+//    });
 ;
 // usage
 // ngApp.config(function($locationProvider, afFooterConfigProvider) {
@@ -817,58 +828,122 @@ angular.module('af.footer', [])
     };
   });
 ;
-angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+//angular.module('af.headerBar', ['af.authManager', 'af.catch', 'af.msg', 'af.redirectionManager', 'af.moduleManager', 'ui.bootstrap.dropdown'])
+angular.module('af.headerMenu', ['af.authManager', 'af.catch', 'af.msg', 'ui.bootstrap.dropdown'])
 
 
-  .provider('afHeaderBarConfig', function(){
+  .provider('afHeaderMenuConfig', function(){
     this.templateUrl = '/tenant/assets/templates/af-header-directive-view.html';
-    this.showAppDropDown = true;
+    this.showModules = true;
     this.showHelpDropDown = true;
     this.showSettings = true;
     this.showProfile = true;
     this.$get = function () { return this; };
   })
 
-  .directive('afHeaderBar',  function(afAuthManager, afCatch, afMsg, afRedirectionManager, afModuleManager, afHeaderBarConfig) {
+  .directive('afHeaderMenu',  function(afAuthManager, afCatch, afMsg, afRedirectionManager, afModuleManager, afHeaderMenuConfig) {
     return {
       restrict: "A",
       replace:true,
       scope:{
         afHeaderBar:'@'
       },
-      templateUrl:afHeaderBarConfig.templateUrl,
+      //templateUrl:afHeaderMenuConfig.templateUrl,
       link:function(scope, elm, attrs){
 
         scope.loggedInUser = afAuthManager.user();
 
-        scope.showProfile = afHeaderBarConfig.showProfile;
-        scope.showSettings = afHeaderBarConfig.showSettings;
-        scope.showAppDropDown = afHeaderBarConfig.showAppDropDown;
-        scope.showHelpDropDown = afHeaderBarConfig.showHelpDropDown;
+        scope.showProfile = afHeaderMenuConfig.showProfile;
+        scope.showSettings = afHeaderMenuConfig.showSettings;
+        scope.showModules = true;
+        scope.showHelpDropDown = afHeaderMenuConfig.showHelpDropDown;
 
-        scope.modules = afModuleManager.getUserAccessibleModules();
-
-        // enable currentModule:
-        _.each(scope.modules, function(module){
-          module.active = (module.key == attrs.afHeaderBar);
-        });
-        scope.currentModule = _.find(scope.modules, 'active');
-        if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
-
-
-        scope.clickModule = function(desiredModule){
-          afRedirectionManager.changeApp(desiredModule.key)
-              .catch(function(response){
-                afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
-                afMsg.error('Failed to redirect');
-              });
-        };
+        scope.modules = [
+          {key:'ce', name:'Client Engagement'},
+          {key:'processpro', name:'ProcessPro'},
+          {key:'admin', name:'Admin'}
+        ]
+        //scope.modules = afModuleManager.getUserAccessibleModules();
+        //
+        //// enable currentModule:
+        //_.each(scope.modules, function(module){
+        //  module.active = (module.key == attrs.afHeaderBar);
+        //});
+        //scope.currentModule = _.find(scope.modules, 'active');
+        //if(!scope.currentModule) scope.currentModule = {label:'Switch App'};
+        //
+        //
+        //scope.clickModule = function(desiredModule){
+        //  afRedirectionManager.changeApp(desiredModule.key)
+        //      .catch(function(response){
+        //        afCatch.send('afHeaderBar. Failed to redirect to ' + desiredModule);
+        //        afMsg.error('Failed to redirect');
+        //      });
+        //};
         scope.logout = function(options){
           afAuthManager.logout();
           afRedirectionManager.logout(options);
         };
 
-      }
+      },
+      template:'<ul id="af-header-menu" class="nav nav-pills pull-right">'+
+                  // HELP
+                  '<li ng-if="showHelpDropDown">'+
+                    '<div class="btn-group pull-right" dropdown>'+
+                      '<button type="button" style="border:none;" dropdown-toggle class="btn btn-default dropdown-toggle">'+
+                        //'<span class="tenant-primary-font">Help</span> '+
+                        '<span class="fa fa-question-circle text-muted-more"></span> ' +
+                        //'<span class="caret"></span>'+
+                      '</button>'+
+                      '<ul class="dropdown-menu" role="menu">'+
+                        '<li><a href="javascript:;"><span fa-icon="comment-o" class="text-gray"></span> Contact Support</a></li>'+
+                        '<li class="divider"></li>'+
+                        '<li><a href="javascript:;">Online Documentation</a></li>'+
+                      '</ul>'+
+                    '</div>'+
+                  '</li>'+
+                   // APP
+                  //'<li ng-if="showAppDropDown && modules.length > 1">'+
+                  //  '<div class="btn-group pull-right" dropdown>'+
+                  //    '<button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>'+
+                  //      '<span class="tenant-primary-font" ng-bind="::currentModule.label"></span> '+
+                  //      '<span class="caret"></span>'+
+                  //    '</button>'+
+                  //    '<ul class="dropdown-menu" role="menu">'+
+                  //      '<li ng-repeat="module in ::modules">'+
+                  //        '<a href="javascript:;" ng-click="clickModule(module)">'+
+                  //          '<span ng-bind="::module.label"></span>'+
+                  //          '<i class="tenant-primary-font" bs-icon="ok" ng-if="module.key == currentModule.key"></i>'+
+                  //        '</a>'+
+                  //      '</li>'+
+                  //    '</ul>'+
+                  //  '</div>'+
+                  //'</li>'+
+                  // USER
+                  '<li>'+
+                    '<div class="btn-group pull-right" dropdown>'+
+                      '<button type="button" style="border:none;" class="btn btn-default dropdown-toggle" dropdown-toggle>'+
+                        '<span fa-icon="user" class="text-muted-more visible-xs-inline-block"></span> '+
+                        '<span class="hidden-xs tenant-primary-font">{{loggedInUser.fullName}}</span> '+
+                        '<span class="caret"></span>'+
+                      '</button>'+
+                      '<ul class="dropdown-menu" role="menu">'+
+                        '<li ng-if="::showProfile" ><a href="javascript:;"><span fa-icon="user" class="text-gray"></span> My Profile</a></li>'+
+                        '<li ng-if="::showModules" class="divider"></li>'+
+                        '<li ng-repeat="module in ::modules">'+
+                          '<a href="javascript:;" ng-click="clickModule(module)">'+
+                            '<span ng-bind="::module.name"></span>'+
+                            '<i class="tenant-primary-font" bs-icon="ok" ng-if="module.key == currentModule.key"></i>'+
+                          '</a>'+
+                        '</li>'+
+                        '<li ng-if="::showSettings" class="divider"></li>'+
+                        '<li ng-if="::showSettings" ><a href="javascript:;"><span fa-icon="cogs" class="text-gray"></span> Settings</a></li>'+
+                        '<li class="divider"></li>'+
+                        '<li><a href="javascript:;" ng-click="logout()"> Logout</a></li>'+
+                      '</ul>'+
+                    '</div>'+
+                  '</li>'+
+                '</ul>'
     };
   });
 ;
@@ -1141,9 +1216,9 @@ angular.module('af.jwtManager', ['af.catch', 'moment'])
       };
     });
 ;
-//
+
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
-//
+
 angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 
     .service('afModuleManager', function($q, $window, _, afTenant, afAuthManager) {
@@ -1180,7 +1255,6 @@ angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
           canLogInto:true
         }
       ];
-
 
       var isAuthorized = function(module){
         if(module != 'admin') return true;
@@ -1224,9 +1298,9 @@ angular.module('af.moduleManager', ['_', 'af.tenant', 'af.authManager'])
 
     });
 ;
-//
+
 // RETURNS LIST OF ENABLED/DISABLED MODULES IN THE SYSTEM
-//
+
 angular.module('af.redirectionManager', ['_', 'af.locationUtil', 'af.env', 'af.catch', 'af.moduleManager', 'af.authManager'])
 
     .service('afRedirectionManager', function($q, $window, $httpParamSerializer, _, afLocationUtil, afEnv, afCatch, afModuleManager, afAuthManager) {
