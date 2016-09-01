@@ -503,6 +503,34 @@
       setAutoApplySessionPriority: function(value) {
         return autoApplySessionPriority = value;
       },
+      MetricsAPI: {
+        serviceUrl: '/metrics/api',
+        execute: function(method, params, onSuccess, onError) {
+          var req;
+          if (params == null) {
+            params = {};
+          }
+          if (params.tenant == null) {
+            params.tenant = $config.getTenantIndex();
+          }
+          if (autoApplySession) {
+            if (params.sessionToken == null) {
+              params.sessionToken = authManager.findSessionToken(autoApplySessionPriority);
+            }
+          }
+          req = {
+            url: node.MetricsAPI.serviceUrl + method,
+            data: params
+          };
+          if(amplify.store('webToken')){
+            req.headers = {
+              Authorization: 'Bearer ' + amplify.store('webToken')
+            }
+          }
+          req = api.addDebugInfo(req);
+          return api.execute(req, onSuccess, onError);
+        }
+      },
       RoadmapNode: {
         serviceUrl: '/roadmap-node',
         execute: function(method, params, onSuccess, onError) {
