@@ -61,6 +61,7 @@
         return value;
       },
       getTenant: function() {
+        if($window.TENANT_HASH) return $window.TENANT_HASH; // added Jun/2017 (php sets window.TENANT_HASH)
         return config.get('app.tenant');
       },
       getEnv: function() {
@@ -81,6 +82,7 @@
         return env;
       },
       getTenantIndex: function() {
+        if($window.TENANT_INDEX) return $window.TENANT_INDEX;// added Jun/2017 (php sets window.TENANT_INDEX)
         var subDomain;
         subDomain = config.getSubDomain();
         switch (subDomain) {
