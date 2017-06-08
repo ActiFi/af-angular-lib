@@ -9,23 +9,8 @@
   });
 
   myApp.service('$config', function($window, $log, DEV_DOMAINS) {
-    var app, config, getPathValue, pluralize;
+    var app, config, getPathValue;
     app = null;
-    pluralize = function(value) {
-      var lastChar, lastTwoChar;
-      if (!value) {
-        return value;
-      }
-      lastChar = value.charAt(value.length - 1).toLowerCase();
-      lastTwoChar = value.slice(value.length - 2).toLowerCase();
-      if (lastChar === 'y') {
-        return value.slice(0, value.length - 1) + 'ies';
-      }
-      if (lastTwoChar === 'ch') {
-        return value + 'es';
-      }
-      return value + 's';
-    };
     getPathValue = function(object, path) {
       var child, parts;
       parts = path.split('.');
@@ -39,6 +24,24 @@
       return getPathValue(child, parts.join('.'));
     };
     config = {
+
+      pluralize : function(value) {
+        var lastChar, lastTwoChar;
+        if (!value) {
+          return value;
+        }
+        lastChar = value.charAt(value.length - 1).toLowerCase();
+        lastTwoChar = value.slice(value.length - 2).toLowerCase();
+        if (lastChar === 'y') {
+          return value.slice(0, value.length - 1) + 'ies';
+        }
+        if (lastTwoChar === 'ch') {
+          return value + 'es';
+        }
+        return value + 's';
+      },
+
+
       get: function(path, makePlural) {
         var pluralValue, value;
         if (!$window.config) {
@@ -56,7 +59,7 @@
           if (pluralValue) {
             return pluralValue;
           }
-          return pluralize(value);
+          return config.pluralize(value);
         }
         return value;
       },
