@@ -4,8 +4,8 @@
   myApp = angular.module('af.config', []);
 
   myApp.constant('DEV_DOMAINS', {
-    localhost: 'alpha2',
-    dev: 'alpha2'
+    localhost: 'alpha',
+    dev: 'alpha'
   });
 
   myApp.service('$config', function($window, $log, DEV_DOMAINS) {
@@ -64,7 +64,10 @@
         return value;
       },
       getTenant: function() {
-        if($window.TENANT_HASH) return $window.TENANT_HASH; // added Jun/2017 (php sets window.TENANT_HASH)
+        if($window.server && $window.server['TENANT_HASH'])
+          return $window.server['TENANT_HASH']; // added jul/2017 (php sets window.server object.
+        if($window.TENANT_HASH)
+          return $window.TENANT_HASH; // added Jun/2017 (php sets window.TENANT_HASH)
         return config.get('app.tenant');
       },
       getEnv: function() {
@@ -85,7 +88,10 @@
         return env;
       },
       getTenantIndex: function() {
-        if($window.TENANT_INDEX) return $window.TENANT_INDEX;// added Jun/2017 (php sets window.TENANT_INDEX)
+        if($window.server && $window.server['TENANT_INDEX'])
+          return $window.server['TENANT_INDEX']; // added jul/2017 (php sets window.server object.
+        if($window.TENANT_INDEX)
+          return $window.TENANT_INDEX;// added Jun/2017 (php sets window.TENANT_INDEX)
         var subDomain;
         subDomain = config.getSubDomain();
         switch (subDomain) {
